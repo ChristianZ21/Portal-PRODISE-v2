@@ -74,7 +74,7 @@ export default function LoginPage() {
             backdropFilter: 'blur(12px)',
             border: '1px solid rgba(255,255,255,0.1)',
             borderRadius: 14,
-            padding: '12px 22px 10px',
+            padding: '16px 28px 14px',
             boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
           }}>
             {/* Línea naranja sutil en la parte superior del panel */}
@@ -84,7 +84,7 @@ export default function LoginPage() {
               src="/logo_prodise.png"
               alt="PRODISE"
               style={{
-                height: 54,
+                height: 80,
                 objectFit: 'contain',
                 display: 'block',
                 filter: 'drop-shadow(0 1px 8px rgba(230,126,34,0.3))',
