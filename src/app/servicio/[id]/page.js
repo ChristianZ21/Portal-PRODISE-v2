@@ -55,7 +55,9 @@ export default function ServicioPage({ params }) {
       {/* ── Sidebar ── */}
       <aside style={{ width: 210, background: 'rgba(5,5,7,0.98)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', flexShrink: 0, height: '100vh', position: 'sticky', top: 0 }}>
         <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
-          <img src="/logo_prodise.png" alt="PRODISE" style={{ height: 30, objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(230,126,34,0.3))' }} />
+          <div style={{ background: 'white', borderRadius: 6, padding: '4px 10px', display: 'inline-flex', alignItems: 'center' }}>
+            <img src="/logo_prodise.png" alt="PRODISE" style={{ height: 28, objectFit: 'contain', display: 'block' }} />
+          </div>
         </div>
         <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ fontSize: 11, fontWeight: 600 }}>{user.nombre}</div>
