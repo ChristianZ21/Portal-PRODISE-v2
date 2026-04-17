@@ -1,8 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = 'https://zqiqrydouzcfdvjgvtoj.supabase.co'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxaXFyeWRvdXpjZmR2amd2dG9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzEzNzgsImV4cCI6MjA5MTQwNzM3OH0.MSNXplkXodHiFWvwqhJZS0BwrZIYiqnOW4WMBFnYsvs'
 
-if (!url || !key) console.error('Faltan variables NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY')
-
-export const supabase = createClient(url || '', key || '')
+export const supabase = createClient(supabaseUrl, supabaseKey)
