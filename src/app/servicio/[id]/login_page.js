@@ -2,21 +2,71 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import gsap from 'gsap'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError]       = useState('')
   const [loading, setLoading]   = useState(false)
-  const [mounted, setMounted]   = useState(false)
   const { login, user }         = useAuth()
   const router                  = useRouter()
   const userRef                 = useRef(null)
 
+  // Refs para GSAP
+  const bgRef      = useRef(null)
+  const logoRef    = useRef(null)
+  const dividerRef = useRef(null)
+  const tagRef     = useRef(null)
+  const cardRef    = useRef(null)
+  const clientsRef = useRef(null)
+  const footerRef  = useRef(null)
+  const lineRef    = useRef(null)
+
   useEffect(() => {
-    setMounted(true)
-    setTimeout(() => userRef.current?.focus(), 350)
-  }, [])
+    if (user) { router.push('/servicios'); return }
+
+    // ── Secuencia de entrada GSAP ──────────────────────────────
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
+
+    // Línea superior aparece primero
+    tl.fromTo(lineRef.current,
+      { scaleX: 0, transformOrigin: 'center' },
+      { scaleX: 1, duration: 0.8 }
+    )
+    // Fondo sube del negro
+    .fromTo(bgRef.current,
+      { opacity: 0 },
+      { opacity: 1, duration: 1.2 },
+      '<'
+    )
+    // Logo cae desde arriba con rebote suave
+    .fromTo(logoRef.current,
+      { opacity: 0, y: -40, scale: 0.85 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: 'back.out(1.4)' },
+      0.3
+    )
+    // Separador y tag aparecen
+    .fromTo([dividerRef.current, tagRef.current],
+      { opacity: 0, y: -8 },
+      { opacity: 1, y: 0, duration: 0.5, stagger: 0.1 },
+      0.8
+    )
+    // Card sube desde abajo
+    .fromTo(cardRef.current,
+      { opacity: 0, y: 32, scale: 0.97 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: 'power2.out' },
+      0.7
+    )
+    // Clientes y footer
+    .fromTo([clientsRef.current, footerRef.current],
+      { opacity: 0 },
+      { opacity: 1, duration: 0.6, stagger: 0.1 },
+      1.1
+    )
+
+    setTimeout(() => userRef.current?.focus(), 900)
+  }, [user, router])
 
   useEffect(() => {
     if (user) router.push('/servicios')
@@ -25,9 +75,29 @@ export default function LoginPage() {
   async function handleSubmit(e) {
     e.preventDefault()
     if (!username.trim() || !password.trim()) { setError('Completa usuario y contraseña'); return }
+
+    // Animación de carga en el card
+    gsap.to(cardRef.current, { scale: 0.99, duration: 0.15 })
     setLoading(true); setError('')
+
     const result = await login(username.trim(), password)
-    if (!result.success) { setError(result.error || 'Credenciales incorrectas'); setLoading(false) }
+    gsap.to(cardRef.current, { scale: 1, duration: 0.15 })
+
+    if (!result.success) {
+      // Shake de error
+      gsap.fromTo(cardRef.current,
+        { x: 0 },
+        { x: 10, duration: 0.07, repeat: 5, yoyo: true, ease: 'power1.inOut',
+          onComplete: () => gsap.set(cardRef.current, { x: 0 }) }
+      )
+      setError(result.error || 'Credenciales incorrectas')
+      setLoading(false)
+    } else {
+      // Fade out suave al entrar
+      gsap.to([logoRef.current, cardRef.current, clientsRef.current], {
+        opacity: 0, y: -20, duration: 0.4, stagger: 0.05, ease: 'power2.in'
+      })
+    }
   }
 
   return (
@@ -36,102 +106,101 @@ export default function LoginPage() {
       position: 'relative', overflow: 'hidden', background: '#060608',
       fontFamily: "'Inter', -apple-system, sans-serif",
     }}>
+
       {/* Fondo */}
-      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(/fondo_planta.jpg)', backgroundSize: 'cover', backgroundPosition: '85% 20%', filter: 'brightness(0.22) saturate(0.5)' }} />
+      <div ref={bgRef} style={{
+        position: 'absolute', inset: 0, opacity: 0,
+        backgroundImage: 'url(/fondo_planta.jpg)',
+        backgroundSize: 'cover', backgroundPosition: '85% 20%',
+        filter: 'brightness(0.22) saturate(0.5)',
+      }} />
       {/* Vignette */}
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, transparent 15%, rgba(6,6,8,0.85) 100%)' }} />
-      {/* Línea superior */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, rgba(230,126,34,0.7) 40%, rgba(230,126,34,0.7) 60%, transparent)', zIndex: 10 }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, transparent 15%, rgba(6,6,8,0.88) 100%)' }} />
+      {/* Línea acento */}
+      <div ref={lineRef} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, rgba(230,126,34,0.75) 35%, rgba(230,126,34,0.75) 65%, transparent)', zIndex: 10, transformOrigin: 'center' }} />
 
-      {/* Card */}
-      <div style={{
-        position: 'relative', zIndex: 5, width: '100%', maxWidth: 360, margin: '0 20px',
-        opacity: mounted ? 1 : 0, transform: mounted ? 'translateY(0)' : 'translateY(20px)',
-        transition: 'opacity 0.5s ease, transform 0.5s ease',
-      }}>
+      {/* Card central */}
+      <div style={{ position: 'relative', zIndex: 5, width: '100%', maxWidth: 360, margin: '0 20px' }}>
 
-        {/* ── LOGO ─────────────────────────────────────────────────────
-            El PNG tiene fondo blanco. Solución definitiva:
-            Usar un contenedor con el MISMO color de fondo de la página
-            y texto de marca separado.
-            
-            FIX PERMANENTE: ve a remove.bg → sube logo → descarga PNG
-            transparente → reemplaza public/logo_prodise.png
-        ────────────────────────────────────────────────────────────── */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24 }}>
+        {/* ── LOGO con glow blanco difuminado ── */}
+        <div ref={logoRef} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24, opacity: 0 }}>
 
-          {/* Glow ambiente naranja */}
-          <div style={{
-            position: 'absolute', width: 300, height: 120,
-            background: 'radial-gradient(ellipse, rgba(230,126,34,0.12) 0%, transparent 70%)',
-            filter: 'blur(24px)', pointerEvents: 'none',
-          }} />
+          <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '8px 4px' }}>
 
-          {/* Contenedor del logo — fondo exacto = página, elimina el blanco del PNG */}
-          <div style={{
-            position: 'relative',
-            background: '#060608',           /* mismo color que el body */
-            borderRadius: 10,
-            padding: '10px 18px',
-            border: '1px solid rgba(230,126,34,0.15)',
-            boxShadow: '0 0 0 6px #060608,  /* extiende el fondo negro fuera del border */ 0 8px 32px rgba(0,0,0,0.5)',
-          }}>
+            {/* Halo blanco suave — da la sensación de luz ambiental */}
+            <div style={{
+              position: 'absolute',
+              width: '130%', height: '180%',
+              background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 45%, transparent 70%)',
+              filter: 'blur(10px)',
+              pointerEvents: 'none',
+            }} />
+
+            {/* Glow naranja cálido debajo */}
+            <div style={{
+              position: 'absolute',
+              width: '160%', height: '220%',
+              background: 'radial-gradient(ellipse at center, rgba(230,126,34,0.18) 0%, rgba(230,126,34,0.06) 50%, transparent 70%)',
+              filter: 'blur(18px)',
+              pointerEvents: 'none',
+            }} />
+
+            {/* Logo — PNG transparente flota sobre los halos */}
             <img
               src="/logo_prodise.png"
               alt="PRODISE"
               style={{
-                height: 50,
+                height: 60,
                 objectFit: 'contain',
                 display: 'block',
-                /* mix-blend-mode lighten sobre fondo #060608:
-                   blanco del PNG = lighten(255, 6) = 255 → sigue siendo blanco
-                   SOLUCIÓN REAL: reemplazar PNG con versión transparente en remove.bg */
-                filter: 'drop-shadow(0 0 10px rgba(230,126,34,0.4))',
+                position: 'relative',
+                zIndex: 1,
+                filter: 'drop-shadow(0 2px 12px rgba(230,126,34,0.35)) drop-shadow(0 0 4px rgba(255,255,255,0.15))',
               }}
             />
           </div>
 
-          <div style={{ width: 50, height: 1, marginTop: 14, background: 'linear-gradient(90deg, transparent, rgba(230,126,34,0.4), transparent)' }} />
-          <div style={{ fontSize: 9, letterSpacing: 3, color: 'rgba(255,255,255,0.2)', fontWeight: 600, marginTop: 9, textTransform: 'uppercase' }}>
+          {/* Separador */}
+          <div ref={dividerRef} style={{ width: 44, height: 1, marginTop: 14, background: 'linear-gradient(90deg, transparent, rgba(230,126,34,0.4), transparent)', opacity: 0 }} />
+          <div ref={tagRef} style={{ fontSize: 9, letterSpacing: 3.5, color: 'rgba(255,255,255,0.22)', fontWeight: 600, marginTop: 9, textTransform: 'uppercase', opacity: 0 }}>
             Portal Operativo
           </div>
         </div>
 
         {/* Formulario */}
-        <div style={{
+        <div ref={cardRef} style={{
           background: 'rgba(10,10,14,0.9)', backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14,
           padding: '24px 24px 20px',
           boxShadow: '0 24px 60px rgba(0,0,0,0.6)',
+          opacity: 0,
         }}>
           <div style={{ marginBottom: 18 }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: '#E8E8E8', marginBottom: 3 }}>Iniciar sesión</div>
             <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)' }}>Accede con tus credenciales PRODISE</div>
           </div>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div>
-              <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontWeight: 600, letterSpacing: 0.6, display: 'block', marginBottom: 5 }}>USUARIO</label>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+            <Field label="USUARIO">
               <input
                 ref={userRef} type="text" value={username} autoComplete="username"
                 onChange={e => { setUsername(e.target.value); setError('') }}
                 placeholder="Nombre de usuario"
                 style={inputStyle}
-                onFocus={e => e.target.style.borderColor = '#E67E22'}
-                onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.07)'}
+                onFocus={e => { e.target.style.borderColor = '#E67E22'; e.target.style.background = 'rgba(230,126,34,0.04)' }}
+                onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.07)'; e.target.style.background = 'rgba(255,255,255,0.045)' }}
               />
-            </div>
-            <div>
-              <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontWeight: 600, letterSpacing: 0.6, display: 'block', marginBottom: 5 }}>CONTRASEÑA</label>
+            </Field>
+            <Field label="CONTRASEÑA">
               <input
                 type="password" value={password} autoComplete="current-password"
                 onChange={e => { setPassword(e.target.value); setError('') }}
                 placeholder="••••••••"
                 style={inputStyle}
-                onFocus={e => e.target.style.borderColor = '#E67E22'}
-                onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.07)'}
+                onFocus={e => { e.target.style.borderColor = '#E67E22'; e.target.style.background = 'rgba(230,126,34,0.04)' }}
+                onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.07)'; e.target.style.background = 'rgba(255,255,255,0.045)' }}
               />
-            </div>
+            </Field>
 
             {error && (
               <div style={{ fontSize: 12, color: '#E8A09A', padding: '8px 12px', background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.14)', borderRadius: 7 }}>
@@ -139,34 +208,25 @@ export default function LoginPage() {
               </div>
             )}
 
-            <button type="submit" disabled={loading} style={{
-              marginTop: 6, width: '100%', padding: '12px',
-              background: loading ? 'rgba(230,126,34,0.4)' : '#E67E22',
-              border: 'none', borderRadius: 8, color: 'white', fontSize: 13, fontWeight: 700,
-              fontFamily: 'Inter,sans-serif', cursor: loading ? 'not-allowed' : 'pointer',
-              letterSpacing: 0.4, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              transition: 'opacity 0.15s',
-            }}
-            onMouseEnter={e => { if (!loading) e.currentTarget.style.opacity = '0.88' }}
-            onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+            <button type="submit" disabled={loading}
+              style={{ marginTop: 6, width: '100%', padding: '12px', background: '#E67E22', border: 'none', borderRadius: 8, color: 'white', fontSize: 13, fontWeight: 700, fontFamily: 'Inter,sans-serif', cursor: loading ? 'not-allowed' : 'pointer', letterSpacing: 0.4, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: loading ? 0.6 : 1, transition: 'opacity 0.15s' }}
+              onMouseEnter={e => { if (!loading) gsap.to(e.currentTarget, { scale: 1.02, duration: 0.15 }) }}
+              onMouseLeave={e => gsap.to(e.currentTarget, { scale: 1, duration: 0.15 })}
             >
-              {loading
-                ? <><Spinner /> Verificando...</>
-                : 'Ingresar al portal'
-              }
+              {loading ? <><Spinner />Verificando...</> : 'Ingresar al portal'}
             </button>
           </form>
         </div>
 
         {/* Clientes */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 18 }}>
+        <div ref={clientsRef} style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 18, opacity: 0 }}>
           {['MARCOBRE', 'HUDBAY', 'LAS BAMBAS'].map(c => (
             <div key={c} style={{ fontSize: 8, letterSpacing: 2, color: 'rgba(255,255,255,0.18)', fontWeight: 600 }}>{c}</div>
           ))}
         </div>
       </div>
 
-      <div style={{ position: 'absolute', bottom: 14, width: '100%', textAlign: 'center', fontSize: 10, color: 'rgba(255,255,255,0.15)', zIndex: 5 }}>
+      <div ref={footerRef} style={{ position: 'absolute', bottom: 14, width: '100%', textAlign: 'center', fontSize: 10, color: 'rgba(255,255,255,0.15)', zIndex: 5, opacity: 0 }}>
         PRODISE Ingeniería &amp; Servicios © 2026 · Desarrollado por CJP y GM
       </div>
 
@@ -180,13 +240,21 @@ export default function LoginPage() {
   )
 }
 
-const inputStyle = {
-  width: '100%', background: 'rgba(255,255,255,0.045)',
-  border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8,
-  padding: '11px 14px', color: '#E8E8E8', fontSize: 13,
-  fontFamily: 'Inter,sans-serif', outline: 'none', transition: 'border-color 0.18s',
+function Field({ label, children }) {
+  return (
+    <div>
+      <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontWeight: 600, letterSpacing: 0.6, display: 'block', marginBottom: 5 }}>{label}</label>
+      {children}
+    </div>
+  )
 }
 
 function Spinner() {
   return <div style={{ width: 13, height: 13, border: '2px solid rgba(255,255,255,0.25)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+}
+
+const inputStyle = {
+  width: '100%', background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.07)',
+  borderRadius: 8, padding: '11px 14px', color: '#E8E8E8', fontSize: 13,
+  fontFamily: 'Inter,sans-serif', outline: 'none', transition: 'border-color 0.18s, background 0.18s',
 }
