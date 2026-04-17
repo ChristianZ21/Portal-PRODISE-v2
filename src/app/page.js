@@ -72,13 +72,13 @@ export default function LoginPage() {
             position: 'relative',
             background: 'rgba(255,255,255,0.07)',
             backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255,255,255,0.1)',
+            border: '1px solid rgba(255,255,255,0.25)',
             borderRadius: 14,
-            padding: '16px 28px 14px',
+            padding: '14px 28px 12px',
+            background: 'rgba(255,255,255,0.93)',
             boxShadow: '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
           }}>
-            {/* Línea naranja sutil en la parte superior del panel */}
-            <div style={{ position: 'absolute', top: 0, left: '20%', right: '20%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(230,126,34,0.5), transparent)', borderRadius: 1 }} />
+
 
             <img
               src="/logo_prodise.png"
