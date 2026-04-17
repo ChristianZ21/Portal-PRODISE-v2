@@ -54,7 +54,7 @@ export default function ServicioPage({ params }) {
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       {/* ── Sidebar ── */}
       <aside style={{ width: 210, background: 'rgba(5,5,7,0.98)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', flexShrink: 0, height: '100vh', position: 'sticky', top: 0 }}>
-        <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+        <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
           <img src="/logo_prodise.png" alt="PRODISE" style={{ height: 30, objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(230,126,34,0.3))' }} />
         </div>
         <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
@@ -780,9 +780,10 @@ function AdminPanel({ svc, user }) {
   const [tab, setTab] = useState('resumen')
 
   const tabs = [
-    { id: 'resumen', label: 'Resumen General' },
-    { id: 'carga', label: 'Carga de Personal' },
-    { id: 'gestion', label: 'Gestión y Borrado' },
+    { id: 'resumen',  label: 'Resumen General' },
+    { id: 'carga',    label: 'Carga de Personal' },
+    { id: 'usuarios', label: 'Gestión de Usuarios' },
+    { id: 'gestion',  label: 'Gestión y Borrado' },
   ]
   if (user.nivel === 1) tabs.push({ id: 'servicios', label: 'Servicios (Root)' })
 
@@ -805,6 +806,7 @@ function AdminPanel({ svc, user }) {
 
       {tab === 'resumen' && <AdminResumen svc={svc} />}
       {tab === 'carga' && <AdminCarga svc={svc} user={user} />}
+      {tab === 'usuarios' && <AdminUsuarios user={user} />}
       {tab === 'gestion' && <AdminGestion svc={svc} />}
       {tab === 'servicios' && <AdminServicios user={user} currentSvcId={svc.id_servicio} />}
     </div>
@@ -2629,6 +2631,367 @@ function RedAfinidadSVG({ cuadrilla, afinidades }) {
     </svg>
   )
 }
+
+/* =========================================
+   GESTIÓN DE USUARIOS
+   ========================================= */
+
+// MD5 puro en JS — mismo resultado que Python hashlib.md5
+function md5(input) {
+  function safeAdd(x,y){const l=(x&0xFFFF)+(y&0xFFFF);return((x>>16)+(y>>16)+(l>>16)<<16)|(l&0xFFFF)}
+  function rol(n,c){return(n<<c)|(n>>>(32-c))}
+  function cmn(q,a,b,x,s,t){return safeAdd(rol(safeAdd(safeAdd(a,q),safeAdd(x,t)),s),b)}
+  function ff(a,b,c,d,x,s,t){return cmn((b&c)|((~b)&d),a,b,x,s,t)}
+  function gg(a,b,c,d,x,s,t){return cmn((b&d)|(c&(~d)),a,b,x,s,t)}
+  function hh(a,b,c,d,x,s,t){return cmn(b^c^d,a,b,x,s,t)}
+  function ii(a,b,c,d,x,s,t){return cmn(c^(b|(~d)),a,b,x,s,t)}
+  const s8=unescape(encodeURIComponent(input));const x=[]
+  for(let i=0;i<s8.length;i+=4)x[i>>2]=s8.charCodeAt(i)+(s8.charCodeAt(i+1)<<8)+(s8.charCodeAt(i+2)<<16)+(s8.charCodeAt(i+3)<<24)
+  const l=s8.length;x[l>>2]|=0x80<<((l%4)*8);x[(((l+64)>>>9)<<4)+14]=l*8
+  let [a,b,c,d]=[0x67452301,0xEFCDAB89,0x98BADCFE,0x10325476]
+  for(let i=0;i<x.length;i+=16){
+    const[A,B,C,D]=[a,b,c,d]
+    a=ff(a,b,c,d,x[i],7,-680876936);d=ff(d,a,b,c,x[i+1],12,-389564586);c=ff(c,d,a,b,x[i+2],17,606105819);b=ff(b,c,d,a,x[i+3],22,-1044525330)
+    a=ff(a,b,c,d,x[i+4],7,-176418897);d=ff(d,a,b,c,x[i+5],12,1200080426);c=ff(c,d,a,b,x[i+6],17,-1473231341);b=ff(b,c,d,a,x[i+7],22,-45705983)
+    a=ff(a,b,c,d,x[i+8],7,1770035416);d=ff(d,a,b,c,x[i+9],12,-1958414417);c=ff(c,d,a,b,x[i+10],17,-42063);b=ff(b,c,d,a,x[i+11],22,-1990404162)
+    a=ff(a,b,c,d,x[i+12],7,1804603682);d=ff(d,a,b,c,x[i+13],12,-40341101);c=ff(c,d,a,b,x[i+14],17,-1502002290);b=ff(b,c,d,a,x[i+15],22,1236535329)
+    a=gg(a,b,c,d,x[i+1],5,-165796510);d=gg(d,a,b,c,x[i+6],9,-1069501632);c=gg(c,d,a,b,x[i+11],14,643717713);b=gg(b,c,d,a,x[i],20,-373897302)
+    a=gg(a,b,c,d,x[i+5],5,-701558691);d=gg(d,a,b,c,x[i+10],9,38016083);c=gg(c,d,a,b,x[i+15],14,-660478335);b=gg(b,c,d,a,x[i+4],20,-405537848)
+    a=gg(a,b,c,d,x[i+9],5,568446438);d=gg(d,a,b,c,x[i+14],9,-1019803690);c=gg(c,d,a,b,x[i+3],14,-187363961);b=gg(b,c,d,a,x[i+8],20,1163531501)
+    a=gg(a,b,c,d,x[i+13],5,-1444681467);d=gg(d,a,b,c,x[i+2],9,-51403784);c=gg(c,d,a,b,x[i+7],14,1735328473);b=gg(b,c,d,a,x[i+12],20,-1926607734)
+    a=hh(a,b,c,d,x[i+5],4,-378558);d=hh(d,a,b,c,x[i+8],11,-2022574463);c=hh(c,d,a,b,x[i+11],16,1839030562);b=hh(b,c,d,a,x[i+14],23,-35309556)
+    a=hh(a,b,c,d,x[i+1],4,-1530992060);d=hh(d,a,b,c,x[i+4],11,1272893353);c=hh(c,d,a,b,x[i+7],16,-155497632);b=hh(b,c,d,a,x[i+10],23,-1094730640)
+    a=hh(a,b,c,d,x[i+13],4,681279174);d=hh(d,a,b,c,x[i],11,-358537222);c=hh(c,d,a,b,x[i+3],16,-722521979);b=hh(b,c,d,a,x[i+6],23,76029189)
+    a=hh(a,b,c,d,x[i+9],4,-640364487);d=hh(d,a,b,c,x[i+12],11,-421815835);c=hh(c,d,a,b,x[i+15],16,530742520);b=hh(b,c,d,a,x[i+2],23,-995338651)
+    a=ii(a,b,c,d,x[i],6,-198630844);d=ii(d,a,b,c,x[i+7],10,1126891415);c=ii(c,d,a,b,x[i+14],15,-1416354905);b=ii(b,c,d,a,x[i+5],21,-57434055)
+    a=ii(a,b,c,d,x[i+12],6,1700485571);d=ii(d,a,b,c,x[i+3],10,-1894986606);c=ii(c,d,a,b,x[i+10],15,-1051523);b=ii(b,c,d,a,x[i+1],21,-2054922799)
+    a=ii(a,b,c,d,x[i+8],6,1873313359);d=ii(d,a,b,c,x[i+15],10,-30611744);c=ii(c,d,a,b,x[i+6],15,-1560198380);b=ii(b,c,d,a,x[i+13],21,1309151649)
+    a=ii(a,b,c,d,x[i+4],6,-145523070);d=ii(d,a,b,c,x[i+11],10,-1120210379);c=ii(c,d,a,b,x[i+2],15,718787259);b=ii(b,c,d,a,x[i+9],21,-343485551)
+    a=safeAdd(a,A);b=safeAdd(b,B);c=safeAdd(c,C);d=safeAdd(d,D)
+  }
+  return[a,b,c,d].map(n=>('00000000'+((n<0?n+0x100000000:n)).toString(16)).slice(-8).match(/../g).reverse().join('')).join('')
+}
+
+function AdminUsuarios({ user: currentUser }) {
+  const [usuarios, setUsuarios]   = useState([])
+  const [trabajadores, setTrab]   = useState([])
+  const [loading, setLoading]     = useState(true)
+  const [showForm, setShowForm]   = useState(false)
+  const [editando, setEditando]   = useState(null)   // usuario en edición
+  const [msg, setMsg]             = useState('')
+  const [guardando, setGuardando] = useState(false)
+  const [busquedaDni, setBusquedaDni] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(null)
+
+  // Form state
+  const [form, setForm] = useState({
+    username: '', password: '', dni_asociado: '', nivel_acceso: 2, estado: 'ACTIVO'
+  })
+  const [generatedPwd, setGeneratedPwd] = useState('')
+
+  const nivelLabels = { 1: 'Nivel 1 — Admin', 2: 'Nivel 2 — Planner/Coordinador', 3: 'Nivel 3 — Supervisor' }
+
+  useEffect(() => { loadAll() }, [])
+
+  async function loadAll() {
+    setLoading(true)
+    const [{ data: usrs }, { data: trabs }] = await Promise.all([
+      supabase.from('usuarios_sistema').select('*').order('username'),
+      supabase.from('trabajadores').select('dni, nombres_completos').order('nombres_completos'),
+    ])
+    setUsuarios(usrs || [])
+    setTrab(trabs || [])
+    setLoading(false)
+  }
+
+  function nombreDeTrabajador(dni) {
+    return trabajadores.find(t => t.dni === dni)?.nombres_completos || dni || '—'
+  }
+
+  function trabajadoresFiltrados() {
+    if (!busquedaDni) return trabajadores.slice(0, 8)
+    const q = busquedaDni.toLowerCase()
+    return trabajadores.filter(t =>
+      t.nombres_completos.toLowerCase().includes(q) || t.dni.includes(q)
+    ).slice(0, 8)
+  }
+
+  function abrirNuevo() {
+    setForm({ username: '', password: '', dni_asociado: '', nivel_acceso: 2, estado: 'ACTIVO' })
+    setGeneratedPwd(''); setEditando(null); setBusquedaDni(''); setMsg(''); setShowForm(true)
+  }
+
+  function abrirEditar(u) {
+    setForm({ username: u.username, password: '', dni_asociado: u.dni_asociado || '', nivel_acceso: u.nivel_acceso, estado: u.estado })
+    setGeneratedPwd(''); setEditando(u); setBusquedaDni(''); setMsg(''); setShowForm(true)
+  }
+
+  function generarPassword() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789#@!'
+    const pwd = Array.from({length: 10}, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+    setForm(f => ({ ...f, password: pwd }))
+    setGeneratedPwd(pwd)
+  }
+
+  async function guardar() {
+    if (!form.username.trim()) { setMsg('El nombre de usuario es obligatorio'); return }
+    if (!editando && !form.password.trim()) { setMsg('La contraseña es obligatoria para usuarios nuevos'); return }
+    setGuardando(true); setMsg('')
+
+    const data = {
+      username:      form.username.toUpperCase().trim(),
+      nivel_acceso:  parseInt(form.nivel_acceso),
+      estado:        form.estado,
+      dni_asociado:  form.dni_asociado || null,
+    }
+
+    // Solo hashear si se escribió contraseña
+    if (form.password.trim()) {
+      data.password_hash = md5(form.password.trim())
+    }
+
+    let error
+    if (editando) {
+      ({ error } = await supabase.from('usuarios_sistema').update(data).eq('username', editando.username))
+    } else {
+      ({ error } = await supabase.from('usuarios_sistema').insert(data))
+    }
+
+    if (error) {
+      setMsg(error.code === '23505' ? 'Ese nombre de usuario ya existe' : error.message)
+    } else {
+      setShowForm(false)
+      setMsg('')
+      await loadAll()
+    }
+    setGuardando(false)
+  }
+
+  async function toggleEstado(u) {
+    const nuevoEstado = u.estado === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO'
+    await supabase.from('usuarios_sistema').update({ estado: nuevoEstado }).eq('username', u.username)
+    await loadAll()
+  }
+
+  async function eliminar(username) {
+    await supabase.from('usuarios_sistema').delete().eq('username', username)
+    setConfirmDelete(null)
+    await loadAll()
+  }
+
+  const nivelColor = n => n === 1 ? 'var(--accent)' : n === 2 ? 'var(--accent2)' : 'var(--green)'
+  const nivelBg    = n => n === 1 ? 'rgba(230,126,34,0.08)' : n === 2 ? 'rgba(91,164,207,0.08)' : 'rgba(39,174,96,0.08)'
+
+  if (loading) return <p style={{ color: 'var(--text3)', fontSize: 13 }}>Cargando usuarios...</p>
+
+  return (
+    <div className="fade">
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 600 }}>Usuarios del sistema</div>
+          <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>{usuarios.length} usuarios registrados</div>
+        </div>
+        <button className="btn btn-primary" onClick={abrirNuevo} style={{ width: 'auto', padding: '8px 18px', fontSize: 12 }}>
+          + Nuevo usuario
+        </button>
+      </div>
+
+      {/* Tabla de usuarios */}
+      <div className="card-static" style={{ overflow: 'hidden', marginBottom: 16 }}>
+        {/* Cabecera */}
+        <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr 140px 80px 120px 100px', gap: 8, padding: '9px 16px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.4 }}>
+          <div>USUARIO</div><div>TRABAJADOR VINCULADO</div><div>NIVEL</div><div>ESTADO</div><div>ÚLTIMO ACCESO</div><div style={{ textAlign: 'right' }}>ACCIONES</div>
+        </div>
+
+        {usuarios.map((u, i) => (
+          <div key={u.username} style={{ display: 'grid', gridTemplateColumns: '140px 1fr 140px 80px 120px 100px', gap: 8, padding: '11px 16px', alignItems: 'center', borderBottom: i < usuarios.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', opacity: u.estado === 'INACTIVO' ? 0.45 : 1 }}>
+            {/* Username */}
+            <div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'monospace', color: u.username === currentUser.username ? 'var(--accent)' : 'var(--text)' }}>
+              {u.username}
+              {u.username === currentUser.username && <span style={{ fontSize: 8, color: 'var(--accent)', marginLeft: 6, fontFamily: 'Inter' }}>tú</span>}
+            </div>
+
+            {/* Trabajador */}
+            <div style={{ fontSize: 11, color: 'var(--text2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {nombreDeTrabajador(u.dni_asociado)}
+            </div>
+
+            {/* Nivel */}
+            <div>
+              <span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 5, background: nivelBg(u.nivel_acceso), color: nivelColor(u.nivel_acceso), fontWeight: 600 }}>
+                N{u.nivel_acceso} · {u.nivel_acceso === 1 ? 'Admin' : u.nivel_acceso === 2 ? 'Planner' : 'Supervisor'}
+              </span>
+            </div>
+
+            {/* Estado */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: u.estado === 'ACTIVO' ? 'var(--green)' : 'var(--text3)', flexShrink: 0 }} />
+              <span style={{ fontSize: 10, color: u.estado === 'ACTIVO' ? 'var(--green)' : 'var(--text3)' }}>{u.estado}</span>
+            </div>
+
+            {/* Último acceso */}
+            <div style={{ fontSize: 10, color: 'var(--text3)' }}>
+              {u.ultimo_login ? new Date(u.ultimo_login).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: '2-digit' }) : 'Nunca'}
+            </div>
+
+            {/* Acciones */}
+            <div style={{ display: 'flex', gap: 5, justifyContent: 'flex-end' }}>
+              <button onClick={() => abrirEditar(u)} style={{ padding: '4px 9px', fontSize: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: 5, color: 'var(--text2)', cursor: 'pointer', fontFamily: 'Inter' }}>
+                ✏ Editar
+              </button>
+              <button onClick={() => toggleEstado(u)} style={{ padding: '4px 9px', fontSize: 10, background: 'transparent', border: '1px solid var(--border)', borderRadius: 5, color: u.estado === 'ACTIVO' ? 'var(--yellow)' : 'var(--green)', cursor: 'pointer', fontFamily: 'Inter' }}>
+                {u.estado === 'ACTIVO' ? '⏸' : '▶'}
+              </button>
+              {u.username !== currentUser.username && (
+                <button onClick={() => setConfirmDelete(u.username)} style={{ padding: '4px 9px', fontSize: 10, background: 'transparent', border: '1px solid rgba(192,57,43,0.25)', borderRadius: 5, color: 'var(--red)', cursor: 'pointer', fontFamily: 'Inter' }}>
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Confirm delete */}
+      {confirmDelete && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 12, padding: '24px 28px', maxWidth: 320, textAlign: 'center' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>¿Eliminar usuario?</div>
+            <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 20 }}>Se eliminará <strong style={{ color: 'var(--text)' }}>{confirmDelete}</strong> permanentemente.</div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="btn btn-ghost" onClick={() => setConfirmDelete(null)} style={{ flex: 1, fontSize: 12 }}>Cancelar</button>
+              <button onClick={() => eliminar(confirmDelete)} style={{ flex: 1, padding: '9px', background: 'var(--red)', border: 'none', borderRadius: 8, color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal formulario */}
+      {showForm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '26px 28px', width: '100%', maxWidth: 440 }}>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>{editando ? 'Editar usuario' : 'Nuevo usuario'}</div>
+              <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 18, cursor: 'pointer', lineHeight: 1 }}>×</button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+              {/* Username */}
+              <div>
+                <label style={lbl}>NOMBRE DE USUARIO</label>
+                <input className="input" value={form.username} placeholder="Ej: RCHANCAY"
+                  onChange={e => setForm(f => ({ ...f, username: e.target.value.toUpperCase() }))}
+                  disabled={!!editando}
+                  style={{ fontFamily: 'monospace', opacity: editando ? 0.6 : 1 }}
+                />
+                <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 3 }}>Solo letras y números, sin espacios. Se guardará en MAYÚSCULAS.</div>
+              </div>
+
+              {/* Trabajador vinculado */}
+              <div>
+                <label style={lbl}>TRABAJADOR VINCULADO</label>
+                <input className="input" placeholder="Buscar por nombre o DNI..."
+                  value={busquedaDni}
+                  onChange={e => setBusquedaDni(e.target.value)}
+                  style={{ marginBottom: 6 }}
+                />
+                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 7, overflow: 'hidden' }}>
+                  {/* Opción ninguno */}
+                  <div onClick={() => { setForm(f => ({...f, dni_asociado: ''})); setBusquedaDni('') }}
+                    style={{ padding: '7px 12px', fontSize: 11, cursor: 'pointer', background: !form.dni_asociado ? 'rgba(230,126,34,0.07)' : 'transparent', color: !form.dni_asociado ? 'var(--accent)' : 'var(--text3)', borderBottom: '1px solid var(--border)' }}>
+                    — Sin vincular
+                  </div>
+                  {trabajadoresFiltrados().map(t => (
+                    <div key={t.dni} onClick={() => { setForm(f => ({...f, dni_asociado: t.dni})); setBusquedaDni(t.nombres_completos) }}
+                      style={{ padding: '7px 12px', fontSize: 11, cursor: 'pointer', background: form.dni_asociado === t.dni ? 'rgba(230,126,34,0.07)' : 'transparent', color: form.dni_asociado === t.dni ? 'var(--accent)' : 'var(--text2)', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                      <span style={{ fontWeight: form.dni_asociado === t.dni ? 600 : 400 }}>{t.nombres_completos}</span>
+                      <span style={{ color: 'var(--text3)', fontFamily: 'monospace' }}>{t.dni}</span>
+                    </div>
+                  ))}
+                </div>
+                {form.dni_asociado && <div style={{ fontSize: 10, color: 'var(--green)', marginTop: 4 }}>✓ Vinculado: {nombreDeTrabajador(form.dni_asociado)}</div>}
+              </div>
+
+              {/* Nivel de acceso */}
+              <div>
+                <label style={lbl}>NIVEL DE ACCESO</label>
+                <select className="input" value={form.nivel_acceso} onChange={e => setForm(f => ({...f, nivel_acceso: parseInt(e.target.value)}))} style={{ background: 'var(--bg2)' }}>
+                  <option value={1} style={{ background: '#0c0c10' }}>Nivel 1 — Admin (acceso total)</option>
+                  <option value={2} style={{ background: '#0c0c10' }}>Nivel 2 — Planner / Coordinador</option>
+                  <option value={3} style={{ background: '#0c0c10' }}>Nivel 3 — Supervisor (solo evaluar)</option>
+                </select>
+              </div>
+
+              {/* Contraseña */}
+              <div>
+                <label style={lbl}>{editando ? 'NUEVA CONTRASEÑA (dejar vacío para no cambiar)' : 'CONTRASEÑA *'}</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input className="input" type="text" value={form.password} placeholder={editando ? 'Escribe para cambiar contraseña' : 'Escribe una contraseña...'}
+                    onChange={e => { setForm(f => ({...f, password: e.target.value})); setGeneratedPwd('') }}
+                    style={{ flex: 1 }}
+                  />
+                  <button type="button" onClick={generarPassword}
+                    style={{ padding: '0 14px', background: 'rgba(91,164,207,0.1)', border: '1px solid rgba(91,164,207,0.2)', borderRadius: 8, color: 'var(--accent2)', fontSize: 11, cursor: 'pointer', fontFamily: 'Inter', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    🎲 Generar
+                  </button>
+                </div>
+                {form.password && (
+                  <div style={{ marginTop: 8, padding: '8px 12px', background: 'rgba(39,174,96,0.07)', border: '1px solid rgba(39,174,96,0.15)', borderRadius: 7 }}>
+                    <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 4 }}>CONTRASEÑA QUE VERÁ EL USUARIO:</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, fontFamily: 'monospace', color: 'var(--green)', letterSpacing: 1 }}>{form.password}</div>
+                    <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 4 }}>Se guardará encriptada en la base de datos. Comparte esta contraseña con el usuario.</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Estado (solo en edición) */}
+              {editando && (
+                <div>
+                  <label style={lbl}>ESTADO</label>
+                  <select className="input" value={form.estado} onChange={e => setForm(f => ({...f, estado: e.target.value}))} style={{ background: 'var(--bg2)' }}>
+                    <option value="ACTIVO" style={{ background: '#0c0c10' }}>ACTIVO</option>
+                    <option value="INACTIVO" style={{ background: '#0c0c10' }}>INACTIVO</option>
+                  </select>
+                </div>
+              )}
+
+              {msg && <div className="alert alert-err">{msg}</div>}
+
+              <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                <button className="btn btn-ghost" onClick={() => setShowForm(false)} style={{ flex: 1 }}>Cancelar</button>
+                <button className="btn btn-primary" onClick={guardar} disabled={guardando} style={{ flex: 2 }}>
+                  {guardando ? 'Guardando...' : editando ? 'Guardar cambios' : 'Crear usuario'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Leyenda de niveles */}
+      <div className="card-static" style={{ padding: '12px 16px' }}>
+        <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text3)', marginBottom: 8, letterSpacing: 0.4 }}>REFERENCIA DE NIVELES</div>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          {[
+            { n: 1, label: 'Admin', desc: 'Acceso total a todos los módulos y servicios' },
+            { n: 2, label: 'Planner', desc: 'Dashboard, Ranking, Perfiles, Buscador, Bitácora' },
+            { n: 3, label: 'Supervisor', desc: 'Solo puede Evaluar y ver Ranking' },
+          ].map(({ n, label, desc }) => (
+            <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: nivelBg(n), color: nivelColor(n), fontWeight: 600 }}>N{n} · {label}</span>
+              <span style={{ fontSize: 10, color: 'var(--text3)' }}>{desc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const lbl = { fontSize: 10, color: 'rgba(255,255,255,0.35)', fontWeight: 600, letterSpacing: 0.5, display: 'block', marginBottom: 5 }
 
 /* =========================================
    BITÁCORA DE ACTIVIDADES (Vinculación Tarea ↔ Personal)
