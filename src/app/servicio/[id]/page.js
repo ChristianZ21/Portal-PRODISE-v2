@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, use, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '../context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
