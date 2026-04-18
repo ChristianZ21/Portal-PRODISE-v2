@@ -1,5 +1,5 @@
 import './globals.css'
-import { useAuth } from '../context/AuthContext'
+import { AuthProvider } from '../context/AuthContext'
 
 export const metadata = { title: 'PRODISE — Portal de Gestión', description: 'Plataforma de Evaluación de Personal' }
 
