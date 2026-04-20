@@ -52,24 +52,13 @@ export default function ServicioPage({ params }) {
   });
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', position: 'relative' }}>
-
-      {/* ── Overlay móvil ── */}
-      {sidebarOpen && (
-        <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 40, display: 'none' }} className="mobile-overlay" />
-      )}
-
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       {/* ── Sidebar ── */}
-      <aside style={{
-        width: 210, background: 'rgba(5,5,7,0.98)', borderRight: '1px solid var(--border)',
-        display: 'flex', flexDirection: 'column', flexShrink: 0,
-        height: '100vh', position: 'sticky', top: 0, zIndex: 50,
-      }} className={sidebarOpen ? 'sidebar sidebar-open' : 'sidebar'}>
-        <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <aside style={{ width: 210, background: 'rgba(5,5,7,0.98)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', flexShrink: 0, height: '100vh', position: 'sticky', top: 0 }}>
+        <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ background: 'white', borderRadius: 6, padding: '4px 10px', display: 'inline-flex', alignItems: 'center' }}>
             <img src="/logo_prodise.png" alt="PRODISE" style={{ height: 28, objectFit: 'contain', display: 'block' }} />
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="close-sidebar-btn" style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 18, cursor: 'pointer', display: 'none', padding: '0 4px', lineHeight: 1 }}>×</button>
         </div>
         <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ fontSize: 11, fontWeight: 600 }}>{user.nombre}</div>
@@ -82,7 +71,7 @@ export default function ServicioPage({ params }) {
         </div>
         <nav style={{ flex: 1, padding: '6px 6px', overflowY: 'auto' }}>
           {nav.map(x => (
-            <button key={x.id} onClick={() => { if (!x.disabled) { setSec(x.id); setSidebarOpen(false) } }} style={{
+            <button key={x.id} onClick={() => { if (!x.disabled) setSec(x.id) }} style={{
               display: 'flex', alignItems: 'center', gap: 7, width: '100%', padding: '7px 10px',
               borderRadius: 6, border: 'none', fontSize: 12,
               cursor: x.disabled ? 'not-allowed' : 'pointer',
@@ -104,14 +93,7 @@ export default function ServicioPage({ params }) {
       </aside>
 
       {/* ── Main ── */}
-      <main style={{ flex: 1, padding: '18px 20px', background: 'var(--bg)', overflowY: 'auto', height: '100vh' }}>
-        {/* Botón hamburguesa móvil */}
-        <button onClick={() => setSidebarOpen(true)} className="hamburger-btn" style={{
-          display: 'none', position: 'fixed', top: 12, left: 12, zIndex: 45,
-          background: 'rgba(5,5,7,0.95)', border: '1px solid var(--border)',
-          borderRadius: 8, padding: '8px 10px', cursor: 'pointer', color: 'var(--text)',
-          fontSize: 18, lineHeight: 1,
-        }}>☰</button>
+      <main style={{ flex: 1, padding: '22px 26px', background: 'var(--bg)', overflowY: 'auto', height: '100vh' }}>
         {sec === 'evaluar'   && <Evaluar    svc={svc} user={user} />}
         {sec === 'historial' && <Historial  svc={svc} user={user} />}
         {sec === 'dashboard' && <Dashboard  svc={svc} user={user} />}
@@ -765,17 +747,7 @@ function Dashboard({ svc, user }) {
         )}
       </div>
 
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @media (max-width: 768px) {
-          .sidebar { position: fixed !important; left: -210px; transition: left 0.3s ease; }
-          .sidebar-open { left: 0 !important; }
-          .mobile-overlay { display: block !important; }
-          .close-sidebar-btn { display: block !important; }
-          .hamburger-btn { display: block !important; }
-          main { padding: 50px 14px 14px !important; }
-        }
-      `}</style>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }
@@ -811,12 +783,12 @@ function AdminPanel({ svc, user }) {
   const [tab, setTab] = useState('resumen')
 
   const tabs = [
-    { id: 'resumen',  label: 'Resumen General' },
-    { id: 'carga',    label: 'Carga de Personal' },
-    { id: 'usuarios', label: 'Gestión de Usuarios' },
-    { id: 'gestion',  label: 'Gestión y Borrado' },
+    { id: 'resumen',   label: 'Resumen General' },
+    { id: 'carga',     label: 'Carga de Personal' },
+    { id: 'usuarios',  label: 'Gestión de Usuarios' },
+    { id: 'gestion',   label: 'Gestión y Borrado' },
+    { id: 'servicios', label: 'Servicios' },
   ]
-  if (user.nivel === 1) tabs.push({ id: 'servicios', label: 'Servicios (Root)' })
 
   return (
     <div>
@@ -3296,3 +3268,421 @@ function Bitacora({ svc, user }) {
     </div>
   )
 }
+
+/* =========================================
+   ADMIN — GESTIÓN Y BORRADO (completo)
+   ========================================= */
+function AdminGestion({ svc }) {
+  const [asigs, setAsigs]         = useState([])
+  const [loading, setLoading]     = useState(true)
+  const [search, setSearch]       = useState('')
+  const [confirmDni, setConfirmDni] = useState(null)
+  const [msg, setMsg]             = useState('')
+  const [turnoFiltro, setTurnoFiltro] = useState('TODOS')
+  const [cargoFiltro, setCargoFiltro] = useState('TODOS')
+  const [cargos, setCargos]       = useState([])
+
+  useEffect(() => { loadAll() }, [svc])
+
+  async function loadAll() {
+    setLoading(true)
+    const { data: asigData } = await supabase
+      .from('asignaciones')
+      .select('id_asignacion, dni_trabajador, id_cargo_actual, turno, id_grupo, estado')
+      .eq('id_servicio', svc.id_servicio)
+      .order('id_cargo_actual')
+
+    if (!asigData?.length) { setAsigs([]); setLoading(false); return }
+
+    const dnis = asigData.map(a => a.dni_trabajador)
+    const cids = [...new Set(asigData.map(a => a.id_cargo_actual))]
+
+    const [{ data: trabs }, { data: catCargos }] = await Promise.all([
+      supabase.from('trabajadores').select('dni, nombres_completos, url_foto').in('dni', dnis),
+      supabase.from('catalogo_cargos').select('id_cargo, nombre_oficial').in('id_cargo', cids),
+    ])
+    const tm = Object.fromEntries((trabs || []).map(t => [t.dni, t]))
+    const cm = Object.fromEntries((catCargos || []).map(c => [c.id_cargo, c.nombre_oficial]))
+    setCargos(catCargos || [])
+
+    setAsigs(asigData.map(a => ({
+      ...a,
+      nombre:      tm[a.dni_trabajador]?.nombres_completos || a.dni_trabajador,
+      foto:        tm[a.dni_trabajador]?.url_foto || null,
+      cargoNombre: cm[a.id_cargo_actual] || `Cargo ${a.id_cargo_actual}`,
+    })))
+    setLoading(false)
+  }
+
+  async function desactivar(id_asignacion, nombre) {
+    await supabase.from('asignaciones').update({ estado: 'INACTIVO' }).eq('id_asignacion', id_asignacion)
+    setMsg(`${nombre} desactivado del servicio`)
+    setConfirmDni(null)
+    await loadAll()
+  }
+
+  async function reactivar(id_asignacion) {
+    await supabase.from('asignaciones').update({ estado: 'ACTIVO' }).eq('id_asignacion', id_asignacion)
+    await loadAll()
+  }
+
+  async function eliminarAsignacion(id_asignacion, nombre) {
+    await supabase.from('asignaciones').delete().eq('id_asignacion', id_asignacion)
+    setMsg(`${nombre} eliminado del servicio`)
+    setConfirmDni(null)
+    await loadAll()
+  }
+
+  if (loading) return <p style={{ color: 'var(--text3)', fontSize: 13 }}>Cargando personal...</p>
+
+  let filtrados = asigs
+  if (search) filtrados = filtrados.filter(a => a.nombre.toLowerCase().includes(search.toLowerCase()) || a.dni_trabajador.includes(search))
+  if (turnoFiltro !== 'TODOS') filtrados = filtrados.filter(a => a.turno === turnoFiltro)
+  if (cargoFiltro !== 'TODOS') filtrados = filtrados.filter(a => String(a.id_cargo_actual) === cargoFiltro)
+
+  const activos   = filtrados.filter(a => a.estado === 'ACTIVO')
+  const inactivos = filtrados.filter(a => a.estado !== 'ACTIVO')
+
+  return (
+    <div className="fade">
+      {msg && <div className="alert alert-ok" style={{ marginBottom: 14 }}>{msg}</div>}
+
+      {/* Filtros */}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+        <input className="input" placeholder="Buscar nombre o DNI..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 2, minWidth: 200 }} />
+        <select className="input" value={turnoFiltro} onChange={e => setTurnoFiltro(e.target.value)} style={{ minWidth: 110, background: 'var(--bg2)' }}>
+          <option value="TODOS">Todos los turnos</option>
+          <option value="A">Turno A</option>
+          <option value="B">Turno B</option>
+        </select>
+        <select className="input" value={cargoFiltro} onChange={e => setCargoFiltro(e.target.value)} style={{ minWidth: 160, background: 'var(--bg2)' }}>
+          <option value="TODOS">Todos los cargos</option>
+          {cargos.map(c => <option key={c.id_cargo} value={String(c.id_cargo)}>{c.nombre_oficial}</option>)}
+        </select>
+      </div>
+
+      <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 12 }}>
+        {activos.length} activos · {inactivos.length} inactivos · {filtrados.length} total
+      </div>
+
+      {/* Lista activos */}
+      {activos.length > 0 && (
+        <div className="card-static" style={{ overflow: 'hidden', marginBottom: 16 }}>
+          <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', fontSize: 10, fontWeight: 600, color: 'var(--text3)', letterSpacing: 0.4 }}>ACTIVOS EN SERVICIO</div>
+          {activos.map((a, i) => (
+            <div key={a.id_asignacion} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderBottom: i < activos.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+              <Avatar nombre={a.nombre} foto={a.foto} size={30} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.nombre}</div>
+                <div style={{ fontSize: 9, color: 'var(--text3)' }}>{a.cargoNombre} · G{a.id_grupo} · T{a.turno}</div>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button onClick={() => setConfirmDni({ id: a.id_asignacion, nombre: a.nombre, accion: 'desactivar' })}
+                  style={{ padding: '4px 10px', fontSize: 10, background: 'rgba(212,160,23,0.08)', border: '1px solid rgba(212,160,23,0.2)', borderRadius: 5, color: 'var(--yellow)', cursor: 'pointer', fontFamily: 'Inter' }}>
+                  ⏸ Desactivar
+                </button>
+                <button onClick={() => setConfirmDni({ id: a.id_asignacion, nombre: a.nombre, accion: 'eliminar' })}
+                  style={{ padding: '4px 10px', fontSize: 10, background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', borderRadius: 5, color: 'var(--red)', cursor: 'pointer', fontFamily: 'Inter' }}>
+                  ✕ Quitar
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Lista inactivos */}
+      {inactivos.length > 0 && (
+        <div className="card-static" style={{ overflow: 'hidden' }}>
+          <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', fontSize: 10, fontWeight: 600, color: 'var(--text3)', letterSpacing: 0.4 }}>INACTIVOS</div>
+          {inactivos.map((a, i) => (
+            <div key={a.id_asignacion} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderBottom: i < inactivos.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', opacity: 0.55 }}>
+              <Avatar nombre={a.nombre} foto={a.foto} size={30} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.nombre}</div>
+                <div style={{ fontSize: 9, color: 'var(--text3)' }}>{a.cargoNombre} · G{a.id_grupo} · T{a.turno}</div>
+              </div>
+              <button onClick={() => reactivar(a.id_asignacion)}
+                style={{ padding: '4px 10px', fontSize: 10, background: 'rgba(39,174,96,0.08)', border: '1px solid rgba(39,174,96,0.2)', borderRadius: 5, color: 'var(--green)', cursor: 'pointer', fontFamily: 'Inter' }}>
+                ▶ Reactivar
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {filtrados.length === 0 && (
+        <div className="card-static" style={{ padding: '36px 20px', textAlign: 'center' }}>
+          <p style={{ color: 'var(--text3)', fontSize: 13 }}>No hay personal con esos filtros</p>
+        </div>
+      )}
+
+      {/* Modal confirmación */}
+      {confirmDni && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 12, padding: '24px 28px', maxWidth: 340, textAlign: 'center' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
+              {confirmDni.accion === 'desactivar' ? '¿Desactivar del servicio?' : '¿Eliminar del servicio?'}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 6 }}>
+              <strong style={{ color: 'var(--text)' }}>{confirmDni.nombre}</strong>
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 20 }}>
+              {confirmDni.accion === 'desactivar'
+                ? 'El trabajador permanecerá en el sistema pero no participará en este servicio.'
+                : 'Se eliminará la asignación a este servicio. El trabajador permanece en el sistema.'
+              }
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="btn btn-ghost" onClick={() => setConfirmDni(null)} style={{ flex: 1, fontSize: 12 }}>Cancelar</button>
+              <button onClick={() => confirmDni.accion === 'desactivar'
+                ? desactivar(confirmDni.id, confirmDni.nombre)
+                : eliminarAsignacion(confirmDni.id, confirmDni.nombre)}
+                style={{ flex: 1, padding: '9px', background: confirmDni.accion === 'desactivar' ? 'var(--yellow)' : 'var(--red)', border: 'none', borderRadius: 8, color: confirmDni.accion === 'desactivar' ? '#000' : 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>
+                {confirmDni.accion === 'desactivar' ? 'Desactivar' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* =========================================
+   ADMIN — GESTIÓN DE SERVICIOS
+   3 estados: ACTIVO / INACTIVO / ARCHIVADO
+   ========================================= */
+function AdminServicios({ user, currentSvcId }) {
+  const [servicios, setServicios] = useState([])
+  const [loading, setLoading]     = useState(true)
+  const [showForm, setShowForm]   = useState(false)
+  const [editando, setEditando]   = useState(null)
+  const [msg, setMsg]             = useState('')
+  const [guardando, setGuardando] = useState(false)
+  const [form, setForm] = useState({
+    codigo_otp: '', nombre_descriptivo: '', cliente: '',
+    tipo: 'PDP', estado: 'ACTIVO', fecha_inicio: '', fecha_fin: '',
+    fondo_url: '', logo_url: '',
+  })
+
+  const estados = [
+    { v: 'ACTIVO',    label: 'Activo',    desc: 'Visible y operativo',                   color: 'var(--green)' },
+    { v: 'INACTIVO',  label: 'Inactivo',  desc: 'Aparece en Finalizados (opaco)',         color: 'var(--yellow)' },
+    { v: 'ARCHIVADO', label: 'Archivado', desc: 'No aparece en ninguna lista de trabajo', color: 'var(--text3)' },
+  ]
+
+  useEffect(() => { loadServicios() }, [])
+
+  async function loadServicios() {
+    setLoading(true)
+    const { data } = await supabase.from('servicios').select('*').order('fecha_inicio', { ascending: false })
+    setServicios(data || [])
+    setLoading(false)
+  }
+
+  function abrirNuevo() {
+    setForm({ codigo_otp: '', nombre_descriptivo: '', cliente: '', tipo: 'PDP', estado: 'ACTIVO', fecha_inicio: '', fecha_fin: '', fondo_url: '', logo_url: '' })
+    setEditando(null); setMsg(''); setShowForm(true)
+  }
+
+  function abrirEditar(s) {
+    setForm({
+      codigo_otp:         s.codigo_otp || '',
+      nombre_descriptivo: s.nombre_descriptivo || '',
+      cliente:            s.cliente || '',
+      tipo:               s.tipo || 'PDP',
+      estado:             s.estado || 'ACTIVO',
+      fecha_inicio:       s.fecha_inicio ? s.fecha_inicio.slice(0, 10) : '',
+      fecha_fin:          s.fecha_fin    ? s.fecha_fin.slice(0, 10)    : '',
+      fondo_url:          s.fondo_url    || '',
+      logo_url:           s.logo_url     || '',
+    })
+    setEditando(s); setMsg(''); setShowForm(true)
+  }
+
+  async function guardar() {
+    if (!form.codigo_otp.trim() || !form.nombre_descriptivo.trim()) { setMsg('OTP y nombre son obligatorios'); return }
+    setGuardando(true); setMsg('')
+    const data = {
+      codigo_otp:         form.codigo_otp.trim().toUpperCase(),
+      nombre_descriptivo: form.nombre_descriptivo.trim().toUpperCase(),
+      cliente:            form.cliente.trim().toUpperCase(),
+      tipo:               form.tipo,
+      estado:             form.estado,
+      fecha_inicio:       form.fecha_inicio || null,
+      fecha_fin:          form.fecha_fin    || null,
+      fondo_url:          form.fondo_url    || null,
+      logo_url:           form.logo_url     || null,
+    }
+    let error
+    if (editando) {
+      ({ error } = await supabase.from('servicios').update(data).eq('id_servicio', editando.id_servicio))
+    } else {
+      ({ error } = await supabase.from('servicios').insert(data))
+    }
+    if (error) setMsg(error.message)
+    else { setShowForm(false); await loadServicios() }
+    setGuardando(false)
+  }
+
+  const estadoColor = e => e === 'ACTIVO' ? 'var(--green)' : e === 'INACTIVO' ? 'var(--yellow)' : 'var(--text3)'
+  const estadoBg    = e => e === 'ACTIVO' ? 'rgba(39,174,96,0.08)' : e === 'INACTIVO' ? 'rgba(212,160,23,0.08)' : 'rgba(255,255,255,0.04)'
+
+  if (loading) return <p style={{ color: 'var(--text3)', fontSize: 13 }}>Cargando servicios...</p>
+
+  return (
+    <div className="fade">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ fontSize: 11, color: 'var(--text3)' }}>{servicios.length} servicios registrados</div>
+        <button className="btn btn-primary" onClick={abrirNuevo} style={{ width: 'auto', padding: '8px 18px', fontSize: 12 }}>+ Nuevo servicio</button>
+      </div>
+
+      {/* Leyenda de estados */}
+      <div style={{ display: 'flex', gap: 14, marginBottom: 16, flexWrap: 'wrap' }}>
+        {estados.map(e => (
+          <div key={e.v} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: e.color }} />
+            <span style={{ color: e.color, fontWeight: 600 }}>{e.label}</span>
+            <span style={{ color: 'var(--text3)' }}>— {e.desc}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {servicios.map(s => (
+          <div key={s.id_servicio} style={{
+            display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
+            background: s.id_servicio === currentSvcId ? 'rgba(230,126,34,0.04)' : 'rgba(255,255,255,0.02)',
+            border: `1px solid ${s.id_servicio === currentSvcId ? 'rgba(230,126,34,0.15)' : 'var(--border)'}`,
+            borderRadius: 10, opacity: s.estado === 'ARCHIVADO' ? 0.45 : 1,
+          }}>
+            {/* Estado dot */}
+            <div style={{ width: 9, height: 9, borderRadius: '50%', background: estadoColor(s.estado), flexShrink: 0 }} />
+
+            {/* Info */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.nombre_descriptivo}</div>
+                {s.id_servicio === currentSvcId && <span style={{ fontSize: 9, color: 'var(--accent)', fontWeight: 600, flexShrink: 0 }}>ACTIVO AHORA</span>}
+              </div>
+              <div style={{ fontSize: 10, color: 'var(--text3)' }}>
+                {s.cliente} · {s.tipo} · {s.codigo_otp}
+                {s.fecha_inicio && ` · ${new Date(s.fecha_inicio).toLocaleDateString('es-PE', { month: 'short', year: 'numeric' })}`}
+              </div>
+            </div>
+
+            {/* Estado badge */}
+            <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 4, background: estadoBg(s.estado), color: estadoColor(s.estado), fontWeight: 600, flexShrink: 0 }}>
+              {s.estado}
+            </span>
+
+            {/* Acciones rápidas de estado */}
+            <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+              {s.estado !== 'ACTIVO' && (
+                <button onClick={async () => { await supabase.from('servicios').update({ estado: 'ACTIVO' }).eq('id_servicio', s.id_servicio); loadServicios() }}
+                  style={{ padding: '3px 8px', fontSize: 9, background: 'rgba(39,174,96,0.1)', border: '1px solid rgba(39,174,96,0.2)', borderRadius: 4, color: 'var(--green)', cursor: 'pointer', fontFamily: 'Inter' }}>Activar</button>
+              )}
+              {s.estado !== 'INACTIVO' && (
+                <button onClick={async () => { await supabase.from('servicios').update({ estado: 'INACTIVO' }).eq('id_servicio', s.id_servicio); loadServicios() }}
+                  style={{ padding: '3px 8px', fontSize: 9, background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.2)', borderRadius: 4, color: 'var(--yellow)', cursor: 'pointer', fontFamily: 'Inter' }}>Desactivar</button>
+              )}
+              {s.estado !== 'ARCHIVADO' && (
+                <button onClick={async () => { await supabase.from('servicios').update({ estado: 'ARCHIVADO' }).eq('id_servicio', s.id_servicio); loadServicios() }}
+                  style={{ padding: '3px 8px', fontSize: 9, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: 4, color: 'var(--text3)', cursor: 'pointer', fontFamily: 'Inter' }}>Archivar</button>
+              )}
+              <button onClick={() => abrirEditar(s)}
+                style={{ padding: '3px 8px', fontSize: 9, background: 'rgba(91,164,207,0.08)', border: '1px solid rgba(91,164,207,0.15)', borderRadius: 4, color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'Inter' }}>✏ Editar</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Modal formulario */}
+      {showForm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '24px 26px', width: '100%', maxWidth: 500, maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>{editando ? 'Editar servicio' : 'Nuevo servicio'}</div>
+              <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 20, cursor: 'pointer' }}>×</button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <label style={lbl2}>CÓDIGO OTP</label>
+                  <input className="input" value={form.codigo_otp} placeholder="Ej: PDP-MCB-OXI-MAR-2026"
+                    onChange={e => setForm(f => ({...f, codigo_otp: e.target.value.toUpperCase()}))} />
+                </div>
+                <div>
+                  <label style={lbl2}>TIPO</label>
+                  <select className="input" value={form.tipo} onChange={e => setForm(f => ({...f, tipo: e.target.value}))} style={{ background: 'var(--bg2)' }}>
+                    <option value="PDP">PDP</option>
+                    <option value="PROYECTO">PROYECTO</option>
+                    <option value="PLANTA">PLANTA</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label style={lbl2}>NOMBRE DESCRIPTIVO</label>
+                <input className="input" value={form.nombre_descriptivo} placeholder="Ej: PARADA DE PLANTA MARCOBRE OXIDOS MARZO 2026"
+                  onChange={e => setForm(f => ({...f, nombre_descriptivo: e.target.value}))} />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <label style={lbl2}>CLIENTE</label>
+                  <input className="input" value={form.cliente} placeholder="Ej: MARCOBRE"
+                    onChange={e => setForm(f => ({...f, cliente: e.target.value.toUpperCase()}))} />
+                </div>
+                <div>
+                  <label style={lbl2}>ESTADO</label>
+                  <select className="input" value={form.estado} onChange={e => setForm(f => ({...f, estado: e.target.value}))} style={{ background: 'var(--bg2)' }}>
+                    <option value="ACTIVO">ACTIVO — visible y operativo</option>
+                    <option value="INACTIVO">INACTIVO — aparece en finalizados</option>
+                    <option value="ARCHIVADO">ARCHIVADO — no aparece</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <label style={lbl2}>FECHA INICIO</label>
+                  <input className="input" type="date" value={form.fecha_inicio} onChange={e => setForm(f => ({...f, fecha_inicio: e.target.value}))} />
+                </div>
+                <div>
+                  <label style={lbl2}>FECHA FIN</label>
+                  <input className="input" type="date" value={form.fecha_fin} onChange={e => setForm(f => ({...f, fecha_fin: e.target.value}))} />
+                </div>
+              </div>
+
+              <div>
+                <label style={lbl2}>URL IMAGEN DE FONDO (opcional)</label>
+                <input className="input" value={form.fondo_url} placeholder="https://... (se mostrará de fondo en la tarjeta)"
+                  onChange={e => setForm(f => ({...f, fondo_url: e.target.value}))} />
+                {form.fondo_url && (
+                  <div style={{ marginTop: 6, height: 60, borderRadius: 6, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                    <img src={form.fondo_url} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
+                  </div>
+                )}
+              </div>
+
+              {msg && <div className="alert alert-err">{msg}</div>}
+
+              <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                <button className="btn btn-ghost" onClick={() => setShowForm(false)} style={{ flex: 1 }}>Cancelar</button>
+                <button className="btn btn-primary" onClick={guardar} disabled={guardando} style={{ flex: 2 }}>
+                  {guardando ? 'Guardando...' : editando ? 'Guardar cambios' : 'Crear servicio'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const lbl2 = { fontSize: 10, color: 'rgba(255,255,255,0.35)', fontWeight: 600, letterSpacing: 0.5, display: 'block', marginBottom: 5 }
+
