@@ -12,6 +12,7 @@ export default function ServicioPage({ params }) {
   const router = useRouter()
   const [svc, setSvc] = useState(null)
   const [sec, setSec] = useState('evaluar')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => { if (!loading && !user) router.push('/') }, [user, loading, router])
   useEffect(() => {
@@ -51,13 +52,24 @@ export default function ServicioPage({ params }) {
   });
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+
+      {/* ── Overlay móvil ── */}
+      {sidebarOpen && (
+        <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 40, display: 'none' }} className="mobile-overlay" />
+      )}
+
       {/* ── Sidebar ── */}
-      <aside style={{ width: 210, background: 'rgba(5,5,7,0.98)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', flexShrink: 0, height: '100vh', position: 'sticky', top: 0 }}>
-        <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
+      <aside style={{
+        width: 210, background: 'rgba(5,5,7,0.98)', borderRight: '1px solid var(--border)',
+        display: 'flex', flexDirection: 'column', flexShrink: 0,
+        height: '100vh', position: 'sticky', top: 0, zIndex: 50,
+      }} className={sidebarOpen ? 'sidebar sidebar-open' : 'sidebar'}>
+        <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ background: 'white', borderRadius: 6, padding: '4px 10px', display: 'inline-flex', alignItems: 'center' }}>
             <img src="/logo_prodise.png" alt="PRODISE" style={{ height: 28, objectFit: 'contain', display: 'block' }} />
           </div>
+          <button onClick={() => setSidebarOpen(false)} className="close-sidebar-btn" style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 18, cursor: 'pointer', display: 'none', padding: '0 4px', lineHeight: 1 }}>×</button>
         </div>
         <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ fontSize: 11, fontWeight: 600 }}>{user.nombre}</div>
@@ -70,7 +82,7 @@ export default function ServicioPage({ params }) {
         </div>
         <nav style={{ flex: 1, padding: '6px 6px', overflowY: 'auto' }}>
           {nav.map(x => (
-            <button key={x.id} onClick={() => { if (!x.disabled) setSec(x.id) }} style={{
+            <button key={x.id} onClick={() => { if (!x.disabled) { setSec(x.id); setSidebarOpen(false) } }} style={{
               display: 'flex', alignItems: 'center', gap: 7, width: '100%', padding: '7px 10px',
               borderRadius: 6, border: 'none', fontSize: 12,
               cursor: x.disabled ? 'not-allowed' : 'pointer',
@@ -92,7 +104,14 @@ export default function ServicioPage({ params }) {
       </aside>
 
       {/* ── Main ── */}
-      <main style={{ flex: 1, padding: '22px 26px', background: 'var(--bg)', overflowY: 'auto', height: '100vh' }}>
+      <main style={{ flex: 1, padding: '18px 20px', background: 'var(--bg)', overflowY: 'auto', height: '100vh' }}>
+        {/* Botón hamburguesa móvil */}
+        <button onClick={() => setSidebarOpen(true)} className="hamburger-btn" style={{
+          display: 'none', position: 'fixed', top: 12, left: 12, zIndex: 45,
+          background: 'rgba(5,5,7,0.95)', border: '1px solid var(--border)',
+          borderRadius: 8, padding: '8px 10px', cursor: 'pointer', color: 'var(--text)',
+          fontSize: 18, lineHeight: 1,
+        }}>☰</button>
         {sec === 'evaluar'   && <Evaluar    svc={svc} user={user} />}
         {sec === 'historial' && <Historial  svc={svc} user={user} />}
         {sec === 'dashboard' && <Dashboard  svc={svc} user={user} />}
@@ -746,7 +765,17 @@ function Dashboard({ svc, user }) {
         )}
       </div>
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 768px) {
+          .sidebar { position: fixed !important; left: -210px; transition: left 0.3s ease; }
+          .sidebar-open { left: 0 !important; }
+          .mobile-overlay { display: block !important; }
+          .close-sidebar-btn { display: block !important; }
+          .hamburger-btn { display: block !important; }
+          main { padding: 50px 14px 14px !important; }
+        }
+      `}</style>
     </div>
   )
 }
