@@ -1,137 +1,209 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../../context/AuthContext'
+import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 
 export default function ServiciosPage() {
   const { user, loading, logout } = useAuth()
   const router = useRouter()
   const [servicios, setServicios] = useState([])
-  const [myServices, setMyServices] = useState(new Set())
   const [cargando, setCargando] = useState(true)
 
   useEffect(() => { if (!loading && !user) router.push('/') }, [user, loading, router])
 
   useEffect(() => {
     if (!user) return
-    async function load() {
-      const [{ data: svcs }, { data: asigs }] = await Promise.all([
-        supabase.from('servicios').select('*').order('estado').order('tipo'),
-        supabase.from('asignaciones').select('id_servicio').eq('dni_trabajador', user.dni)
-      ])
-      setServicios(svcs || [])
-      setMyServices(new Set((asigs || []).map(a => a.id_servicio)))
-      setCargando(false)
-    }
-    load()
+    supabase
+      .from('servicios')
+      .select('*')
+      .order('estado', { ascending: false }) // ACTIVO primero
+      .order('fecha_inicio', { ascending: false })
+      .then(({ data }) => { setServicios(data || []); setCargando(false) })
   }, [user])
 
-  if (loading || !user) return null
+  if (loading || !user) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#060608' }}>
+      <div style={{ width: 16, height: 16, border: '2px solid #E67E22', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    </div>
+  )
 
-  const activos = servicios.filter(s => s.estado === 'ACTIVO')
-  const inactivos = servicios.filter(s => s.estado !== 'ACTIVO')
+  // Agrupar por cliente
+  const clientes = [...new Set(servicios.map(s => s.cliente))].filter(Boolean)
 
-  const byClient = {}
-  activos.forEach(s => {
-    const c = s.cliente || 'OTROS'
-    if (!byClient[c]) byClient[c] = []
-    byClient[c].push(s)
-  })
-
-  function enter(s) {
-    if (!myServices.has(s.id_servicio) && user.nivel > 1) return
-    supabase.from('audit_log').insert({ username: user.username, accion: 'INGRESO_SERVICIO', tabla_afectada: 'servicios', registro_id: String(s.id_servicio) })
-    router.push(`/servicio/${s.id_servicio}`)
-  }
+  const activos     = servicios.filter(s => s.estado === 'ACTIVO')
+  const finalizados = servicios.filter(s => s.estado !== 'ACTIVO')
 
   return (
-    <div style={{ minHeight: '100vh', position: 'relative' }}>
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0, backgroundImage: 'url(/fondo_planta.jpg)', backgroundSize: 'cover', backgroundPosition: 'right center' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(6,6,8,0.96) 0%, rgba(6,6,8,0.93) 100%)' }} />
+    <div style={{ minHeight: '100vh', background: '#060608', fontFamily: "'Inter', -apple-system, sans-serif", color: '#E8E8E8', display: 'flex', flexDirection: 'column' }}>
+
+      {/* ── Header con logo PRODISE ── */}
+      <header style={{ padding: '14px 28px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(5,5,7,0.95)', position: 'sticky', top: 0, zIndex: 10, backdropFilter: 'blur(10px)' }}>
+        <div style={{ background: 'white', borderRadius: 7, padding: '5px 14px', display: 'inline-flex', alignItems: 'center' }}>
+          <img src="/logo_prodise.png" alt="PRODISE" style={{ height: 32, objectFit: 'contain', display: 'block' }} />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: 12, fontWeight: 600 }}>{user.nombre}</div>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>Nivel {user.nivel}</div>
+          </div>
+          <button onClick={() => { logout(); router.push('/') }} style={{ padding: '6px 14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 7, color: 'rgba(255,255,255,0.5)', fontSize: 11, cursor: 'pointer', fontFamily: 'Inter' }}>
+            Cerrar sesión
+          </button>
+        </div>
+      </header>
+
+      {/* ── Contenido ── */}
+      <div style={{ flex: 1, padding: '32px 28px', maxWidth: 1100, width: '100%', margin: '0 auto' }}>
+
+        <div style={{ marginBottom: 28 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>Frentes de Trabajo</h1>
+          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13 }}>Selecciona un servicio para ingresar</p>
+        </div>
+
+        {cargando ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '40px 0' }}>
+            <div style={{ width: 14, height: 14, border: '2px solid #E67E22', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>Cargando servicios...</span>
+          </div>
+        ) : (
+          <>
+            {/* Servicios activos */}
+            {activos.length > 0 && (
+              <div style={{ marginBottom: 36 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+                  {activos.map(s => (
+                    <TarjetaServicio key={s.id_servicio} s={s} activo={true} onClick={() => router.push(`/servicio/${s.id_servicio}`)} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Servicios finalizados */}
+            {finalizados.length > 0 && (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.25)', letterSpacing: 1 }}>FINALIZADOS</div>
+                  <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
+                  {finalizados.map(s => (
+                    <TarjetaServicio key={s.id_servicio} s={s} activo={false} onClick={() => {}} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {servicios.length === 0 && (
+              <div style={{ padding: '60px 20px', textAlign: 'center', color: 'rgba(255,255,255,0.25)', fontSize: 14 }}>
+                No hay servicios disponibles
+              </div>
+            )}
+          </>
+        )}
       </div>
 
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Header */}
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 24px', borderBottom: '1px solid var(--border)', background: 'rgba(6,6,8,0.7)', backdropFilter: 'blur(10px)' }}>
-          <img src="/logo_prodise.png" alt="PRODISE" style={{ height: 36, objectFit: 'contain', mixBlendMode: 'lighten' }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 12, fontWeight: 600 }}>{user.nombre}</div>
-              <div style={{ fontSize: 10, color: 'var(--text3)' }}>Nivel {user.nivel}</div>
-            </div>
-            <button className="btn btn-ghost" onClick={logout}>Salir</button>
+      {/* ── Footer ── */}
+      <footer style={{ padding: '16px 28px', borderTop: '1px solid rgba(255,255,255,0.04)', textAlign: 'center' }}>
+        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', letterSpacing: 0.3 }}>
+          PROYECTOS DE INGENIERIA Y SERVICIOS S.C.R.L. © 2026 · Desarrollado por CJP y GM
+        </div>
+      </footer>
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @keyframes spin { to { transform: rotate(360deg) } }
+        @media (max-width: 600px) {
+          .svc-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+function TarjetaServicio({ s, activo, onClick }) {
+  const [hovered, setHovered] = useState(false)
+
+  const bgStyle = s.fondo_url ? {
+    backgroundImage: `url(${s.fondo_url})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+  } : {}
+
+  return (
+    <div
+      onClick={activo ? onClick : undefined}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        position: 'relative', overflow: 'hidden',
+        borderRadius: 14,
+        border: `1px solid ${activo ? (hovered ? 'rgba(230,126,34,0.4)' : 'rgba(255,255,255,0.08)') : 'rgba(255,255,255,0.04)'}`,
+        background: activo ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.015)',
+        cursor: activo ? 'pointer' : 'default',
+        opacity: activo ? 1 : 0.5,
+        transition: 'all 0.2s',
+        transform: activo && hovered ? 'translateY(-2px)' : 'translateY(0)',
+        boxShadow: activo && hovered ? '0 8px 30px rgba(0,0,0,0.4)' : 'none',
+        minHeight: 180,
+        ...bgStyle,
+      }}
+    >
+      {/* Overlay sobre el fondo */}
+      {s.fondo_url && (
+        <div style={{ position: 'absolute', inset: 0, background: activo ? 'rgba(6,6,8,0.72)' : 'rgba(6,6,8,0.85)', borderRadius: 14 }} />
+      )}
+
+      {/* Contenido */}
+      <div style={{ position: 'relative', zIndex: 1, padding: '20px 20px 18px' }}>
+
+        {/* Tipo + cliente */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <span style={{
+            fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 5, letterSpacing: 0.4,
+            background: s.tipo === 'PDP' ? 'rgba(91,164,207,0.12)' : 'rgba(155,89,182,0.12)',
+            color: s.tipo === 'PDP' ? '#5BA4CF' : '#B07CC6',
+            border: `1px solid ${s.tipo === 'PDP' ? 'rgba(91,164,207,0.2)' : 'rgba(155,89,182,0.2)'}`,
+          }}>{s.tipo}</span>
+          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontWeight: 600, letterSpacing: 0.5 }}>
+            {s.cliente}
+          </span>
+        </div>
+
+        {/* Nombre del servicio */}
+        <div style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.3, marginBottom: 6, color: activo ? '#E8E8E8' : 'rgba(255,255,255,0.5)' }}>
+          {s.nombre_descriptivo}
+        </div>
+
+        {/* OTP */}
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', fontFamily: 'monospace', marginBottom: 16 }}>
+          {s.codigo_otp}
+        </div>
+
+        {/* Fechas si existen */}
+        {s.fecha_inicio && (
+          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginBottom: 16 }}>
+            {new Date(s.fecha_inicio).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}
+            {s.fecha_fin && ` → ${new Date(s.fecha_fin).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}`}
           </div>
-        </header>
+        )}
 
-        <main style={{ maxWidth: 1060, margin: '0 auto', padding: '32px 20px 60px' }}>
-          <div className="fade">
-            <h1 style={{ fontSize: 20, fontWeight: 700, letterSpacing: -0.3 }}>Frentes de Trabajo</h1>
-            <p style={{ color: 'var(--text3)', fontSize: 13, marginTop: 3, marginBottom: 32 }}>Selecciona un servicio para ingresar</p>
+        {/* Botón ingresar */}
+        {activo && (
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            fontSize: 12, fontWeight: 700, color: hovered ? '#E67E22' : 'rgba(230,126,34,0.7)',
+            transition: 'color 0.2s',
+          }}>
+            Ingresar {hovered ? '→' : '›'}
           </div>
-
-          {cargando ? (
-            <p style={{ color: 'var(--text3)', padding: '40px 0' }}>Cargando...</p>
-          ) : (
-            <>
-              {Object.entries(byClient).map(([cliente, servs]) => (
-                <section key={cliente} style={{ marginBottom: 36 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                    {servs[0]?.logo_url && <img src={servs[0].logo_url} alt="" style={{ height: 20, objectFit: 'contain', background: 'rgba(255,255,255,0.9)', padding: '2px 6px', borderRadius: 3 }} />}
-                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 1 }}>{cliente}</span>
-                    <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
-                    {servs.map(s => {
-                      const isMine = myServices.has(s.id_servicio) || user.nivel <= 1
-                      return (
-                        <div key={s.id_servicio} onClick={() => enter(s)} style={{
-                          padding: '22px 18px', textAlign: 'center', borderRadius: 12, cursor: isMine ? 'pointer' : 'default',
-                          border: '1px solid var(--border)', background: 'var(--card)', position: 'relative', overflow: 'hidden',
-                          opacity: isMine ? 1 : 0.35, filter: isMine ? 'none' : 'grayscale(0.5)',
-                          transition: 'all 0.25s',
-                        }}
-                          onMouseEnter={e => { if (isMine) { e.currentTarget.style.borderColor = 'var(--border-h)'; e.currentTarget.style.transform = 'translateY(-2px)' } }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none' }}
-                        >
-                          {!isMine && (
-                            <div style={{ position: 'absolute', top: 8, right: 8, fontSize: 9, color: 'var(--text3)', background: 'rgba(0,0,0,0.5)', padding: '2px 8px', borderRadius: 4 }}>
-                              No participa en este servicio
-                            </div>
-                          )}
-                          <div style={{ position: 'absolute', top: 0, left: '20%', width: '60%', height: 1, background: s.tipo === 'PDP' ? 'var(--accent2)' : '#B07CC6', opacity: 0.3 }} />
-                          {s.logo_url ? (
-                            <div style={{ width: 48, height: 48, margin: '0 auto 12px', borderRadius: 8, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 6 }}>
-                              <img src={s.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                            </div>
-                          ) : <div style={{ height: 48, marginBottom: 12 }} />}
-                          <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3, marginBottom: 8 }}>{s.nombre_descriptivo}</div>
-                          <span className={`badge ${s.tipo === 'PDP' ? 'b-pdp' : 'b-pro'}`}>{s.tipo}</span>
-                          <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 6, fontFamily: 'monospace' }}>{s.codigo_otp}</div>
-                          {isMine && <div style={{ marginTop: 12, paddingTop: 8, borderTop: '1px solid var(--border)', fontSize: 11, color: 'var(--accent)', fontWeight: 600 }}>Ingresar →</div>}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </section>
-              ))}
-
-              {inactivos.length > 0 && (
-                <section style={{ marginTop: 36 }}>
-                  <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Finalizados</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>
-                    {inactivos.map(s => (
-                      <div key={s.id_servicio} style={{ background: 'var(--card)', border: '1px dashed rgba(255,255,255,0.03)', borderRadius: 10, padding: '16px 12px', textAlign: 'center', opacity: 0.2 }}>
-                        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)' }}>{s.nombre_descriptivo}</div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-            </>
-          )}
-        </main>
+        )}
+        {!activo && (
+          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', fontStyle: 'italic' }}>
+            Servicio finalizado
+          </div>
+        )}
       </div>
     </div>
   )
