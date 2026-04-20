@@ -13,6 +13,7 @@ export default function ServicioPage({ params }) {
   const [svc, setSvc] = useState(null)
   const [sec, setSec] = useState('evaluar')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [asigCheck, setAsigCheck] = useState(null) // null=cargando, true=ok, false=no participa
 
   useEffect(() => { if (!loading && !user) router.push('/') }, [user, loading, router])
   useEffect(() => {
@@ -20,9 +21,38 @@ export default function ServicioPage({ params }) {
     supabase.from('servicios').select('*').eq('id_servicio', id).single().then(({ data }) => setSvc(data))
   }, [user, id])
 
-  if (loading || !user || !svc) return (
+  // Verificar si el nivel 3 está asignado a este servicio
+  useEffect(() => {
+    if (!user || !svc) return
+    if (user.nivel <= 2) { setAsigCheck(true); return } // N1 y N2 siempre tienen acceso
+    if (!user.dni) { setAsigCheck(false); return }
+    supabase.from('asignaciones')
+      .select('id_asignacion')
+      .eq('id_servicio', id)
+      .eq('dni_trabajador', user.dni)
+      .eq('estado', 'ACTIVO')
+      .limit(1)
+      .then(({ data }) => setAsigCheck(data && data.length > 0))
+  }, [user, svc, id])
+
+  if (loading || !user || !svc || asigCheck === null) return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
       <p style={{ color: 'var(--text3)', fontSize: 13 }}>Cargando...</p>
+    </div>
+  )
+
+  // Nivel 3 no asignado — bloqueo con mensaje
+  if (asigCheck === false) return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ fontSize: 48 }}>🔒</div>
+      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>No participas en este servicio</div>
+      <div style={{ fontSize: 13, color: 'var(--text3)', textAlign: 'center', maxWidth: 320 }}>
+        No estás asignado a <strong style={{ color: 'var(--text2)' }}>{svc.nombre_descriptivo}</strong>.<br />
+        Contacta a tu coordinador o planner si crees que es un error.
+      </div>
+      <button className="btn btn-ghost" onClick={() => router.push('/servicios')} style={{ marginTop: 8 }}>
+        ← Volver a mis servicios
+      </button>
     </div>
   )
 
@@ -805,11 +835,14 @@ function AdminPanel({ svc, user }) {
   const [tab, setTab] = useState('resumen')
 
   const tabs = [
-    { id: 'resumen',   label: 'Resumen General' },
-    { id: 'carga',     label: 'Carga de Personal' },
-    { id: 'usuarios',  label: 'Gestión de Usuarios' },
-    { id: 'gestion',   label: 'Gestión y Borrado' },
-    { id: 'servicios', label: 'Servicios' },
+    { id: 'resumen',      label: 'Resumen' },
+    { id: 'personal',     label: 'Editar Personal' },
+    { id: 'carga',        label: 'Carga Masiva' },
+    { id: 'competencias', label: 'Competencias' },
+    { id: 'bitacora',     label: 'Bitácora' },
+    { id: 'usuarios',     label: 'Usuarios' },
+    { id: 'gestion',      label: 'Asignaciones' },
+    { id: 'servicios',    label: 'Servicios' },
   ]
 
   return (
@@ -829,11 +862,14 @@ function AdminPanel({ svc, user }) {
         ))}
       </div>
 
-      {tab === 'resumen' && <AdminResumen svc={svc} />}
-      {tab === 'carga' && <AdminCarga svc={svc} user={user} />}
-      {tab === 'usuarios' && <AdminUsuarios user={user} />}
-      {tab === 'gestion' && <AdminGestion svc={svc} />}
-      {tab === 'servicios' && <AdminServicios user={user} currentSvcId={svc.id_servicio} />}
+      {tab === 'resumen'      && <AdminResumen svc={svc} />}
+      {tab === 'personal'     && <AdminPersonal svc={svc} />}
+      {tab === 'carga'        && <AdminCarga svc={svc} user={user} />}
+      {tab === 'competencias' && <AdminCompetencias />}
+      {tab === 'bitacora'     && <AdminBitacoraEditor svc={svc} user={user} />}
+      {tab === 'usuarios'     && <AdminUsuarios user={user} />}
+      {tab === 'gestion'      && <AdminGestion svc={svc} />}
+      {tab === 'servicios'    && <AdminServicios user={user} currentSvcId={svc.id_servicio} />}
     </div>
   )
 }
@@ -3707,4 +3743,515 @@ function AdminServicios({ user, currentSvcId }) {
 }
 
 const lbl2 = { fontSize: 10, color: 'rgba(255,255,255,0.35)', fontWeight: 600, letterSpacing: 0.5, display: 'block', marginBottom: 5 }
+
+
+/* =========================================
+   ADMIN — EDITAR PERSONAL
+   Editar cargo_max, nombre, foto URL
+   ========================================= */
+function AdminPersonal({ svc }) {
+  const [busqueda, setBusqueda] = useState('')
+  const [resultados, setResultados] = useState([])
+  const [editando, setEditando] = useState(null)
+  const [form, setForm] = useState({})
+  const [cargos, setCargos] = useState([])
+  const [guardando, setGuardando] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [buscando, setBuscando] = useState(false)
+
+  useEffect(() => {
+    supabase.from('catalogo_cargos').select('id_cargo, nombre_oficial').order('nombre_oficial')
+      .then(({ data }) => setCargos(data || []))
+  }, [])
+
+  async function buscar() {
+    if (!busqueda.trim()) return
+    setBuscando(true)
+    const q = busqueda.trim()
+    // Buscar por nombre o DNI en trabajadores del servicio
+    const { data: asigs } = await supabase
+      .from('asignaciones').select('id_asignacion, dni_trabajador, id_cargo_actual, turno, id_grupo, estado')
+      .eq('id_servicio', svc.id_servicio)
+
+    if (!asigs?.length) { setResultados([]); setBuscando(false); return }
+
+    const dnis = asigs.map(a => a.dni_trabajador)
+    let query = supabase.from('trabajadores').select('dni, nombres_completos, url_foto, cargo_max_id').in('dni', dnis)
+    
+    if (/^\d+$/.test(q)) query = query.ilike('dni', `%${q}%`)
+    else query = query.ilike('nombres_completos', `%${q}%`)
+
+    const { data: trabs } = await query.limit(10)
+    const asigMap = Object.fromEntries(asigs.map(a => [a.dni_trabajador, a]))
+    const cm = Object.fromEntries(cargos.map(c => [c.id_cargo, c.nombre_oficial]))
+
+    setResultados((trabs || []).map(t => ({
+      ...t,
+      asig: asigMap[t.dni],
+      cargoMaxNombre: cm[t.cargo_max_id] || `Cargo ${t.cargo_max_id}`,
+      cargoActualNombre: cm[asigMap[t.dni]?.id_cargo_actual] || '',
+    })))
+    setBuscando(false)
+  }
+
+  function abrirEditar(t) {
+    setEditando(t)
+    setForm({
+      nombres_completos: t.nombres_completos || '',
+      cargo_max_id:      t.cargo_max_id || '',
+      url_foto:          t.url_foto || '',
+      id_cargo_actual:   t.asig?.id_cargo_actual || '',
+      turno:             t.asig?.turno || 'A',
+      id_grupo:          t.asig?.id_grupo || '',
+    })
+    setMsg('')
+  }
+
+  async function guardar() {
+    if (!editando) return
+    setGuardando(true); setMsg('')
+    
+    const { error: e1 } = await supabase.from('trabajadores').update({
+      nombres_completos: form.nombres_completos.trim(),
+      cargo_max_id:      parseInt(form.cargo_max_id) || editando.cargo_max_id,
+      url_foto:          form.url_foto.trim() || null,
+    }).eq('dni', editando.dni)
+
+    if (e1) { setMsg('Error: ' + e1.message); setGuardando(false); return }
+
+    if (editando.asig) {
+      const { error: e2 } = await supabase.from('asignaciones').update({
+        id_cargo_actual: parseInt(form.id_cargo_actual) || editando.asig.id_cargo_actual,
+        turno:           form.turno,
+        id_grupo:        form.id_grupo.trim(),
+      }).eq('id_asignacion', editando.asig.id_asignacion)
+      if (e2) { setMsg('Error en asignación: ' + e2.message); setGuardando(false); return }
+    }
+
+    setMsg('✓ Cambios guardados')
+    setGuardando(false)
+    setEditando(null)
+    buscar()
+  }
+
+  return (
+    <div className="fade">
+      <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 14 }}>
+        Busca un trabajador del servicio para editar sus datos, cargo o asignación.
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        <input className="input" placeholder="Buscar por nombre o DNI..." value={busqueda}
+          onChange={e => setBusqueda(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && buscar()}
+          style={{ flex: 1 }} />
+        <button className="btn btn-primary" onClick={buscar} disabled={buscando} style={{ width: 'auto', padding: '0 20px', fontSize: 12 }}>
+          {buscando ? '...' : 'Buscar'}
+        </button>
+      </div>
+
+      {msg && <div className="alert alert-ok" style={{ marginBottom: 12 }}>{msg}</div>}
+
+      {resultados.length > 0 && (
+        <div className="card-static" style={{ overflow: 'hidden' }}>
+          {resultados.map((t, i) => (
+            <div key={t.dni} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 16px', borderBottom: i < resultados.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+              <Avatar nombre={t.nombres_completos} foto={t.url_foto} size={34} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 600 }}>{t.nombres_completos}</div>
+                <div style={{ fontSize: 10, color: 'var(--text3)' }}>
+                  DNI: {t.dni} · Cargo max: {t.cargoMaxNombre}
+                  {t.asig && ` · Actual: ${t.cargoActualNombre} · G${t.asig.id_grupo} T${t.asig.turno}`}
+                </div>
+              </div>
+              <button onClick={() => abrirEditar(t)} style={{ padding: '5px 12px', fontSize: 11, background: 'rgba(91,164,207,0.08)', border: '1px solid rgba(91,164,207,0.2)', borderRadius: 6, color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'Inter' }}>
+                ✏ Editar
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Modal edición */}
+      {editando && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '22px 24px', width: '100%', maxWidth: 460 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>Editar — {editando.nombres_completos}</div>
+              <button onClick={() => setEditando(null)} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 20, cursor: 'pointer' }}>×</button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+              <div>
+                <label style={lbl3}>NOMBRE COMPLETO</label>
+                <input className="input" value={form.nombres_completos} onChange={e => setForm(f => ({...f, nombres_completos: e.target.value}))} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <label style={lbl3}>CARGO MÁXIMO (perfil)</label>
+                  <select className="input" value={form.cargo_max_id} onChange={e => setForm(f => ({...f, cargo_max_id: e.target.value}))} style={{ background: 'var(--bg2)' }}>
+                    {cargos.map(c => <option key={c.id_cargo} value={c.id_cargo} style={{ background: '#0c0c10' }}>{c.nombre_oficial}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={lbl3}>CARGO EN ESTE SERVICIO</label>
+                  <select className="input" value={form.id_cargo_actual} onChange={e => setForm(f => ({...f, id_cargo_actual: e.target.value}))} style={{ background: 'var(--bg2)' }}>
+                    {cargos.map(c => <option key={c.id_cargo} value={c.id_cargo} style={{ background: '#0c0c10' }}>{c.nombre_oficial}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <label style={lbl3}>TURNO</label>
+                  <select className="input" value={form.turno} onChange={e => setForm(f => ({...f, turno: e.target.value}))} style={{ background: 'var(--bg2)' }}>
+                    <option value="A">Turno A</option>
+                    <option value="B">Turno B</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={lbl3}>GRUPO</label>
+                  <input className="input" value={form.id_grupo} onChange={e => setForm(f => ({...f, id_grupo: e.target.value}))} placeholder="Ej: 1, MASTER" />
+                </div>
+              </div>
+              <div>
+                <label style={lbl3}>URL FOTO (opcional)</label>
+                <input className="input" value={form.url_foto} onChange={e => setForm(f => ({...f, url_foto: e.target.value}))} placeholder="https://..." />
+              </div>
+
+              {msg && <div className="alert alert-ok">{msg}</div>}
+
+              <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                <button className="btn btn-ghost" onClick={() => setEditando(null)} style={{ flex: 1 }}>Cancelar</button>
+                <button className="btn btn-primary" onClick={guardar} disabled={guardando} style={{ flex: 2 }}>
+                  {guardando ? 'Guardando...' : 'Guardar cambios'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* =========================================
+   ADMIN — CATÁLOGO DE COMPETENCIAS
+   ========================================= */
+function AdminCompetencias() {
+  const [items, setItems]   = useState([])
+  const [loading, setLoading] = useState(true)
+  const [editando, setEditando] = useState(null)
+  const [form, setForm]     = useState({})
+  const [guardando, setGuardando] = useState(false)
+  const [confirmDel, setConfirmDel] = useState(null)
+  const [msg, setMsg]       = useState('')
+
+  const categorias = ['CHANCADO','MOLIENDA','CLASIFICACION','TRANSPORTE','SOLDADURA','IZAJE','ESTRUCTURA','BOMBEO','METROLOGIA','SEGURIDAD','OTRO']
+  const criticidades = [{ v: 1, l: 'Baja' }, { v: 2, l: 'Media' }, { v: 3, l: 'Alta' }]
+
+  useEffect(() => { load() }, [])
+
+  async function load() {
+    setLoading(true)
+    const { data } = await supabase.from('catalogo_competencias').select('*').order('categoria').order('nombre')
+    setItems(data || [])
+    setLoading(false)
+  }
+
+  function abrirNuevo() {
+    setForm({ nombre: '', categoria: 'CHANCADO', nivel_criticidad: 2, descripcion: '', equipo_asociado: '' })
+    setEditando('nuevo'); setMsg('')
+  }
+
+  function abrirEditar(item) {
+    setForm({ nombre: item.nombre, categoria: item.categoria, nivel_criticidad: item.nivel_criticidad, descripcion: item.descripcion || '', equipo_asociado: item.equipo_asociado || '' })
+    setEditando(item); setMsg('')
+  }
+
+  async function guardar() {
+    if (!form.nombre.trim()) { setMsg('El nombre es obligatorio'); return }
+    setGuardando(true)
+    const data = { nombre: form.nombre.trim(), categoria: form.categoria, nivel_criticidad: parseInt(form.nivel_criticidad), descripcion: form.descripcion.trim() || null, equipo_asociado: form.equipo_asociado.trim() || null }
+    let error
+    if (editando === 'nuevo') {
+      ({ error } = await supabase.from('catalogo_competencias').insert(data))
+    } else {
+      ({ error } = await supabase.from('catalogo_competencias').update(data).eq('id_competencia', editando.id_competencia))
+    }
+    if (error) setMsg(error.message)
+    else { setEditando(null); await load() }
+    setGuardando(false)
+  }
+
+  async function eliminar(id) {
+    await supabase.from('catalogo_competencias').delete().eq('id_competencia', id)
+    setConfirmDel(null); await load()
+  }
+
+  const critColor = n => n === 3 ? 'var(--red)' : n === 2 ? 'var(--yellow)' : 'var(--green)'
+
+  if (loading) return <p style={{ color: 'var(--text3)', fontSize: 13 }}>Cargando...</p>
+
+  // Agrupar por categoría
+  const grouped = {}
+  items.forEach(i => { if (!grouped[i.categoria]) grouped[i.categoria] = []; grouped[i.categoria].push(i) })
+
+  return (
+    <div className="fade">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ fontSize: 11, color: 'var(--text3)' }}>{items.length} competencias en catálogo</div>
+        <button className="btn btn-primary" onClick={abrirNuevo} style={{ width: 'auto', padding: '8px 18px', fontSize: 12 }}>+ Nueva competencia</button>
+      </div>
+
+      {Object.entries(grouped).map(([cat, comps]) => (
+        <div key={cat} style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', letterSpacing: 0.8 }}>{cat}</div>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            <div style={{ fontSize: 9, color: 'var(--text3)' }}>{comps.length}</div>
+          </div>
+          <div className="card-static" style={{ overflow: 'hidden' }}>
+            {comps.map((comp, i) => (
+              <div key={comp.id_competencia} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: i < comps.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: critColor(comp.nivel_criticidad), flexShrink: 0 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600 }}>{comp.nombre}</div>
+                  {comp.equipo_asociado && <div style={{ fontSize: 10, color: 'var(--text3)' }}>{comp.equipo_asociado}</div>}
+                </div>
+                <div style={{ fontSize: 9, color: critColor(comp.nivel_criticidad), fontWeight: 600 }}>
+                  {criticidades.find(c => c.v === comp.nivel_criticidad)?.l}
+                </div>
+                <div style={{ display: 'flex', gap: 5 }}>
+                  <button onClick={() => abrirEditar(comp)} style={{ padding: '3px 9px', fontSize: 10, background: 'rgba(91,164,207,0.08)', border: '1px solid rgba(91,164,207,0.2)', borderRadius: 5, color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'Inter' }}>✏</button>
+                  <button onClick={() => setConfirmDel(comp)} style={{ padding: '3px 9px', fontSize: 10, background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.15)', borderRadius: 5, color: 'var(--red)', cursor: 'pointer', fontFamily: 'Inter' }}>✕</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {/* Modal */}
+      {editando && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '22px 24px', width: '100%', maxWidth: 440 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>{editando === 'nuevo' ? 'Nueva competencia' : 'Editar competencia'}</div>
+              <button onClick={() => setEditando(null)} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 20, cursor: 'pointer' }}>×</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+              <div><label style={lbl3}>NOMBRE *</label><input className="input" value={form.nombre} onChange={e => setForm(f => ({...f, nombre: e.target.value}))} placeholder="Ej: CAMBIO DE CONCAVOS EN CHANCADORA PRIMARIA" /></div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <label style={lbl3}>CATEGORÍA</label>
+                  <select className="input" value={form.categoria} onChange={e => setForm(f => ({...f, categoria: e.target.value}))} style={{ background: 'var(--bg2)' }}>
+                    {categorias.map(cat => <option key={cat} value={cat} style={{ background: '#0c0c10' }}>{cat}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={lbl3}>CRITICIDAD</label>
+                  <select className="input" value={form.nivel_criticidad} onChange={e => setForm(f => ({...f, nivel_criticidad: e.target.value}))} style={{ background: 'var(--bg2)' }}>
+                    {criticidades.map(c => <option key={c.v} value={c.v} style={{ background: '#0c0c10' }}>{c.v} — {c.l}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div><label style={lbl3}>EQUIPO ASOCIADO</label><input className="input" value={form.equipo_asociado} onChange={e => setForm(f => ({...f, equipo_asociado: e.target.value}))} placeholder="Ej: Chancadora HP400" /></div>
+              <div><label style={lbl3}>DESCRIPCIÓN</label><textarea className="input" value={form.descripcion} onChange={e => setForm(f => ({...f, descripcion: e.target.value}))} rows={2} placeholder="Descripción breve..." style={{ resize: 'vertical' }} /></div>
+              {msg && <div className="alert alert-err">{msg}</div>}
+              <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                <button className="btn btn-ghost" onClick={() => setEditando(null)} style={{ flex: 1 }}>Cancelar</button>
+                <button className="btn btn-primary" onClick={guardar} disabled={guardando} style={{ flex: 2 }}>{guardando ? 'Guardando...' : 'Guardar'}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm delete */}
+      {confirmDel && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 12, padding: '24px 28px', maxWidth: 320, textAlign: 'center' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>¿Eliminar competencia?</div>
+            <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 20 }}><strong style={{ color: 'var(--text)' }}>{confirmDel.nombre}</strong></div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="btn btn-ghost" onClick={() => setConfirmDel(null)} style={{ flex: 1 }}>Cancelar</button>
+              <button onClick={() => eliminar(confirmDel.id_competencia)} style={{ flex: 1, padding: '9px', background: 'var(--red)', border: 'none', borderRadius: 8, color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* =========================================
+   ADMIN — BITÁCORA EDITOR
+   Ver y editar actividades críticas
+   ========================================= */
+function AdminBitacoraEditor({ svc, user }) {
+  const [actividades, setActividades] = useState([])
+  const [loading, setLoading]         = useState(true)
+  const [editando, setEditando]       = useState(null)
+  const [form, setForm]               = useState({})
+  const [guardando, setGuardando]     = useState(false)
+  const [confirmDel, setConfirmDel]   = useState(null)
+  const [comps, setComps]             = useState([])
+
+  useEffect(() => { loadAll() }, [svc])
+
+  async function loadAll() {
+    setLoading(true)
+    const [{ data: acts }, { data: ct }] = await Promise.all([
+      supabase.from('actividades_criticas').select('*, catalogo_competencias(nombre)').eq('id_servicio', svc.id_servicio).order('fecha_inicio', { ascending: false }),
+      supabase.from('catalogo_competencias').select('id_competencia, nombre').order('nombre'),
+    ])
+    setActividades(acts || [])
+    setComps(ct || [])
+    setLoading(false)
+  }
+
+  function abrirEditar(act) {
+    let meta = {}
+    try { meta = JSON.parse(act.checklist_generado) } catch {}
+    setForm({
+      nombre_actividad:    act.nombre_actividad || '',
+      id_competencia:      act.id_competencia || '',
+      duracion_programada: act.duracion_programada || '',
+      duracion_horas:      act.duracion_horas || '',
+      estado:              act.estado || 'EN PLAZO',
+      lecciones_aprendidas: act.lecciones_aprendidas || '',
+      url_foto:            meta.url_foto || '',
+      id_grupo:            meta.id_grupo || '',
+    })
+    setEditando(act)
+  }
+
+  async function guardar() {
+    setGuardando(true)
+    const meta = JSON.stringify({ url_foto: form.url_foto, id_grupo: form.id_grupo })
+    const { error } = await supabase.from('actividades_criticas').update({
+      nombre_actividad:    form.nombre_actividad.trim(),
+      id_competencia:      parseInt(form.id_competencia) || null,
+      duracion_programada: parseFloat(form.duracion_programada) || null,
+      duracion_horas:      parseFloat(form.duracion_horas) || null,
+      estado:              form.estado,
+      lecciones_aprendidas: form.lecciones_aprendidas.trim() || null,
+      checklist_generado:  meta,
+    }).eq('id_actividad', editando.id_actividad)
+    setGuardando(false)
+    if (!error) { setEditando(null); await loadAll() }
+  }
+
+  async function eliminar(id) {
+    await supabase.from('detalle_actividad').delete().eq('id_actividad', id)
+    await supabase.from('actividades_criticas').delete().eq('id_actividad', id)
+    setConfirmDel(null); await loadAll()
+  }
+
+  if (loading) return <p style={{ color: 'var(--text3)', fontSize: 13 }}>Cargando bitácora...</p>
+
+  return (
+    <div className="fade">
+      <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 16 }}>
+        {actividades.length} trabajos críticos registrados en este servicio
+      </div>
+
+      {actividades.length === 0 ? (
+        <div className="card-static" style={{ padding: '36px 20px', textAlign: 'center' }}>
+          <p style={{ color: 'var(--text3)', fontSize: 13 }}>No hay actividades registradas aún. Regístralas desde la Bitácora.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {actividades.map(act => {
+            let meta = {}
+            try { meta = JSON.parse(act.checklist_generado) } catch {}
+            return (
+              <div key={act.id_actividad} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 10 }}>
+                {meta.url_foto ? (
+                  <img src={meta.url_foto} alt="" style={{ width: 56, height: 56, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
+                ) : (
+                  <div style={{ width: 56, height: 56, borderRadius: 6, background: 'rgba(230,126,34,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🔧</div>
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{act.nombre_actividad}</div>
+                  <div style={{ fontSize: 10, color: 'var(--accent)', marginTop: 1 }}>{act.catalogo_competencias?.nombre}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text3)' }}>
+                    Prog: {act.duracion_programada || '—'}h · Real: {act.duracion_horas || '—'}h · G{meta.id_grupo}
+                    <span style={{ marginLeft: 8, color: act.estado === 'EN PLAZO' ? 'var(--green)' : 'var(--red)', fontWeight: 600 }}>{act.estado}</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                  <button onClick={() => abrirEditar(act)} style={{ padding: '4px 10px', fontSize: 10, background: 'rgba(91,164,207,0.08)', border: '1px solid rgba(91,164,207,0.2)', borderRadius: 5, color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'Inter' }}>✏ Editar</button>
+                  <button onClick={() => setConfirmDel(act)} style={{ padding: '4px 10px', fontSize: 10, background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.15)', borderRadius: 5, color: 'var(--red)', cursor: 'pointer', fontFamily: 'Inter' }}>✕</button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Modal edición */}
+      {editando && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '22px 24px', width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>Editar actividad</div>
+              <button onClick={() => setEditando(null)} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 20, cursor: 'pointer' }}>×</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+              <div><label style={lbl3}>DESCRIPCIÓN DEL TRABAJO</label><input className="input" value={form.nombre_actividad} onChange={e => setForm(f => ({...f, nombre_actividad: e.target.value}))} /></div>
+              <div>
+                <label style={lbl3}>COMPETENCIA / TIPO DE TRABAJO</label>
+                <select className="input" value={form.id_competencia} onChange={e => setForm(f => ({...f, id_competencia: e.target.value}))} style={{ background: 'var(--bg2)' }}>
+                  <option value="">— Sin competencia —</option>
+                  {comps.map(c => <option key={c.id_competencia} value={c.id_competencia} style={{ background: '#0c0c10' }}>{c.nombre}</option>)}
+                </select>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                <div><label style={lbl3}>H. PROGRAMADAS</label><input className="input" type="number" value={form.duracion_programada} onChange={e => setForm(f => ({...f, duracion_programada: e.target.value}))} /></div>
+                <div><label style={lbl3}>H. REALES</label><input className="input" type="number" value={form.duracion_horas} onChange={e => setForm(f => ({...f, duracion_horas: e.target.value}))} /></div>
+                <div>
+                  <label style={lbl3}>ESTADO</label>
+                  <select className="input" value={form.estado} onChange={e => setForm(f => ({...f, estado: e.target.value}))} style={{ background: 'var(--bg2)' }}>
+                    <option value="EN PLAZO">EN PLAZO</option>
+                    <option value="RETRASO">RETRASO</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div><label style={lbl3}>GRUPO ASIGNADO</label><input className="input" value={form.id_grupo} onChange={e => setForm(f => ({...f, id_grupo: e.target.value}))} placeholder="Ej: 1" /></div>
+                <div>
+                  <label style={lbl3}>URL FOTO</label>
+                  <input className="input" value={form.url_foto} onChange={e => setForm(f => ({...f, url_foto: e.target.value}))} placeholder="https://..." />
+                </div>
+              </div>
+              <div><label style={lbl3}>LECCIONES APRENDIDAS</label><textarea className="input" value={form.lecciones_aprendidas} onChange={e => setForm(f => ({...f, lecciones_aprendidas: e.target.value}))} rows={3} style={{ resize: 'vertical' }} /></div>
+              <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                <button className="btn btn-ghost" onClick={() => setEditando(null)} style={{ flex: 1 }}>Cancelar</button>
+                <button className="btn btn-primary" onClick={guardar} disabled={guardando} style={{ flex: 2 }}>{guardando ? 'Guardando...' : 'Guardar cambios'}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm delete */}
+      {confirmDel && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 12, padding: '24px 28px', maxWidth: 320, textAlign: 'center' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>¿Eliminar esta actividad?</div>
+            <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 6 }}><strong style={{ color: 'var(--text)' }}>{confirmDel.nombre_actividad}</strong></div>
+            <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 20 }}>Se eliminará también todo el detalle asociado.</div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="btn btn-ghost" onClick={() => setConfirmDel(null)} style={{ flex: 1 }}>Cancelar</button>
+              <button onClick={() => eliminar(confirmDel.id_actividad)} style={{ flex: 1, padding: '9px', background: 'var(--red)', border: 'none', borderRadius: 8, color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const lbl3 = { fontSize: 10, color: 'rgba(255,255,255,0.35)', fontWeight: 600, letterSpacing: 0.5, display: 'block', marginBottom: 5 }
 
