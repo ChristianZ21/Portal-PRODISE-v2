@@ -52,13 +52,28 @@ export default function ServicioPage({ params }) {
   });
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+      {/* Overlay oscuro móvil */}
+      {sidebarOpen && (
+        <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 40 }} />
+      )}
+
       {/* ── Sidebar ── */}
-      <aside style={{ width: 210, background: 'rgba(5,5,7,0.98)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', flexShrink: 0, height: '100vh', position: 'sticky', top: 0 }}>
-        <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
+      <aside style={{
+        width: 210, background: 'rgba(5,5,7,0.99)', borderRight: '1px solid var(--border)',
+        display: 'flex', flexDirection: 'column', flexShrink: 0,
+        height: '100vh', zIndex: 50,
+        // Móvil: posición fija, fuera de pantalla por defecto
+        position: typeof window !== 'undefined' && window.innerWidth <= 768 ? 'fixed' : 'sticky',
+        top: 0,
+        transform: typeof window !== 'undefined' && window.innerWidth <= 768 && !sidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
+        transition: 'transform 0.28s ease',
+      }}>
+        <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ background: 'white', borderRadius: 6, padding: '4px 10px', display: 'inline-flex', alignItems: 'center' }}>
             <img src="/logo_prodise.png" alt="PRODISE" style={{ height: 28, objectFit: 'contain', display: 'block' }} />
           </div>
+          <button onClick={() => setSidebarOpen(false)} className="close-sidebar-btn" style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 20, cursor: 'pointer', padding: '0 2px', lineHeight: 1, display: 'none' }}>×</button>
         </div>
         <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ fontSize: 11, fontWeight: 600 }}>{user.nombre}</div>
@@ -71,7 +86,7 @@ export default function ServicioPage({ params }) {
         </div>
         <nav style={{ flex: 1, padding: '6px 6px', overflowY: 'auto' }}>
           {nav.map(x => (
-            <button key={x.id} onClick={() => { if (!x.disabled) setSec(x.id) }} style={{
+            <button key={x.id} onClick={() => { if (!x.disabled) { setSec(x.id); setSidebarOpen(false) } }} style={{
               display: 'flex', alignItems: 'center', gap: 7, width: '100%', padding: '7px 10px',
               borderRadius: 6, border: 'none', fontSize: 12,
               cursor: x.disabled ? 'not-allowed' : 'pointer',
@@ -93,7 +108,14 @@ export default function ServicioPage({ params }) {
       </aside>
 
       {/* ── Main ── */}
-      <main style={{ flex: 1, padding: '22px 26px', background: 'var(--bg)', overflowY: 'auto', height: '100vh' }}>
+      <main style={{ flex: 1, padding: '22px 26px', background: 'var(--bg)', overflowY: 'auto', height: '100vh', position: 'relative' }}>
+        {/* Botón hamburguesa - solo visible en móvil via CSS */}
+        <button onClick={() => setSidebarOpen(true)} className="hamburger-btn" style={{
+          position: 'fixed', top: 10, left: 10, zIndex: 39,
+          background: 'rgba(5,5,7,0.95)', border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 8, padding: '8px 11px', cursor: 'pointer', color: 'var(--text)',
+          fontSize: 16, lineHeight: 1, display: 'none',
+        }}>☰</button>
         {sec === 'evaluar'   && <Evaluar    svc={svc} user={user} />}
         {sec === 'historial' && <Historial  svc={svc} user={user} />}
         {sec === 'dashboard' && <Dashboard  svc={svc} user={user} />}
