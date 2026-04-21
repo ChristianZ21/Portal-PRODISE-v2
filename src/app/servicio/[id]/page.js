@@ -799,22 +799,22 @@ function Dashboard({ svc, user }) {
         </div>
       )}
 
-
-      <div style={{ display: 'grid', gridTemplateColumns: kpi.topScorer ? '1fr 200px' : '1fr', gap: 14 }}>
+      {/* ── ÚLTIMAS EVALUACIONES + TOP SCORER ── */}
+      <div className="dash-bottom-grid" style={{ display: 'grid', gridTemplateColumns: kpi.topScorer ? '1fr 240px' : '1fr', gap: 14, marginBottom: 14 }}>
         {recent.length > 0 && (
-          <div className="card-static" style={{ padding: '16px 18px' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 12 }}>Últimas evaluaciones</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {recent.map((r, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: i < recent.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                  <Avatar nombre={r.nombre} foto={r.foto} size={28} />
+          <div className="card-static" style={{ padding: '14px 16px' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.5, marginBottom: 10, textTransform: 'uppercase' }}>Últimas evaluaciones</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 6 }}>
+              {recent.slice(0, 8).map((r, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 10px', background: 'rgba(255,255,255,0.02)', borderRadius: 6 }}>
+                  <Avatar nombre={r.nombre} foto={r.foto} size={30} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.nombre}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text3)' }}>{r.cargo}</div>
+                    <div style={{ fontSize: 9, color: 'var(--text3)' }}>{r.cargo}</div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: scoreColor(r.nota) }}>{r.nota}</div>
-                    <div style={{ fontSize: 9, color: 'var(--text3)' }}>{new Date(r.fecha).toLocaleDateString('es-PE')}</div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: scoreColor(r.nota), fontFamily: 'monospace', lineHeight: 1 }}>{r.nota}</div>
+                    <div style={{ fontSize: 8, color: 'var(--text3)', marginTop: 1 }}>{new Date(r.fecha).toLocaleDateString('es-PE', {day: '2-digit', month: 'short'})}</div>
                   </div>
                 </div>
               ))}
@@ -823,15 +823,14 @@ function Dashboard({ svc, user }) {
         )}
 
         {kpi.topScorer && (
-          <div className="card-static" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 10 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent)', letterSpacing: 1 }}>TOP SCORER</div>
-            <Avatar nombre={kpi.topScorer.nombre} foto={kpi.topScorer.foto} size={56} />
+          <div className="card-static" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 8, background: 'linear-gradient(160deg, rgba(255,215,0,0.06) 0%, rgba(255,180,0,0.02) 100%)', border: '1px solid rgba(255,215,0,0.2)' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#FFD700', letterSpacing: 0.8 }}>🥇 TOP SCORER</div>
+            <Avatar nombre={kpi.topScorer.nombre} foto={kpi.topScorer.foto} size={58} />
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.3 }}>{kpi.topScorer.nombre}</div>
-              <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2 }}>{kpi.topScorer.cargo}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.25 }}>{kpi.topScorer.nombre}</div>
+              <div style={{ fontSize: 10, color: 'var(--accent)', marginTop: 2, fontWeight: 600 }}>{kpi.topScorer.cargo}</div>
             </div>
-            <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--green)', lineHeight: 1 }}>{kpi.topScorer.nota}</div>
-            <div style={{ fontSize: 10, color: 'var(--text3)' }}>de 4.0</div>
+            <div style={{ fontSize: 30, fontWeight: 900, color: 'var(--green)', lineHeight: 1, fontFamily: 'monospace', textShadow: '0 0 20px rgba(39,174,96,0.4)' }}>{kpi.topScorer.nota}</div>
           </div>
         )}
       </div>
@@ -2074,15 +2073,15 @@ function Perfiles({ svc, user }) {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }} className="perfil-grid">
+          <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.4fr 1fr', gap: 10 }} className="perfil-grid">
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               
-              <div className="card-static" style={{ padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1, marginBottom: 16, width: '100%', textAlign: 'left' }}>ANÁLISIS DIMENSIONAL VS CARGO</div>
+              <div className="card-static" style={{ padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8, marginBottom: 10, width: '100%', textAlign: 'left' }}>ANÁLISIS DIMENSIONAL VS CARGO</div>
                 {perfil.dims ? (
                   <>
-                    <RadarSVG dims={perfil.dims} grupoDims={perfil.cargoServicioDims} size={220} color={sc(perfil.notaActual)} />
+                    <RadarSVG dims={perfil.dims} grupoDims={perfil.cargoServicioDims} size={180} color={sc(perfil.notaActual)} />
                     <div style={{ display: 'flex', gap: 16, marginTop: 16, fontSize: 9, color: 'var(--text3)', fontWeight: 600 }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, background: sc(perfil.notaActual), opacity: 0.6, borderRadius: 2 }} /> Trabajador</span>
                       {perfil.cargoServicioDims && <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, background: 'rgba(150,160,170,0.3)', border: '1px solid rgba(180,190,200,0.6)', borderRadius: 2 }} /> Promedio Cargo</span>}
@@ -2091,8 +2090,8 @@ function Perfiles({ svc, user }) {
                 ) : <div style={{ padding: '40px 0', fontSize: 11, color: 'var(--text3)' }}>Requiere evaluación para generar radar</div>}
               </div>
 
-              <div className="card-static" style={{ padding: '16px' }}>
-                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1, marginBottom: 12 }}>DESGLOSE DE VARIANZA (Δ)</div>
+              <div className="card-static" style={{ padding: '14px' }}>
+                 <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8, marginBottom: 10 }}>DESGLOSE DE VARIANZA (Δ)</div>
                  {perfil.dims ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     {Object.entries({ 'Seguridad': 'd1', 'Calidad Técnica': 'd2', 'Actitud': 'd3', 'Precisión': 'd4' }).map(([label, key]) => {
@@ -2138,17 +2137,17 @@ function Perfiles({ svc, user }) {
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div className="card-static" style={{ padding: '16px' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1, marginBottom: 12 }}>LÍNEA DE TIEMPO DE RENDIMIENTO</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="card-static" style={{ padding: '14px' }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8, marginBottom: 10 }}>LÍNEA DE TIEMPO DE RENDIMIENTO</div>
                 {perfil.trayectoria.length > 0
                   ? <TrayectoriaSVG data={perfil.trayectoria} scoreColor={sc} />
                   : <div style={{ padding: '30px 0', fontSize: 11, color: 'var(--text3)', textAlign: 'center' }}>No hay data histórica suficiente para trazar curva de rendimiento.</div>}
               </div>
 
-              <div className="card-static" style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1 }}>MATRIZ DE COMPETENCIAS TÉCNICAS ({perfil.competencias.length})</div>
+              <div className="card-static" style={{ padding: '14px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8 }}>MATRIZ COMPETENCIAS ({perfil.competencias.length})</div>
                 </div>
                 
                 {perfil.competencias.length > 0 ? (
@@ -2172,11 +2171,11 @@ function Perfiles({ svc, user }) {
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               
-              <div className="card-static" style={{ padding: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1 }}>DIAGNÓSTICO DEL SISTEMA</div>
+              <div className="card-static" style={{ padding: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8 }}>DIAGNÓSTICO IA</div>
                   <div style={{ fontSize: 9, fontWeight: 700, color: loadingAi ? 'var(--accent)' : 'var(--green)', display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: 4 }}>
                     {loadingAi ? '⏳ SINTETIZANDO...' : '✓ ANÁLISIS COMPLETADO'}
                   </div>
@@ -2191,8 +2190,8 @@ function Perfiles({ svc, user }) {
               </div>
 
               {perfil.habilidades.length > 0 && (
-                <div className="card-static" style={{ padding: '16px' }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1, marginBottom: 10 }}>POLIVALENCIA CERTIFICADA</div>
+                <div className="card-static" style={{ padding: '14px' }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8, marginBottom: 8 }}>POLIVALENCIA</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {perfil.habilidades.map((h, i) => (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(91,164,207,0.06)', border: '1px solid rgba(91,164,207,0.1)', borderRadius: 6 }}>
@@ -2209,8 +2208,8 @@ function Perfiles({ svc, user }) {
                 </div>
               )}
 
-              <div className="card-static" style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1, marginBottom: 12 }}>FEED DE OBSERVACIONES</div>
+              <div className="card-static" style={{ padding: '14px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8, marginBottom: 10 }}>OBSERVACIONES</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', flex: 1 }}>
                   {perfil.comentarios?.length > 0 ? perfil.comentarios.map((c, i) => (
                     <div key={i} style={{ fontSize: 10, color: 'var(--text2)', lineHeight: 1.5, padding: '8px 10px', background: 'rgba(255,255,255,0.02)', borderRadius: 6, borderLeft: '2px solid var(--border)' }}>
