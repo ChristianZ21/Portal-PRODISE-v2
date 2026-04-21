@@ -799,7 +799,6 @@ function Dashboard({ svc, user }) {
         </div>
       )}
 
-}
 
       <div style={{ display: 'grid', gridTemplateColumns: kpi.topScorer ? '1fr 200px' : '1fr', gap: 14 }}>
         {recent.length > 0 && (
