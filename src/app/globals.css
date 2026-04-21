@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
   --bg:      #0e0f13;
-  --bg2:     #151619;
+  --bg2:     #15171c;
   --card:    rgba(255,255,255,0.025);
   --card-h:  rgba(255,255,255,0.045);
   --accent:  #E67E22;
@@ -32,6 +32,7 @@ body {
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 .fade { animation: fadeIn 0.35s ease-out forwards; }
@@ -62,12 +63,27 @@ body {
 .alert-err { background: rgba(192,57,43,0.08); color: #E8A09A; border: 1px solid rgba(192,57,43,0.12); }
 .alert-ok  { background: rgba(39,174,96,0.08); color: #8ED1AD; border: 1px solid rgba(39,174,96,0.12); }
 
-/* ── Sidebar responsive ── */
+/* ─── SIDEBAR RESPONSIVE ─────────────────────── */
 .sidebar { transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); }
 .hamburger-btn { display: none; }
 .close-sidebar-btn { display: none; }
 
+/* ─── TABLET ─────────────────────────────────── */
+@media (max-width: 900px) {
+  .dash-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .dash-col-span2 {
+    grid-column: span 1 !important;
+  }
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ─── MOBILE ─────────────────────────────────── */
 @media (max-width: 768px) {
+  /* Sidebar */
   .sidebar {
     position: fixed !important;
     left: 0 !important;
@@ -75,59 +91,101 @@ body {
     z-index: 50;
     box-shadow: 4px 0 24px rgba(0,0,0,0.6);
   }
-  .sidebar-open {
-    transform: translateX(0) !important;
+  .sidebar-open { transform: translateX(0) !important; }
+  .close-sidebar-btn { display: block !important; }
+  .hamburger-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
   }
-  .close-sidebar-btn { display: flex !important; }
-  .hamburger-btn { display: flex !important; }
 
-  /* Main con espacio para el botón hamburguesa */
-  main { padding-top: 50px !important; padding-left: 14px !important; padding-right: 14px !important; }
+  /* Main content */
+  main {
+    padding: 52px 12px 14px !important;
+  }
 
-  /* Cards compactas */
+  /* Cards & spacing */
   .card-static, .card { border-radius: 8px; }
 
-  /* Texto evaluar más legible */
-  .eval-opcion { padding: 12px 14px !important; }
+  /* Perfiles 360 grid → single column */
+  .perfil-grid { grid-template-columns: 1fr !important; }
+  
+  /* KPI grid → 2 cols on mobile */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
 
-  /* Tablas con scroll horizontal */
-  .tabla-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-
-  /* Grids adaptativos */
-  .grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
-  .grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
-
-  /* Ocultar columnas menos importantes en tablas */
-  .col-hist { display: none !important; }
+  /* Ranking rows → nombre arriba, scores abajo */
+  .rank-header-desktop {
+    display: none !important;
+  }
+  .rank-row-content {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+  /* Primera row: posición + avatar + nombre */
+  .rank-row-content > *:nth-child(1) {
+    display: none !important;
+  }
+  .rank-row-content > *:nth-child(2) {
+    display: flex !important;
+    width: 100%;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+  /* Scores row abajo */
+  .rank-row-content > *:nth-child(3),
+  .rank-row-content > *:nth-child(4),
+  .rank-row-content > *:nth-child(5) {
+    display: inline-flex !important;
+  }
+  /* Usamos flexbox inline para la segunda fila */
+  .rank-row-content {
+    display: grid !important;
+    grid-template-areas: 
+      "name name name"
+      "act hist final" !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 8px !important;
+  }
+  .rank-row-content > *:nth-child(1) { display: none !important; }
+  .rank-row-content > *:nth-child(2) { grid-area: name !important; }
+  .rank-row-content > *:nth-child(3) {
+    grid-area: act !important;
+    text-align: center !important;
+    padding: 6px !important;
+    background: rgba(255,255,255,0.025) !important;
+    border-radius: 6px !important;
+  }
+  .rank-row-content > *:nth-child(4) {
+    grid-area: hist !important;
+    text-align: center !important;
+    padding: 6px !important;
+    background: rgba(255,255,255,0.025) !important;
+    border-radius: 6px !important;
+  }
+  .rank-row-content > *:nth-child(5) {
+    grid-area: final !important;
+    text-align: center !important;
+    padding: 6px !important;
+    background: rgba(230,126,34,0.06) !important;
+    border: 1px solid rgba(230,126,34,0.15) !important;
+    border-radius: 6px !important;
+    align-items: center !important;
+  }
+  .rank-row-content > *:nth-child(5) > div {
+    width: 100% !important;
+  }
 }
 
 @media (max-width: 480px) {
-  main { padding-top: 46px !important; padding-left: 10px !important; padding-right: 10px !important; }
-  .grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
-  .grid-3 { grid-template-columns: 1fr !important; }
-}
-
-/* Perfiles 360 grid responsive */
-@media (max-width: 768px) {
-  .perfil-grid {
-    grid-template-columns: 1fr !important;
+  main {
+    padding: 48px 8px 10px !important;
   }
-}
-
-
-/* Podio compacto en mobile */
-@media (max-width: 600px) {
-  .perfil-grid { grid-template-columns: 1fr !important; }
-}
-
-/* Podio trofeo — asegurar que el emoji sea visible */
-
-/* Dashboard 3-col grid responsive */
-@media (max-width: 900px) {
-  .dash-grid-3 { grid-template-columns: 1fr 1fr !important; }
-  .dash-col-span2 { grid-column: span 2 !important; }
-}
-@media (max-width: 600px) {
-  .dash-grid-3 { grid-template-columns: 1fr !important; }
-  .dash-col-span2 { grid-column: span 1 !important; }
+  .kpi-grid {
+    gap: 6px !important;
+  }
 }
