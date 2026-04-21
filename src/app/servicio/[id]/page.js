@@ -406,7 +406,7 @@ function Historial({ svc, user }) {
                   <div style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 500 }}>{h.cargo_momento} · G{h.grupo_momento} · T{h.turno_momento}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: h.promedio >= 3 ? 'var(--green)' : h.promedio >= 1.6 ? 'var(--yellow)' : 'var(--red)' }}>{h.promedio}</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: h.promedio >= 3.5 ? 'var(--green)' : h.promedio >= 2.0 ? 'var(--yellow)' : 'var(--red)' }}>{h.promedio}</div>
                   <div style={{ fontSize: 9, color: 'var(--text3)' }}>{new Date(h.fecha_hora).toLocaleDateString('es-PE')}</div>
                 </div>
               </div>
@@ -416,7 +416,7 @@ function Historial({ svc, user }) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, marginBottom: 8 }}>
                 {[{ l: 'Seguridad', v: h.nota_1 }, { l: 'Calidad', v: h.nota_2 }, { l: 'Actitud', v: h.nota_3 }, { l: 'Precisión', v: h.nota_4 }].map((d, i) => (
                   <div key={i} style={{ textAlign: 'center', padding: '6px 4px', background: 'rgba(255,255,255,0.02)', borderRadius: 5, border: '1px solid var(--border)' }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: d.v >= 3 ? 'var(--green)' : d.v >= 1.6 ? 'var(--yellow)' : 'var(--red)' }}>{d.v}</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: d.v >= 3.5 ? 'var(--green)' : d.v >= 2.0 ? 'var(--yellow)' : 'var(--red)' }}>{d.v}</div>
                     <div style={{ fontSize: 8, color: 'var(--text3)', marginTop: 1 }}>{d.l}</div>
                   </div>
                 ))}
@@ -529,7 +529,7 @@ function Dashboard({ svc, user }) {
       .map(a => ({ ...a, nombre: trabMap[a.dni_trabajador]?.nombres_completos || a.dni_trabajador, cargo: cargoMap[a.id_cargo_actual] || '' }))
 
     const notasBajas = (evals || [])
-      .filter(e => parseFloat(e.promedio) < 1.6)
+      .filter(e => parseFloat(e.promedio) < 2.0)
       .map(e => {
         const asig = asigs.find(a => a.id_asignacion === e.id_asignacion)
         if (!asig) return null
@@ -614,7 +614,7 @@ function Dashboard({ svc, user }) {
   const scoreColor = (v) => {
     const n = parseFloat(v)
     if (isNaN(n)) return 'var(--text3)'
-    return n >= 3 ? 'var(--green)' : n >= 1.6 ? 'var(--yellow)' : 'var(--red)'
+    return n >= 3.5 ? 'var(--green)' : n >= 2.0 ? 'var(--yellow)' : 'var(--red)'
   }
 
   return (
@@ -700,47 +700,64 @@ function Dashboard({ svc, user }) {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+      {/* ── GRID PRINCIPAL: dimensiones + cargo + grupos ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 14 }}>
+
+        {/* Columna 1: Promedio por dimensión */}
         {byDim.length > 0 && (
           <div className="card-static" style={{ padding: '16px 18px' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 14 }}>Promedio por dimensión</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.5, marginBottom: 14, textTransform: 'uppercase' }}>Por Dimensión</div>
             {byDim.map(d => (
               <div key={d.dim} style={{ marginBottom: 10 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
                   <span style={{ fontSize: 11, color: 'var(--text2)' }}>{d.dim}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: scoreColor(d.avg) }}>{d.avg ?? '—'}</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: scoreColor(d.avg), fontFamily: 'monospace' }}>{d.avg ?? '—'}</span>
                 </div>
                 <div style={{ height: 5, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{
-                    height: '100%', borderRadius: 3,
-                    width: `${d.avg ? (parseFloat(d.avg) / 4) * 100 : 0}%`,
-                    background: scoreColor(d.avg), transition: 'width 0.8s ease',
-                  }} />
+                  <div style={{ height: '100%', borderRadius: 3, width: `${d.avg ? (parseFloat(d.avg) / 4) * 100 : 0}%`, background: scoreColor(d.avg), transition: 'width 0.8s ease' }} />
                 </div>
               </div>
             ))}
+            {/* Nota promedio por cargo — debajo de dimensiones */}
+            {byCargo.length > 0 && (
+              <>
+                <div style={{ height: 1, background: 'var(--border)', margin: '14px 0 12px' }} />
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.5, marginBottom: 10, textTransform: 'uppercase' }}>Por Cargo</div>
+                {byCargo.slice(0, 8).map((cargo, i) => (
+                  <div key={cargo.cargo} style={{ marginBottom: 8 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3, alignItems: 'center' }}>
+                      <span style={{ fontSize: 10, color: 'var(--text2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%' }}>{cargo.cargo}</span>
+                      <span style={{ fontSize: 12, fontWeight: 800, color: cargo.promedio ? scoreColor(cargo.promedio) : 'var(--text3)', fontFamily: 'monospace', flexShrink: 0 }}>
+                        {cargo.promedio ?? '—'}
+                      </span>
+                    </div>
+                    <div style={{ height: 4, background: 'rgba(255,255,255,0.04)', borderRadius: 2, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', borderRadius: 2, width: cargo.promedio ? `${(parseFloat(cargo.promedio) / 4) * 100}%` : '0%', background: cargo.promedio ? scoreColor(cargo.promedio) : 'transparent', transition: 'width 0.8s ease' }} />
+                    </div>
+                    <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 1 }}>{cargo.evaluados} eval.</div>
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         )}
 
+        {/* Columna 2 & 3: Estado por grupo — expandido */}
         {byGrupo.length > 0 && (
-          <div className="card-static" style={{ padding: '16px 18px' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 14 }}>Estado por grupo</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div className="card-static" style={{ padding: '16px 18px', gridColumn: 'span 2' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.5, marginBottom: 14, textTransform: 'uppercase' }}>Estado por Grupo</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px 20px' }}>
               {byGrupo.map(g => (
                 <div key={g.grupo}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ fontSize: 11, color: 'var(--text2)' }}>Grupo {g.grupo}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                    <span style={{ fontSize: 11, color: 'var(--text2)', fontWeight: g.promedio ? 600 : 400 }}>Grupo {g.grupo}</span>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <span style={{ fontSize: 10, color: 'var(--text3)' }}>{g.evaluados}/{g.total}</span>
-                      {g.promedio && <span style={{ fontSize: 12, fontWeight: 700, color: scoreColor(g.promedio) }}>{g.promedio}</span>}
+                      <span style={{ fontSize: 9, color: 'var(--text3)' }}>{g.evaluados}/{g.total}</span>
+                      {g.promedio && <span style={{ fontSize: 13, fontWeight: 800, color: scoreColor(g.promedio), fontFamily: 'monospace' }}>{g.promedio}</span>}
                     </div>
                   </div>
                   <div style={{ height: 5, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' }}>
-                    <div style={{
-                      height: '100%', borderRadius: 3, width: `${g.pct}%`,
-                      background: g.pct >= 80 ? 'var(--green)' : g.pct >= 50 ? 'var(--accent)' : 'var(--text3)',
-                      transition: 'width 0.8s ease',
-                    }} />
+                    <div style={{ height: '100%', borderRadius: 3, width: `${g.pct}%`, background: g.pct >= 80 ? 'var(--green)' : g.pct >= 50 ? 'var(--accent)' : 'var(--text3)', transition: 'width 0.8s ease' }} />
                   </div>
                 </div>
               ))}
@@ -778,36 +795,7 @@ function Dashboard({ svc, user }) {
         </div>
       )}
 
-      {byCargo.length > 0 && (
-        <div className="card-static" style={{ padding: '16px 18px', marginBottom: 14 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 14 }}>Nota promedio por cargo</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {byCargo.map((c, i) => (
-              <div key={c.cargo} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 130, fontSize: 11, color: 'var(--text2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 0 }}>{c.cargo}</div>
-                <div style={{ flex: 1, height: 22, background: 'rgba(255,255,255,0.03)', borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
-                  {c.promedio ? (
-                    <div style={{
-                      height: '100%', borderRadius: 4,
-                      width: `${(parseFloat(c.promedio) / 4) * 100}%`,
-                      background: i === 0 ? 'var(--accent)' : 'rgba(230,126,34,0.4)',
-                      transition: 'width 0.8s ease',
-                      display: 'flex', alignItems: 'center', paddingLeft: 8,
-                    }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: 'white' }}>{c.promedio}</span>
-                    </div>
-                  ) : (
-                    <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: 'var(--text3)' }}>Sin evaluaciones</span>
-                  )}
-                </div>
-                <div style={{ fontSize: 10, color: 'var(--text3)', width: 50, textAlign: 'right', flexShrink: 0 }}>
-                  {c.evaluados}/{c.total}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+}
 
       <div style={{ display: 'grid', gridTemplateColumns: kpi.topScorer ? '1fr 200px' : '1fr', gap: 14 }}>
         {recent.length > 0 && (
@@ -1402,7 +1390,7 @@ function Ranking({ svc, user }) {
 
   const avg    = arr => arr.reduce((a, b) => a + b, 0) / arr.length
   const round2 = n   => Math.round(n * 100) / 100
-  const scoreColor = v => { if (!v && v !== 0) return 'var(--text3)'; return v >= 3 ? 'var(--green)' : v >= 1.6 ? 'var(--yellow)' : 'var(--red)' }
+  const scoreColor = v => { if (!v && v !== 0) return 'var(--text3)'; return v >= 3.5 ? 'var(--green)' : v >= 2.0 ? 'var(--yellow)' : 'var(--red)' }
   const medalColor = p => p === 1 ? '#FFD700' : p === 2 ? '#C0C0C0' : '#CD7F32'
 
   const [podioCargo, setPodioCargo] = useState([])
@@ -1607,8 +1595,8 @@ function Ranking({ svc, user }) {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
                         <Avatar nombre={r.nombre} foto={r.foto} size={32} />
                         <div style={{ minWidth: 0, flex: 1 }}>
-                          <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.nombre}</div>
-                          <div style={{ fontSize: 9, color: 'var(--text3)' }}>G{r.id_grupo} · T{r.turno}</div>
+                          <div style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.3, wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{r.nombre}</div>
+                          <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 1 }}>G{r.id_grupo} · T{r.turno}</div>
                         </div>
                       </div>
                       <div style={{ textAlign: 'right', fontSize: 13, fontWeight: 700, color: scoreColor(r.notaActual) }}>{r.notaActual}</div>
@@ -1631,15 +1619,15 @@ function Ranking({ svc, user }) {
       <div style={{ marginTop: 16, padding: '10px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
         <span style={{ fontSize: 10, color: 'var(--text3)', marginRight: 4 }}>Total evaluados: {totalEval} ·</span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: 'var(--green)' }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--green)' }} />≥ 3.0 Óptimo
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--green)' }} />≥ 3.5 Óptimo
         </span>
         <span style={{ color: 'var(--text3)', fontSize: 10 }}>·</span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: 'var(--yellow)' }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--yellow)' }} />≥ 1.6 Aceptable
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--yellow)' }} />≥ 2.0 Aceptable
         </span>
         <span style={{ color: 'var(--text3)', fontSize: 10 }}>·</span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: 'var(--red)' }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--red)' }} />{'< 1.6 Riesgo'}
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--red)' }} />{'< 2.0 Riesgo'}
         </span>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -1788,7 +1776,7 @@ function Perfiles({ svc, user }) {
     }
   }, [perfil]);
 
-  const sc  = v => { if (!v && v !== 0) return 'var(--text3)'; return v >= 3 ? 'var(--green)' : v >= 1.6 ? 'var(--yellow)' : 'var(--red)' }
+  const sc  = v => { if (!v && v !== 0) return 'var(--text3)'; return v >= 3.5 ? 'var(--green)' : v >= 2.0 ? 'var(--yellow)' : 'var(--red)' }
   const r2  = n  => Math.round(n * 100) / 100
   const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null
 
@@ -2631,7 +2619,7 @@ function Predictor({ svc, user }) {
   if (scoreFinal > 4.0) scoreFinal = 4.0
   if (scoreFinal < 1.0 && baseScore > 0) scoreFinal = 1.0
 
-  const sc = v => { if (!v) return 'var(--text3)'; return v >= 3 ? 'var(--green)' : v >= 1.6 ? 'var(--yellow)' : 'var(--red)' }
+  const sc = v => { if (!v) return 'var(--text3)'; return v >= 3.5 ? 'var(--green)' : v >= 2.0 ? 'var(--yellow)' : 'var(--red)' }
 
   return (
     <div className="fade" style={{ display: 'flex', gap: 20, height: 'calc(100vh - 100px)' }}>
@@ -4609,7 +4597,7 @@ function AdminEvaluadores({ svc }) {
                 <div style={{ flex: 1, fontSize: 11, color: 'var(--text2)' }}>{e.cargo_momento || '—'}</div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   {[e.nota_1, e.nota_2, e.nota_3, e.nota_4].map((n, ni) => (
-                    <div key={ni} style={{ width: 20, height: 20, borderRadius: 4, background: n>=3?'rgba(39,174,96,0.25)':n>=1.6?'rgba(212,160,23,0.25)':'rgba(192,57,43,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: n>=3?'var(--green)':n>=1.6?'var(--yellow)':'var(--red)' }}>{n}</div>
+                    <div key={ni} style={{ width: 20, height: 20, borderRadius: 4, background: n>=3?'rgba(39,174,96,0.25)':n>=1.6?'rgba(212,160,23,0.25)':'rgba(192,57,43,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: n>=3.5?'var(--green)':n>=2.0?'var(--yellow)':'var(--red)' }}>{n}</div>
                   ))}
                 </div>
                 <div style={{ fontSize: 9, color: 'var(--text3)' }}>{e.fecha_hora ? new Date(e.fecha_hora).toLocaleDateString('es-PE',{day:'2-digit',month:'short'}) : '—'}</div>
