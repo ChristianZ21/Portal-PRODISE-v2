@@ -99,16 +99,20 @@ export default function ServicioPage({ params }) {
         transform: typeof window !== 'undefined' && window.innerWidth <= 768 && !sidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
         transition: 'transform 0.28s ease',
       }}>
-        <div style={{ padding: '12px 10px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-            <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', inset: -6, borderRadius: 12, background: 'radial-gradient(ellipse, rgba(255,255,255,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
-              <div style={{ background: 'rgba(255,255,255,0.91)', borderRadius: 8, padding: '5px 12px', boxShadow: '0 0 0 1px rgba(255,255,255,0.13), 0 0 14px 5px rgba(255,255,255,0.06), 0 0 30px 10px rgba(255,255,255,0.025)' }}>
-                <img src="/logo_prodise.png" alt="PRODISE" style={{ height: 26, objectFit: 'contain', display: 'block' }} />
-              </div>
-            </div>
+        <div style={{ padding: '16px 12px 14px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+          {/* Glow ambiental */}
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 180, height: 70, background: 'radial-gradient(ellipse, rgba(230,126,34,0.08) 0%, transparent 65%)', filter: 'blur(14px)', pointerEvents: 'none' }} />
+          {/* Panel del logo con bordes difuminados estilo login */}
+          <div style={{
+            position: 'relative',
+            background: 'rgba(255,255,255,0.92)',
+            borderRadius: 10,
+            padding: '6px 14px',
+            boxShadow: '0 0 0 1px rgba(255,255,255,0.18), 0 0 16px 6px rgba(255,255,255,0.07), 0 0 36px 14px rgba(255,255,255,0.03), 0 4px 12px rgba(0,0,0,0.3)',
+          }}>
+            <img src="/logo_prodise.png" alt="PRODISE" style={{ height: 28, objectFit: 'contain', display: 'block' }} />
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="close-sidebar-btn" style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: 20, cursor: 'pointer', padding: '0 4px', lineHeight: 1, display: 'none' }}>×</button>
+          <button onClick={() => setSidebarOpen(false)} className="close-sidebar-btn" style={{ position: 'absolute', right: 8, top: 10, background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: 22, cursor: 'pointer', lineHeight: 1, display: 'none' }}>×</button>
         </div>
         <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>{user.nombre}</div>
@@ -122,8 +126,8 @@ export default function ServicioPage({ params }) {
         <nav style={{ flex: 1, padding: '6px 6px', overflowY: 'auto' }}>
           {nav.map(x => (
             <button key={x.id} onClick={() => { if (!x.disabled) { setSec(x.id); setSidebarOpen(false) } }} style={{
-              display: 'flex', alignItems: 'center', gap: 7, width: '100%', padding: '7px 10px',
-              borderRadius: 6, border: 'none', fontSize: 12,
+              display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 11px',
+              borderRadius: 7, border: 'none', fontSize: 12.5,
               cursor: x.disabled ? 'not-allowed' : 'pointer',
               opacity: x.disabled ? 0.35 : 1,
               background: sec === x.id ? 'rgba(230,126,34,0.08)' : 'none',
@@ -143,7 +147,7 @@ export default function ServicioPage({ params }) {
       </aside>
 
       {/* ── Main ── */}
-      <main style={{ flex: 1, padding: '22px 26px', background: 'var(--bg)', overflowY: 'auto', height: '100vh', position: 'relative' }}>
+      <main style={{ flex: 1, padding: '18px 22px', background: 'var(--bg)', overflowY: 'auto', height: '100vh', position: 'relative' }}>
         {/* Botón hamburguesa - solo visible en móvil via CSS */}
         <button onClick={() => setSidebarOpen(true)} className="hamburger-btn" style={{
           position: 'fixed', top: 10, left: 10, zIndex: 39,
@@ -680,7 +684,7 @@ function Dashboard({ svc, user }) {
 
       {dashTab === 'resumen' && <>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 18 }}>
+      <div className="kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 18 }}>
         <KpiCard label="Personal Total" value={kpi.total} sub="asignados al servicio" color="var(--accent2)" />
         <KpiCard label="Evaluados" value={`${kpi.evaluados}/${kpi.total}`} sub={`${kpi.pctEval}% completado`} color={kpi.pctEval >= 80 ? 'var(--green)' : kpi.pctEval >= 50 ? 'var(--yellow)' : 'var(--red)'} />
         <KpiCard label="Nota Promedio" value={kpi.avgGeneral ?? '—'} sub="de 1 a 4" color={scoreColor(kpi.avgGeneral)} />
@@ -701,7 +705,7 @@ function Dashboard({ svc, user }) {
       </div>
 
       {/* ── GRID PRINCIPAL: dimensiones + cargo + grupos ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 14 }}>
+      <div className="dash-main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 14 }}>
 
         {/* Columna 1: Promedio por dimensión */}
         {byDim.length > 0 && (
@@ -744,7 +748,7 @@ function Dashboard({ svc, user }) {
 
         {/* Columna 2 & 3: Estado por grupo — expandido */}
         {byGrupo.length > 0 && (
-          <div className="card-static" style={{ padding: '16px 18px', gridColumn: 'span 2' }}>
+          <div className="card-static dash-col-span2" style={{ padding: '16px 18px', gridColumn: 'span 2' }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.5, marginBottom: 14, textTransform: 'uppercase' }}>Estado por Grupo</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px 20px' }}>
               {byGrupo.map(g => (
@@ -887,14 +891,14 @@ function AdminPanel({ svc, user }) {
       <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 2 }}>Panel de Administración</h2>
       <p style={{ color: 'var(--text3)', fontSize: 12, marginBottom: 18 }}>Control central para {svc.nombre_descriptivo}</p>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid var(--border)', paddingBottom: 0 }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid var(--border)', paddingBottom: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {tabs.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
-            padding: '8px 16px', background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 13, fontFamily: 'Inter', fontWeight: tab === t.id ? 600 : 400,
+            padding: '8px 14px', background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: 12, fontFamily: 'Inter', fontWeight: tab === t.id ? 600 : 400,
             color: tab === t.id ? 'var(--accent)' : 'var(--text3)',
             borderBottom: tab === t.id ? '2px solid var(--accent)' : '2px solid transparent',
-            marginBottom: -1, transition: 'color 0.2s',
+            marginBottom: -1, transition: 'color 0.2s', whiteSpace: 'nowrap', flexShrink: 0,
           }}>{t.label}</button>
         ))}
       </div>
@@ -1580,7 +1584,7 @@ function Ranking({ svc, user }) {
                 <div style={{ fontSize: 10, color: 'var(--text3)' }}>{grupo.rows.length} evaluados</div>
               </div>
               <div className="card-static" style={{ overflow: 'hidden', overflowX: 'auto' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 64px 64px 90px', gap: 4, padding: '7px 12px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.3 }}>
+                <div className="rank-header-desktop" style={{ display: 'grid', gridTemplateColumns: '28px 1fr 64px 64px 90px', gap: 4, padding: '7px 12px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.3 }}>
                   <div>#</div><div>TRABAJADOR</div>
                   <div style={{ textAlign: 'right' }}><span style={{ color: 'var(--accent)' }}>{modoRanking === 'actual' ? '' : `${(pesos.actual*100).toFixed(0)}%`}</span>{modoRanking === 'actual' ? 'NOTA' : 'ACT.'}</div>
                   <div style={{ textAlign: 'right', opacity: modoRanking === 'formula' ? 1 : 0.15 }}><span style={{ color: 'var(--accent2)' }}>{(pesos.historico*100).toFixed(0)}%</span></div>
@@ -1588,7 +1592,7 @@ function Ranking({ svc, user }) {
                 </div>
                 {grupo.rows.map((r, i) => (
                   <div key={r.id_asignacion} style={{ borderBottom: i < grupo.rows.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', background: r.posicion <= 3 ? 'rgba(255,255,255,0.012)' : 'transparent' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 64px 64px 90px', gap: 4, padding: '9px 12px', alignItems: 'center' }}>
+                    <div className="rank-row-content" style={{ display: 'grid', gridTemplateColumns: '28px 1fr 64px 64px 90px', gap: 4, padding: '9px 12px', alignItems: 'center' }}>
                       <div style={{ fontSize: 12, fontWeight: 800, textAlign: 'center', color: r.posicion <= 3 ? medalColor(r.posicion) : 'var(--text3)' }}>
                         {r.posicion <= 3 ? ['🥇','🥈','🥉'][r.posicion-1] : r.posicion}
                       </div>
@@ -4407,7 +4411,7 @@ function AdminEvaluadores({ svc }) {
 
   const r2 = n => Math.round(n * 100) / 100
   const avg = arr => arr.length ? arr.reduce((a,b) => a+b, 0) / arr.length : null
-  const sc = v => !v && v!==0 ? 'var(--text3)' : v>=3 ? 'var(--green)' : v>=1.6 ? 'var(--yellow)' : 'var(--red)'
+  const sc = v => !v && v!==0 ? 'var(--text3)' : v>=3.5 ? 'var(--green)' : v>=2.0 ? 'var(--yellow)' : 'var(--red)'
 
   useEffect(() => { load() }, [svc])
 
@@ -4422,10 +4426,10 @@ function AdminEvaluadores({ svc }) {
 
     if (!evals?.length) { setDatos([]); setLoading(false); return }
 
-    // Agrupar por evaluador (usar dni_evaluador o 'SIN_IDENTIFICAR' si es null)
+    // Agrupar por evaluador
     const grupos = {}
     evals.forEach(e => {
-      const key = e.dni_evaluador || 'SIN_DNI_' + (e.id_evaluacion % 100)
+      const key = e.dni_evaluador || 'SIN_IDENTIFICAR'
       if (!grupos[key]) grupos[key] = { dni: e.dni_evaluador, evs: [] }
       grupos[key].evs.push(e)
     })
@@ -4451,8 +4455,8 @@ function AdminEvaluadores({ svc }) {
       const proms = evs.map(e => parseFloat(e.promedio))
       const notaMedia = r2(avg(proms))
       const desviacion = r2(Math.sqrt(avg(proms.map(p => Math.pow(p - notaMedia, 2)))) || 0)
-      const verdesPorc = Math.round(proms.filter(p => p >= 3).length / proms.length * 100)
-      const rojaPorc   = Math.round(proms.filter(p => p < 1.6).length / proms.length * 100)
+      const verdesPorc = Math.round(proms.filter(p => p >= 3.5).length / proms.length * 100)
+      const rojaPorc   = Math.round(proms.filter(p => p < 2.0).length / proms.length * 100)
       const diff = r2(notaMedia - globalAvg)
 
       // Clasificación del perfil evaluador
@@ -4470,8 +4474,9 @@ function AdminEvaluadores({ svc }) {
       }
 
       return {
-        dni, username: userMap[dni] || '—',
-        nombre: nombresMap[dni] || dni,
+        dni: dni || 'SIN_IDENTIFICAR',
+        username: dni ? (userMap[dni] || '—') : 'Sistema',
+        nombre: dni ? (nombresMap[dni] || dni) : 'Evaluador sin DNI vinculado',
         total: evs.length, notaMedia, desviacion,
         verdesPorc, rojaPorc, diff, perfil, perfilColor, perfilIcon, evs,
       }
@@ -4572,9 +4577,9 @@ function AdminEvaluadores({ svc }) {
             <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, marginBottom: 6 }}>DISTRIBUCIÓN DE NOTAS</div>
             <div style={{ display: 'flex', height: 28, borderRadius: 6, overflow: 'hidden', gap: 1 }}>
               {[
-                { label: 'Riesgo <1.6', val: sel.evs.filter(e=>parseFloat(e.promedio)<1.6).length, color: 'var(--red)' },
-                { label: 'Aceptable 1.6-3', val: sel.evs.filter(e=>parseFloat(e.promedio)>=1.6&&parseFloat(e.promedio)<3).length, color: 'var(--yellow)' },
-                { label: 'Óptimo ≥3', val: sel.evs.filter(e=>parseFloat(e.promedio)>=3).length, color: 'var(--green)' },
+                { label: 'Riesgo <2.0', val: sel.evs.filter(e=>parseFloat(e.promedio)<2.0).length, color: 'var(--red)' },
+                { label: 'Aceptable 2.0-3.5', val: sel.evs.filter(e=>parseFloat(e.promedio)>=2.0&&parseFloat(e.promedio)<3.5).length, color: 'var(--yellow)' },
+                { label: 'Óptimo ≥3.5', val: sel.evs.filter(e=>parseFloat(e.promedio)>=3.5).length, color: 'var(--green)' },
               ].map(b => b.val > 0 && (
                 <div key={b.label} title={`${b.label}: ${b.val}`} style={{ flex: b.val, background: b.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'rgba(0,0,0,0.6)' }}>
                   {b.val > 0 && b.val}
@@ -4582,9 +4587,9 @@ function AdminEvaluadores({ svc }) {
               ))}
             </div>
             <div style={{ display: 'flex', gap: 14, marginTop: 5 }}>
-              <span style={{ fontSize: 9, color: 'var(--red)' }}>■ Riesgo: {sel.evs.filter(e=>parseFloat(e.promedio)<1.6).length}</span>
-              <span style={{ fontSize: 9, color: 'var(--yellow)' }}>■ Aceptable: {sel.evs.filter(e=>parseFloat(e.promedio)>=1.6&&parseFloat(e.promedio)<3).length}</span>
-              <span style={{ fontSize: 9, color: 'var(--green)' }}>■ Óptimo: {sel.evs.filter(e=>parseFloat(e.promedio)>=3).length}</span>
+              <span style={{ fontSize: 9, color: 'var(--red)' }}>■ Riesgo: {sel.evs.filter(e=>parseFloat(e.promedio)<2.0).length}</span>
+              <span style={{ fontSize: 9, color: 'var(--yellow)' }}>■ Aceptable: {sel.evs.filter(e=>parseFloat(e.promedio)>=2.0&&parseFloat(e.promedio)<3.5).length}</span>
+              <span style={{ fontSize: 9, color: 'var(--green)' }}>■ Óptimo: {sel.evs.filter(e=>parseFloat(e.promedio)>=3.5).length}</span>
             </div>
           </div>
 
@@ -4597,7 +4602,7 @@ function AdminEvaluadores({ svc }) {
                 <div style={{ flex: 1, fontSize: 11, color: 'var(--text2)' }}>{e.cargo_momento || '—'}</div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   {[e.nota_1, e.nota_2, e.nota_3, e.nota_4].map((n, ni) => (
-                    <div key={ni} style={{ width: 20, height: 20, borderRadius: 4, background: n>=3?'rgba(39,174,96,0.25)':n>=1.6?'rgba(212,160,23,0.25)':'rgba(192,57,43,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: n>=3.5?'var(--green)':n>=2.0?'var(--yellow)':'var(--red)' }}>{n}</div>
+                    <div key={ni} style={{ width: 20, height: 20, borderRadius: 4, background: n>=3.5?'rgba(39,174,96,0.25)':n>=2.0?'rgba(212,160,23,0.25)':'rgba(192,57,43,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: n>=3.5?'var(--green)':n>=2.0?'var(--yellow)':'var(--red)' }}>{n}</div>
                   ))}
                 </div>
                 <div style={{ fontSize: 9, color: 'var(--text3)' }}>{e.fecha_hora ? new Date(e.fecha_hora).toLocaleDateString('es-PE',{day:'2-digit',month:'short'}) : '—'}</div>
