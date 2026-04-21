@@ -106,3 +106,10 @@ body {
   .grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
   .grid-3 { grid-template-columns: 1fr !important; }
 }
+
+/* Perfiles 360 grid responsive */
+@media (max-width: 768px) {
+  .perfil-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
