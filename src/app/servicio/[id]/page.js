@@ -283,8 +283,11 @@ function Evaluar({ svc, user }) {
         <div className="fade">
           <button className="btn btn-ghost" onClick={() => { setSel(null); setPregs([]) }} style={{ marginBottom: 16 }}>← Volver a la lista</button>
           <div className="card-static" style={{ padding: '16px 18px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'rgba(230,126,34,0.06)', border: '2px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: 'var(--accent)', flexShrink: 0 }}>
-              {getInitials(sel.nombre)}
+            <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'rgba(230,126,34,0.06)', border: '2px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: 'var(--accent)', flexShrink: 0, overflow: 'hidden' }}>
+              {sel.foto
+                ? <img src={sel.foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display='none' }} />
+                : getInitials(sel.nombre)
+              }
             </div>
             <div>
               <div style={{ fontSize: 15, fontWeight: 700 }}>{sel.nombre}</div>
@@ -436,6 +439,7 @@ function Dashboard({ svc, user }) {
   const [byDim, setByDim] = useState([])
   const [recent, setRecent] = useState([])
   const [alertas, setAlertas] = useState([])
+  const [dashTab, setDashTab] = useState('resumen') // 'resumen' | 'alertas'
   const [actividades, setActividades] = useState([])
 
   useEffect(() => { loadAll() }, [svc])
@@ -618,21 +622,58 @@ function Dashboard({ svc, user }) {
         <button className="btn btn-ghost" onClick={loadAll} style={{ fontSize: 11 }}>↻ Actualizar</button>
       </div>
 
-      {alertas.length > 0 && (
-        <div style={{ marginBottom: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {alertas.map((a, i) => (
-            <div key={i} style={{
-              padding: '8px 14px', borderRadius: 8, fontSize: 12, display: 'flex', alignItems: 'center', gap: 8,
-              background: a.tipo === 'baja' ? 'rgba(192,57,43,0.07)' : 'rgba(212,160,23,0.07)',
-              border: `1px solid ${a.tipo === 'baja' ? 'rgba(192,57,43,0.15)' : 'rgba(212,160,23,0.15)'}`,
-              color: a.tipo === 'baja' ? '#E8A09A' : '#D4A017',
-            }}>
-              <span>{a.tipo === 'baja' ? '⚠' : '◎'}</span>
-              {a.tipo === 'baja' ? <><strong>{a.nombre}</strong> — {a.cargo} — {a.msg}</> : a.msg}
+      {/* Tabs dashboard */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 18, borderBottom: '1px solid var(--border)' }}>
+        {[
+          { id: 'resumen', label: 'Resumen' },
+          { id: 'alertas', label: `Alertas ${alertas.length > 0 ? `(${alertas.length})` : ''}`, badge: alertas.length > 0 },
+        ].map(t => (
+          <button key={t.id} onClick={() => setDashTab(t.id)} style={{
+            padding: '7px 16px', background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: 13, fontFamily: 'Inter', fontWeight: dashTab === t.id ? 600 : 400,
+            color: dashTab === t.id ? (t.badge ? 'var(--red)' : 'var(--accent)') : 'var(--text3)',
+            borderBottom: dashTab === t.id ? `2px solid ${t.badge ? 'var(--red)' : 'var(--accent)'}` : '2px solid transparent',
+            marginBottom: -1, transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: 5,
+          }}>
+            {t.id === 'alertas' && alertas.length > 0 && <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--red)', flexShrink: 0 }} />}
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Alertas */}
+      {dashTab === 'alertas' && (
+        <div className="fade">
+          {alertas.length === 0 ? (
+            <div className="card-static" style={{ padding: '36px 20px', textAlign: 'center' }}>
+              <div style={{ fontSize: 22, marginBottom: 8 }}>✓</div>
+              <p style={{ color: 'var(--green)', fontSize: 13, fontWeight: 600 }}>Sin alertas activas</p>
+              <p style={{ color: 'var(--text3)', fontSize: 11, marginTop: 4 }}>Todos los indicadores están dentro de los rangos normales</p>
             </div>
-          ))}
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {alertas.map((a, i) => (
+                <div key={i} style={{
+                  padding: '12px 16px', borderRadius: 9, fontSize: 12, display: 'flex', alignItems: 'center', gap: 10,
+                  background: a.tipo === 'baja' ? 'rgba(192,57,43,0.07)' : 'rgba(212,160,23,0.07)',
+                  border: `1px solid ${a.tipo === 'baja' ? 'rgba(192,57,43,0.2)' : 'rgba(212,160,23,0.2)'}`,
+                  color: a.tipo === 'baja' ? '#E8A09A' : '#D4A017',
+                }}>
+                  <span style={{ fontSize: 16 }}>{a.tipo === 'baja' ? '⚠' : '◎'}</span>
+                  <div style={{ flex: 1 }}>
+                    {a.tipo === 'baja'
+                      ? <><strong style={{ color: 'var(--text)' }}>{a.nombre}</strong> <span style={{ color: 'var(--text3)' }}>·</span> {a.cargo} <span style={{ color: 'var(--red)', fontWeight: 600 }}>· {a.msg}</span></>
+                      : a.msg
+                    }
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
+
+      {dashTab === 'resumen' && <>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 18 }}>
         <KpiCard label="Personal Total" value={kpi.total} sub="asignados al servicio" color="var(--accent2)" />
@@ -799,6 +840,8 @@ function Dashboard({ svc, user }) {
         )}
       </div>
 
+      </>
+      }
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
@@ -1342,7 +1385,8 @@ function Ranking({ svc, user }) {
   const [grupoFiltro, setGrupoFiltro]   = useState('TODOS')
   const [grupos, setGrupos]             = useState([])
   const [allData, setAllData]           = useState(null)
-  const [usar7030, setUsar7030]         = useState(true)
+  const [usar7030, setUsar7030]         = useState(false)
+  const [modoRanking, setModoRanking]   = useState('actual') // 'actual' | 'formula'
   const [verPodioServicio, setVerPodioServicio] = useState(false)
 
   useEffect(() => { loadAll() }, [svc])
@@ -1468,10 +1512,20 @@ function Ranking({ svc, user }) {
           <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 2 }}>Ranking por Cargo</h2>
           <p style={{ color: 'var(--text3)', fontSize: 12 }}>{svc.nombre_descriptivo}</p>
         </div>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <ToggleSwitch on={usar7030} onChange={setUsar7030} color="var(--accent)"
-            label="Fórmula 70/30"
-            sub={usar7030 ? `${(pesos.actual*100).toFixed(0)}% actual + ${(pesos.historico*100).toFixed(0)}% hist.` : 'Solo nota actual'} />
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {/* Modo: Solo este servicio */}
+          <button onClick={() => { setModoRanking('actual'); setUsar7030(false) }}
+            style={{ padding: '8px 14px', borderRadius: 8, border: `1px solid ${modoRanking === 'actual' ? 'var(--accent2)' : 'var(--border)'}`, background: modoRanking === 'actual' ? 'rgba(91,164,207,0.1)' : 'rgba(255,255,255,0.03)', color: modoRanking === 'actual' ? 'var(--accent2)' : 'var(--text3)', fontSize: 12, fontWeight: modoRanking === 'actual' ? 700 : 400, cursor: 'pointer', fontFamily: 'Inter', transition: 'all 0.15s' }}>
+            Solo este servicio
+            {modoRanking === 'actual' && <div style={{ fontSize: 9, opacity: 0.7, marginTop: 1 }}>Sin historial previo</div>}
+          </button>
+          {/* Modo: Fórmula 70/30 */}
+          <button onClick={() => { setModoRanking('formula'); setUsar7030(true) }}
+            style={{ padding: '8px 14px', borderRadius: 8, border: `1px solid ${modoRanking === 'formula' ? 'var(--accent)' : 'var(--border)'}`, background: modoRanking === 'formula' ? 'rgba(230,126,34,0.08)' : 'rgba(255,255,255,0.03)', color: modoRanking === 'formula' ? 'var(--accent)' : 'var(--text3)', fontSize: 12, fontWeight: modoRanking === 'formula' ? 700 : 400, cursor: 'pointer', fontFamily: 'Inter', transition: 'all 0.15s' }}>
+            Fórmula 70/30
+            {modoRanking === 'formula' && <div style={{ fontSize: 9, opacity: 0.7, marginTop: 1 }}>{(pesos.actual*100).toFixed(0)}% actual + {(pesos.historico*100).toFixed(0)}% hist.</div>}
+          </button>
+          {/* Podio del servicio */}
           <ToggleSwitch on={verPodioServicio} onChange={setVerPodioServicio} color="var(--accent2)"
             label="Podio del servicio" sub="Top 3 general" />
         </div>
@@ -1530,11 +1584,11 @@ function Ranking({ svc, user }) {
                 <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
                 <div style={{ fontSize: 10, color: 'var(--text3)' }}>{grupo.rows.length} evaluados</div>
               </div>
-              <div className="card-static" style={{ overflow: 'hidden' }}>
+              <div className="card-static" style={{ overflow: 'hidden', overflowX: 'auto' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr 88px 88px 100px 120px', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.3 }}>
                   <div>#</div><div>TRABAJADOR</div>
-                  <div style={{ textAlign: 'right' }}><span style={{ color: 'var(--accent)' }}>{(pesos.actual*100).toFixed(0)}%</span> ACT.</div>
-                  <div style={{ textAlign: 'right', opacity: usar7030 ? 1 : 0.3 }}><span style={{ color: 'var(--accent2)' }}>{(pesos.historico*100).toFixed(0)}%</span> HIST.</div>
+                  <div style={{ textAlign: 'right' }}><span style={{ color: 'var(--accent)' }}>{modoRanking === 'actual' ? 'NOTA' : `${(pesos.actual*100).toFixed(0)}%`}</span> {modoRanking === 'actual' ? 'SERVICIO' : 'ACT.'}</div>
+                  <div style={{ textAlign: 'right', opacity: modoRanking === 'formula' ? 1 : 0.2 }}><span style={{ color: 'var(--accent2)' }}>{(pesos.historico*100).toFixed(0)}%</span> HIST.</div>
                   <div style={{ textAlign: 'right' }}>FINAL</div>
                   <div style={{ paddingLeft: 8 }}>BARRA</div>
                 </div>
