@@ -268,7 +268,7 @@ function Evaluar({ svc, user }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {list.filter(p => p.nombre.toLowerCase().includes(search.toLowerCase())).map(p => (
                 <div key={p.id_asignacion} onClick={() => pick(p)} className="card" style={{ padding: '11px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(230,126,34,0.06)', border: '1.5px solid rgba(230,126,34,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--accent)', flexShrink: 0, overflow: 'hidden' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(230,126,34,0.06)', border: '2px solid rgba(230,126,34,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--accent)', flexShrink: 0, overflow: 'hidden' }}>
                     {p.foto ? <img src={p.foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : getInitials(p.nombre)}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -288,7 +288,7 @@ function Evaluar({ svc, user }) {
         <div className="fade">
           <button className="btn btn-ghost" onClick={() => { setSel(null); setPregs([]) }} style={{ marginBottom: 16 }}>← Volver a la lista</button>
           <div className="card-static" style={{ padding: '16px 18px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'rgba(230,126,34,0.06)', border: '2px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: 'var(--accent)', flexShrink: 0, overflow: 'hidden' }}>
+            <div style={{ width: 62, height: 62, borderRadius: '50%', background: 'rgba(230,126,34,0.06)', border: '2px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: 'var(--accent)', flexShrink: 0, overflow: 'hidden' }}>
               {sel.foto
                 ? <img src={sel.foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display='none' }} />
                 : getInitials(sel.nombre)
@@ -1541,7 +1541,7 @@ function Ranking({ svc, user }) {
       {verPodioServicio && rowsServicio.slice(0,3).length >= 2 && (
         <div style={{ marginBottom: 24 }} className="fade">
           <SectionLabel text={`PODIO GENERAL — ${svc.nombre_descriptivo.toUpperCase()}`} color="var(--accent2)" />
-          <Podio items={rowsServicio.slice(0,3)} medalColor={medalColor} scoreColor={scoreColor} />
+          <Podio items={rowsServicio.slice(0,3)} medalColor={medalColor} scoreColor={scoreColor} svcId={svc.id_servicio} />
         </div>
       )}
 
@@ -1576,7 +1576,7 @@ function Ranking({ svc, user }) {
       {podioCargo.length >= 2 && (
         <div style={{ marginBottom: 24 }}>
           <SectionLabel text={`PODIO — ${cargos.find(c => c.id === cargoSelPodio)?.nombre.toUpperCase() || ''}`} color="var(--text3)" />
-          <Podio items={podioCargo} medalColor={medalColor} scoreColor={scoreColor} />
+          <Podio items={podioCargo} medalColor={medalColor} scoreColor={scoreColor} svcId={svc.id_servicio} />
         </div>
       )}
 
@@ -1592,7 +1592,7 @@ function Ranking({ svc, user }) {
                 <div style={{ fontSize: 10, color: 'var(--text3)' }}>{grupo.rows.length} evaluados</div>
               </div>
               <div className="card-static" style={{ overflow: 'hidden', overflowX: 'auto' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '30px 1fr 70px 70px 70px', gap: 6, padding: '8px 12px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.3 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '30px 1fr 70px 70px 70px', gap: 6, padding: '8px 12px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.3 }} className="rank-header">
                   <div>#</div><div>TRABAJADOR</div>
                   <div style={{ textAlign: 'right' }}><span style={{ color: 'var(--accent)' }}>{modoRanking === 'actual' ? 'NOTA' : `${(pesos.actual*100).toFixed(0)}%`}</span> {modoRanking === 'actual' ? 'SERVICIO' : 'ACT.'}</div>
                   <div style={{ textAlign: 'right', opacity: modoRanking === 'formula' ? 1 : 0.2 }}><span style={{ color: 'var(--accent2)' }}>{(pesos.historico*100).toFixed(0)}%</span> HIST.</div>
@@ -1600,7 +1600,7 @@ function Ranking({ svc, user }) {
                   <div style={{ paddingLeft: 8 }}>BARRA</div>
                 </div>
                 {grupo.rows.map((r, i) => (
-                  <div key={r.id_asignacion} style={{ display: 'grid', gridTemplateColumns: '30px 1fr 70px 70px 70px', gap: 6, padding: '9px 12px', alignItems: 'center', borderBottom: i < grupo.rows.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', background: r.posicion <= 3 ? 'rgba(255,255,255,0.012)' : 'transparent' }}>
+                  <div key={r.id_asignacion} style={{ display: 'grid', gridTemplateColumns: '30px 1fr 70px 70px 70px', gap: 6, padding: '9px 12px', alignItems: 'center', borderBottom: i < grupo.rows.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', background: r.posicion <= 3 ? 'rgba(255,255,255,0.012)' : 'transparent' }} className="rank-row">
                     <div style={{ fontSize: 13, fontWeight: 700, textAlign: 'center', color: r.posicion <= 3 ? medalColor(r.posicion) : 'var(--text3)' }}>{r.posicion}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
                       <Avatar nombre={r.nombre} foto={r.foto} size={30} />
@@ -1662,29 +1662,77 @@ function SectionLabel({ text, color }) {
   return <div style={{ fontSize: 11, color: color || 'var(--text3)', fontWeight: 600, letterSpacing: 0.8, marginBottom: 14 }}>{text}</div>
 }
 
-function Podio({ items, medalColor, scoreColor }) {
+function Podio({ items, medalColor, scoreColor, svcId }) {
+  const [victorias, setVictorias] = useState({})
+
+  useEffect(() => {
+    if (!items?.length) return
+    async function checkV() {
+      const dnis = items.filter(Boolean).map(p => p.dni_trabajador || p.dni).filter(Boolean)
+      if (!dnis.length) { return }
+      // Buscar 1eros puestos en servicios anteriores
+      const { data: asigs } = await supabase.from('asignaciones').select('id_asignacion, dni_trabajador').in('dni_trabajador', dnis)
+      if (!asigs?.length) return
+      const asigIds = asigs.map(a => a.id_asignacion)
+      const asigMap = Object.fromEntries(asigs.map(a => [a.id_asignacion, a.dni_trabajador]))
+      const { data: hist } = await supabase.from('historial_evaluaciones').select('id_asignacion, id_servicio, promedio').in('id_asignacion', asigIds).neq('id_servicio', svcId)
+      if (!hist?.length) return
+      const porSvc = {}
+      hist.forEach(e => {
+        const k = e.id_servicio; const d = asigMap[e.id_asignacion]; const p = parseFloat(e.promedio)
+        if (!porSvc[k] || p > porSvc[k].p) porSvc[k] = { d, p }
+      })
+      const cnt = {}
+      Object.values(porSvc).forEach(({ d }) => { cnt[d] = (cnt[d] || 0) + 1 })
+      setVictorias(cnt)
+    }
+    checkV()
+  }, [items, svcId])
+
   const orden = [items[1], items[0], items[2]].filter(Boolean)
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, justifyContent: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, justifyContent: 'center' }}>
       {orden.map((p, vi) => {
         const pos = vi === 0 ? 2 : vi === 1 ? 1 : 3
         const isFirst = pos === 1
+        const dni = p.dni_trabajador || p.dni
+        const v = victorias[dni] || 0
+        const parts = (p.nombre || '').split(' ')
+        const corto = parts.length >= 2 ? parts[0] + ' ' + parts[parts.length - 1] : p.nombre
+        const leyenda = v >= 4 ? '⭐ Leyenda del equipo' : v >= 3 ? '🔥 Tricampeón PRODISE' : v === 2 ? '🔁 2 veces campeón' : v === 1 ? '🏆 Campeón anterior' : (isFirst && p.notaFinal >= 3.5) ? '✨ Debut en el podio' : null
+        const cercanoPrimero = pos === 2 && items[0] && Math.abs((p.notaFinal || 0) - (items[0].notaFinal || 0)) <= 0.1
         return (
-          <div key={p.id_asignacion} style={{ flex: isFirst ? 1.15 : 1, minWidth: 0, height: isFirst ? 210 : 175, background: isFirst ? 'rgba(255,215,0,0.05)' : 'rgba(255,255,255,0.02)', border: `1px solid ${isFirst ? 'rgba(255,215,0,0.22)' : 'rgba(255,255,255,0.06)'}`, borderRadius: 14, padding: '20px 16px 18px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, position: 'relative', textAlign: 'center', boxShadow: isFirst ? '0 0 24px rgba(255,215,0,0.07)' : 'none' }}>
-            <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', width: 28, height: 28, borderRadius: '50%', background: medalColor(pos), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: pos === 1 ? '#111' : '#fff', boxShadow: `0 2px 10px ${medalColor(pos)}66` }}>{pos}°</div>
-            <Avatar nombre={p.nombre} foto={p.foto} size={isFirst ? 66 : 52} />
-            <div style={{ width: '100%' }}>
-              <div style={{ fontSize: isFirst ? 13 : 12, fontWeight: 700, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.nombre.split(' ').slice(0, 2).join(' ')}</div>
-              {p.cargoNombre && <div style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 500, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.cargoNombre}</div>}
-              <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 2 }}>G{p.id_grupo} · T{p.turno}</div>
-            </div>
-            <div style={{ fontSize: isFirst ? 30 : 24, fontWeight: 900, color: scoreColor(p.notaFinal), lineHeight: 1 }}>{p.notaFinal}</div>
+          <div key={p.id_asignacion} style={{
+            flex: isFirst ? 1.2 : 1, minWidth: 0, position: 'relative', textAlign: 'center',
+            height: isFirst ? 270 : 215,
+            background: isFirst ? 'rgba(255,215,0,0.06)' : pos===2 ? 'rgba(192,192,192,0.04)' : 'rgba(205,127,50,0.04)',
+            border: `1px solid ${isFirst ? 'rgba(255,215,0,0.28)' : pos===2 ? 'rgba(192,192,192,0.14)' : 'rgba(205,127,50,0.14)'}`,
+            borderRadius: 16, padding: '24px 14px 16px',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+            boxShadow: isFirst ? '0 0 32px rgba(255,215,0,0.09), inset 0 1px 0 rgba(255,215,0,0.1)' : 'none',
+          }}>
+            {/* Medalla */}
+            <div style={{ position: 'absolute', top: -15, left: '50%', transform: 'translateX(-50%)', width: 32, height: 32, borderRadius: '50%', background: medalColor(pos), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, color: pos===1?'#111':'#fff', boxShadow: `0 2px 14px ${medalColor(pos)}99`, border: '2px solid rgba(255,255,255,0.15)' }}>{pos}°</div>
+            {/* Badge victorias */}
+            {v > 0 && <div style={{ position: 'absolute', top: 7, right: 7, background: 'rgba(255,215,0,0.12)', border: '1px solid rgba(255,215,0,0.25)', borderRadius: 10, padding: '2px 6px', fontSize: 9, fontWeight: 700, color: '#FFD700' }}>🏆×{v}</div>}
+            {/* Avatar grande */}
+            <Avatar nombre={p.nombre} foto={p.foto} size={isFirst ? 82 : 64} />
+            {/* Nombre */}
+            <div style={{ fontSize: isFirst ? 13 : 12, fontWeight: 800, lineHeight: 1.25, marginTop: 2 }}>{corto}</div>
+            {p.cargoNombre && <div style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{p.cargoNombre}</div>}
+            <div style={{ fontSize: 9, color: 'var(--text3)' }}>G{p.id_grupo} · T{p.turno}</div>
+            {/* Nota */}
+            <div style={{ fontSize: isFirst ? 36 : 28, fontWeight: 900, color: scoreColor(p.notaFinal), lineHeight: 1, fontFamily: 'monospace' }}>{p.notaFinal}</div>
+            {/* Leyenda especial */}
+            {leyenda && <div style={{ fontSize: 9, color: isFirst ? '#FFD700' : 'rgba(255,255,255,0.5)', fontWeight: 600 }}>{leyenda}</div>}
+            {cercanoPrimero && <div style={{ fontSize: 9, color: 'rgba(192,192,192,0.6)' }}>🎯 Muy cerca del 1°</div>}
           </div>
         )
       })}
     </div>
   )
 }
+
 
 /* =========================================
    PERFILES 360° (Nivel Analítico y Visual)
@@ -4347,41 +4395,38 @@ function AdminEvaluadores({ svc }) {
     // Traer todas las evaluaciones del servicio con el evaluador
     const { data: evals } = await supabase
       .from('historial_evaluaciones')
-      .select('id_evaluacion, dni_evaluador, promedio, nota_1, nota_2, nota_3, nota_4, fecha_evaluacion, cargo_momento')
+      .select('id_evaluacion, dni_evaluador, promedio, nota_1, nota_2, nota_3, nota_4, fecha_hora, cargo_momento')
       .eq('id_servicio', svc.id_servicio)
-      .order('fecha_evaluacion', { ascending: false })
+      .order('fecha_hora', { ascending: false })
 
     if (!evals?.length) { setDatos([]); setLoading(false); return }
 
-    // Agrupar por evaluador
+    // Agrupar por evaluador (usar dni_evaluador o 'SIN_IDENTIFICAR' si es null)
     const grupos = {}
     evals.forEach(e => {
-      if (!e.dni_evaluador) return
-      if (!grupos[e.dni_evaluador]) grupos[e.dni_evaluador] = []
-      grupos[e.dni_evaluador].push(e)
+      const key = e.dni_evaluador || 'SIN_DNI_' + (e.id_evaluacion % 100)
+      if (!grupos[key]) grupos[key] = { dni: e.dni_evaluador, evs: [] }
+      grupos[key].evs.push(e)
     })
 
-    // Obtener nombres de los evaluadores
-    const dnis = Object.keys(grupos)
-    const { data: users } = await supabase
-      .from('usuarios_sistema')
-      .select('username, dni_asociado')
-      .in('dni_asociado', dnis.filter(Boolean))
+    // Obtener nombres — buscar por DNI en trabajadores y en usuarios_sistema
+    const dnis = [...new Set(evals.map(e => e.dni_evaluador).filter(Boolean))]
+    const [{ data: usersData }, { data: trabsData }] = await Promise.all([
+      dnis.length ? supabase.from('usuarios_sistema').select('username, dni_asociado').in('dni_asociado', dnis) : { data: [] },
+      dnis.length ? supabase.from('trabajadores').select('dni, nombres_completos').in('dni', dnis) : { data: [] },
+    ])
 
-    const { data: trabs } = await supabase
-      .from('trabajadores')
-      .select('dni, nombres_completos')
-      .in('dni', dnis.filter(Boolean))
-
-    const nombresMap = Object.fromEntries((trabs || []).map(t => [t.dni, t.nombres_completos]))
-    const userMap = Object.fromEntries((users || []).map(u => [u.dni_asociado, u.username]))
+    const nombresMap = Object.fromEntries((trabsData || []).map(t => [t.dni, t.nombres_completos]))
+    const userMap = Object.fromEntries((usersData || []).map(u => [u.dni_asociado, u.username]))
 
     // Promedio general del servicio para comparar
     const promsGlobal = evals.map(e => parseFloat(e.promedio))
     const globalAvg = r2(avg(promsGlobal))
 
     // Construir estadísticas por evaluador
-    const stats = Object.entries(grupos).map(([dni, evs]) => {
+    const stats = Object.entries(grupos).map(([key, grupo]) => {
+      const dni = grupo.dni
+      const evs = grupo.evs
       const proms = evs.map(e => parseFloat(e.promedio))
       const notaMedia = r2(avg(proms))
       const desviacion = r2(Math.sqrt(avg(proms.map(p => Math.pow(p - notaMedia, 2)))) || 0)
@@ -4534,7 +4579,7 @@ function AdminEvaluadores({ svc }) {
                     <div key={ni} style={{ width: 20, height: 20, borderRadius: 4, background: n>=3?'rgba(39,174,96,0.25)':n>=1.6?'rgba(212,160,23,0.25)':'rgba(192,57,43,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: n>=3?'var(--green)':n>=1.6?'var(--yellow)':'var(--red)' }}>{n}</div>
                   ))}
                 </div>
-                <div style={{ fontSize: 9, color: 'var(--text3)' }}>{e.fecha_evaluacion ? new Date(e.fecha_evaluacion).toLocaleDateString('es-PE',{day:'2-digit',month:'short'}) : '—'}</div>
+                <div style={{ fontSize: 9, color: 'var(--text3)' }}>{e.fecha_hora ? new Date(e.fecha_hora).toLocaleDateString('es-PE',{day:'2-digit',month:'short'}) : '—'}</div>
               </div>
             ))}
           </div>
