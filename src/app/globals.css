@@ -114,19 +114,10 @@ body {
   }
 }
 
-/* Ranking rows mobile — nombre arriba, datos abajo */
+
+/* Podio compacto en mobile */
 @media (max-width: 600px) {
-  .rank-header { display: none !important; }
-  .rank-row {
-    display: flex !important;
-    flex-direction: column !important;
-    padding: 12px 14px !important;
-    gap: 6px !important;
-  }
-  .rank-row > *:first-child { /* posición */
-    position: absolute;
-    font-size: 13px;
-    font-weight: 800;
-    color: var(--accent);
-  }
+  .perfil-grid { grid-template-columns: 1fr !important; }
 }
+
+/* Podio trofeo — asegurar que el emoji sea visible */
