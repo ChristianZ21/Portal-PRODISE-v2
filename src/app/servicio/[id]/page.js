@@ -1592,29 +1592,32 @@ function Ranking({ svc, user }) {
                 <div style={{ fontSize: 10, color: 'var(--text3)' }}>{grupo.rows.length} evaluados</div>
               </div>
               <div className="card-static" style={{ overflow: 'hidden', overflowX: 'auto' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '30px 1fr 70px 70px 70px', gap: 6, padding: '8px 12px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.3 }} className="rank-header">
+                <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 64px 64px 90px', gap: 4, padding: '7px 12px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.3 }}>
                   <div>#</div><div>TRABAJADOR</div>
-                  <div style={{ textAlign: 'right' }}><span style={{ color: 'var(--accent)' }}>{modoRanking === 'actual' ? 'NOTA' : `${(pesos.actual*100).toFixed(0)}%`}</span> {modoRanking === 'actual' ? 'SERVICIO' : 'ACT.'}</div>
-                  <div style={{ textAlign: 'right', opacity: modoRanking === 'formula' ? 1 : 0.2 }}><span style={{ color: 'var(--accent2)' }}>{(pesos.historico*100).toFixed(0)}%</span> HIST.</div>
+                  <div style={{ textAlign: 'right' }}><span style={{ color: 'var(--accent)' }}>{modoRanking === 'actual' ? '' : `${(pesos.actual*100).toFixed(0)}%`}</span>{modoRanking === 'actual' ? 'NOTA' : 'ACT.'}</div>
+                  <div style={{ textAlign: 'right', opacity: modoRanking === 'formula' ? 1 : 0.15 }}><span style={{ color: 'var(--accent2)' }}>{(pesos.historico*100).toFixed(0)}%</span></div>
                   <div style={{ textAlign: 'right' }}>FINAL</div>
-                  <div style={{ paddingLeft: 8 }}>BARRA</div>
                 </div>
                 {grupo.rows.map((r, i) => (
-                  <div key={r.id_asignacion} style={{ display: 'grid', gridTemplateColumns: '30px 1fr 70px 70px 70px', gap: 6, padding: '9px 12px', alignItems: 'center', borderBottom: i < grupo.rows.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', background: r.posicion <= 3 ? 'rgba(255,255,255,0.012)' : 'transparent' }} className="rank-row">
-                    <div style={{ fontSize: 13, fontWeight: 700, textAlign: 'center', color: r.posicion <= 3 ? medalColor(r.posicion) : 'var(--text3)' }}>{r.posicion}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-                      <Avatar nombre={r.nombre} foto={r.foto} size={30} />
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.nombre}</div>
-                        <div style={{ fontSize: 9, color: 'var(--text3)' }}>G{r.id_grupo} · T{r.turno}</div>
+                  <div key={r.id_asignacion} style={{ borderBottom: i < grupo.rows.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', background: r.posicion <= 3 ? 'rgba(255,255,255,0.012)' : 'transparent' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 64px 64px 90px', gap: 4, padding: '9px 12px', alignItems: 'center' }}>
+                      <div style={{ fontSize: 12, fontWeight: 800, textAlign: 'center', color: r.posicion <= 3 ? medalColor(r.posicion) : 'var(--text3)' }}>
+                        {r.posicion <= 3 ? ['🥇','🥈','🥉'][r.posicion-1] : r.posicion}
                       </div>
-                    </div>
-                    <div style={{ textAlign: 'right', fontSize: 13, fontWeight: 700, color: scoreColor(r.notaActual) }}>{r.notaActual}</div>
-                    <div style={{ textAlign: 'right', fontSize: 12, color: usar7030 ? 'var(--accent2)' : 'var(--text3)', opacity: usar7030 ? 1 : 0.35 }}>{r.notaHist ?? '—'}</div>
-                    <div style={{ textAlign: 'right' }}><span style={{ fontSize: 16, fontWeight: 800, color: scoreColor(r.notaFinal) }}>{r.notaFinal}</span></div>
-                    <div style={{ paddingLeft: 8 }}>
-                      <div style={{ height: 8, background: 'rgba(255,255,255,0.04)', borderRadius: 4, overflow: 'hidden' }}>
-                        <div style={{ height: '100%', borderRadius: 4, width: `${(r.notaFinal / 4) * 100}%`, background: scoreColor(r.notaFinal), transition: 'width 0.6s ease' }} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                        <Avatar nombre={r.nombre} foto={r.foto} size={32} />
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.nombre}</div>
+                          <div style={{ fontSize: 9, color: 'var(--text3)' }}>G{r.id_grupo} · T{r.turno}</div>
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right', fontSize: 13, fontWeight: 700, color: scoreColor(r.notaActual) }}>{r.notaActual}</div>
+                      <div style={{ textAlign: 'right', fontSize: 12, color: usar7030 ? 'var(--accent2)' : 'var(--text3)', opacity: usar7030 ? 1 : 0.2 }}>{usar7030 ? (r.notaHist ?? '—') : '—'}</div>
+                      <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
+                        <span style={{ fontSize: 15, fontWeight: 900, color: scoreColor(r.notaFinal), fontFamily: 'monospace' }}>{r.notaFinal}</span>
+                        <div style={{ width: 60, height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', borderRadius: 2, width: `${(r.notaFinal / 4) * 100}%`, background: scoreColor(r.notaFinal), transition: 'width 0.6s ease' }} />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1669,13 +1672,11 @@ function Podio({ items, medalColor, scoreColor, svcId }) {
     if (!items?.length) return
     async function checkV() {
       const dnis = items.filter(Boolean).map(p => p.dni_trabajador || p.dni).filter(Boolean)
-      if (!dnis.length) { return }
-      // Buscar 1eros puestos en servicios anteriores
+      if (!dnis.length) return
       const { data: asigs } = await supabase.from('asignaciones').select('id_asignacion, dni_trabajador').in('dni_trabajador', dnis)
       if (!asigs?.length) return
-      const asigIds = asigs.map(a => a.id_asignacion)
       const asigMap = Object.fromEntries(asigs.map(a => [a.id_asignacion, a.dni_trabajador]))
-      const { data: hist } = await supabase.from('historial_evaluaciones').select('id_asignacion, id_servicio, promedio').in('id_asignacion', asigIds).neq('id_servicio', svcId)
+      const { data: hist } = await supabase.from('historial_evaluaciones').select('id_asignacion, id_servicio, promedio').in('id_asignacion', asigs.map(a => a.id_asignacion)).neq('id_servicio', svcId)
       if (!hist?.length) return
       const porSvc = {}
       hist.forEach(e => {
@@ -1690,42 +1691,78 @@ function Podio({ items, medalColor, scoreColor, svcId }) {
   }, [items, svcId])
 
   const orden = [items[1], items[0], items[2]].filter(Boolean)
+  
+  const trofeo = pos => pos === 1 ? '🥇' : pos === 2 ? '🥈' : '🥉'
+  const podioH = pos => pos === 1 ? 'auto' : 'auto'
+  const podioFlex = pos => pos === 1 ? 1.25 : 1
+
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, justifyContent: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, justifyContent: 'center' }}>
       {orden.map((p, vi) => {
         const pos = vi === 0 ? 2 : vi === 1 ? 1 : 3
         const isFirst = pos === 1
         const dni = p.dni_trabajador || p.dni
         const v = victorias[dni] || 0
-        const parts = (p.nombre || '').split(' ')
-        const corto = parts.length >= 2 ? parts[0] + ' ' + parts[parts.length - 1] : p.nombre
-        const leyenda = v >= 4 ? '⭐ Leyenda del equipo' : v >= 3 ? '🔥 Tricampeón PRODISE' : v === 2 ? '🔁 2 veces campeón' : v === 1 ? '🏆 Campeón anterior' : (isFirst && p.notaFinal >= 3.5) ? '✨ Debut en el podio' : null
-        const cercanoPrimero = pos === 2 && items[0] && Math.abs((p.notaFinal || 0) - (items[0].notaFinal || 0)) <= 0.1
+        const leyenda = v >= 4 ? '⭐ Leyenda PRODISE' : v >= 3 ? '🔥 Tricampeón' : v === 2 ? '🔁 2× Campeón' : v === 1 ? '🏆 Campeón prev.' : (isFirst && p.notaFinal >= 3.5) ? '✨ Debut' : null
+        const cercanoPrimero = pos === 2 && items[0] && Math.abs((p.notaFinal||0)-(items[0].notaFinal||0)) <= 0.1
+
         return (
           <div key={p.id_asignacion} style={{
-            flex: isFirst ? 1.2 : 1, minWidth: 0, position: 'relative', textAlign: 'center',
-            height: isFirst ? 270 : 215,
-            background: isFirst ? 'rgba(255,215,0,0.06)' : pos===2 ? 'rgba(192,192,192,0.04)' : 'rgba(205,127,50,0.04)',
-            border: `1px solid ${isFirst ? 'rgba(255,215,0,0.28)' : pos===2 ? 'rgba(192,192,192,0.14)' : 'rgba(205,127,50,0.14)'}`,
-            borderRadius: 16, padding: '24px 14px 16px',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-            boxShadow: isFirst ? '0 0 32px rgba(255,215,0,0.09), inset 0 1px 0 rgba(255,215,0,0.1)' : 'none',
+            flex: podioFlex(pos), minWidth: 0, position: 'relative', textAlign: 'center',
+            background: isFirst
+              ? 'linear-gradient(160deg, rgba(255,215,0,0.09) 0%, rgba(255,180,0,0.04) 100%)'
+              : pos===2 ? 'rgba(192,192,192,0.04)' : 'rgba(205,127,50,0.04)',
+            border: `1px solid ${isFirst ? 'rgba(255,215,0,0.32)' : pos===2 ? 'rgba(192,192,192,0.16)' : 'rgba(205,127,50,0.16)'}`,
+            borderRadius: 14, padding: isFirst ? '18px 12px 14px' : '14px 10px 12px',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+            boxShadow: isFirst ? '0 0 28px rgba(255,215,0,0.1), 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,215,0,0.12)' : '0 2px 12px rgba(0,0,0,0.2)',
           }}>
-            {/* Medalla */}
-            <div style={{ position: 'absolute', top: -15, left: '50%', transform: 'translateX(-50%)', width: 32, height: 32, borderRadius: '50%', background: medalColor(pos), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, color: pos===1?'#111':'#fff', boxShadow: `0 2px 14px ${medalColor(pos)}99`, border: '2px solid rgba(255,255,255,0.15)' }}>{pos}°</div>
-            {/* Badge victorias */}
-            {v > 0 && <div style={{ position: 'absolute', top: 7, right: 7, background: 'rgba(255,215,0,0.12)', border: '1px solid rgba(255,215,0,0.25)', borderRadius: 10, padding: '2px 6px', fontSize: 9, fontWeight: 700, color: '#FFD700' }}>🏆×{v}</div>}
-            {/* Avatar grande */}
-            <Avatar nombre={p.nombre} foto={p.foto} size={isFirst ? 82 : 64} />
-            {/* Nombre */}
-            <div style={{ fontSize: isFirst ? 13 : 12, fontWeight: 800, lineHeight: 1.25, marginTop: 2 }}>{corto}</div>
-            {p.cargoNombre && <div style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{p.cargoNombre}</div>}
+
+            {/* Badge victorias históricas */}
+            {v > 0 && (
+              <div style={{ position: 'absolute', top: -8, right: -8, background: 'rgba(255,215,0,0.18)', border: '1px solid rgba(255,215,0,0.35)', borderRadius: 10, padding: '2px 6px', fontSize: 9, fontWeight: 800, color: '#FFD700', zIndex: 2 }}>
+                🏆×{v}
+              </div>
+            )}
+
+            {/* Trofeo grande */}
+            <div style={{ fontSize: isFirst ? 36 : 28, lineHeight: 1, marginBottom: 2 }}>{trofeo(pos)}</div>
+
+            {/* Avatar */}
+            <Avatar nombre={p.nombre} foto={p.foto} size={isFirst ? 72 : 54} />
+
+            {/* Nombre completo (2 líneas max) */}
+            <div style={{ fontSize: isFirst ? 12 : 10, fontWeight: 800, lineHeight: 1.25, maxWidth: '100%', wordBreak: 'break-word', letterSpacing: -0.2 }}>
+              {p.nombre}
+            </div>
+
+            {/* Cargo */}
+            {p.cargoNombre && (
+              <div style={{ fontSize: 9, color: 'var(--accent)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
+                {p.cargoNombre}
+              </div>
+            )}
+
+            {/* Grupo y turno */}
             <div style={{ fontSize: 9, color: 'var(--text3)' }}>G{p.id_grupo} · T{p.turno}</div>
+
             {/* Nota */}
-            <div style={{ fontSize: isFirst ? 36 : 28, fontWeight: 900, color: scoreColor(p.notaFinal), lineHeight: 1, fontFamily: 'monospace' }}>{p.notaFinal}</div>
-            {/* Leyenda especial */}
-            {leyenda && <div style={{ fontSize: 9, color: isFirst ? '#FFD700' : 'rgba(255,255,255,0.5)', fontWeight: 600 }}>{leyenda}</div>}
-            {cercanoPrimero && <div style={{ fontSize: 9, color: 'rgba(192,192,192,0.6)' }}>🎯 Muy cerca del 1°</div>}
+            <div style={{
+              fontSize: isFirst ? 32 : 24, fontWeight: 900, color: scoreColor(p.notaFinal),
+              lineHeight: 1, fontFamily: 'monospace',
+              textShadow: isFirst ? `0 0 20px ${scoreColor(p.notaFinal)}66` : 'none',
+              marginTop: 2,
+            }}>{p.notaFinal}</div>
+
+            {/* Leyenda dinámica */}
+            {leyenda && (
+              <div style={{ fontSize: 9, color: isFirst ? '#FFD700' : 'rgba(255,255,255,0.45)', fontWeight: 700, marginTop: 2 }}>
+                {leyenda}
+              </div>
+            )}
+            {cercanoPrimero && (
+              <div style={{ fontSize: 9, color: 'rgba(192,192,192,0.55)' }}>🎯 -{Math.abs((p.notaFinal||0)-(items[0].notaFinal||0)).toFixed(2)} del 1°</div>
+            )}
           </div>
         )
       })}
@@ -1733,10 +1770,6 @@ function Podio({ items, medalColor, scoreColor, svcId }) {
   )
 }
 
-
-/* =========================================
-   PERFILES 360° (Nivel Analítico y Visual)
-   ========================================= */
 function Perfiles({ svc, user }) {
   const [search, setSearch]       = useState('')
   const [todos, setTodos]         = useState([])
