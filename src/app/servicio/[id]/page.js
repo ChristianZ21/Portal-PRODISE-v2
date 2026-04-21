@@ -99,15 +99,20 @@ export default function ServicioPage({ params }) {
         transform: typeof window !== 'undefined' && window.innerWidth <= 768 && !sidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
         transition: 'transform 0.28s ease',
       }}>
-        <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ background: 'white', borderRadius: 6, padding: '4px 10px', display: 'inline-flex', alignItems: 'center' }}>
-            <img src="/logo_prodise.png" alt="PRODISE" style={{ height: 28, objectFit: 'contain', display: 'block' }} />
+        <div style={{ padding: '12px 10px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+            <div style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', inset: -6, borderRadius: 12, background: 'radial-gradient(ellipse, rgba(255,255,255,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
+              <div style={{ background: 'rgba(255,255,255,0.91)', borderRadius: 8, padding: '5px 12px', boxShadow: '0 0 0 1px rgba(255,255,255,0.13), 0 0 14px 5px rgba(255,255,255,0.06), 0 0 30px 10px rgba(255,255,255,0.025)' }}>
+                <img src="/logo_prodise.png" alt="PRODISE" style={{ height: 26, objectFit: 'contain', display: 'block' }} />
+              </div>
+            </div>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="close-sidebar-btn" style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 20, cursor: 'pointer', padding: '0 2px', lineHeight: 1, display: 'none' }}>×</button>
+          <button onClick={() => setSidebarOpen(false)} className="close-sidebar-btn" style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: 20, cursor: 'pointer', padding: '0 4px', lineHeight: 1, display: 'none' }}>×</button>
         </div>
         <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ fontSize: 11, fontWeight: 600 }}>{user.nombre}</div>
-          <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 1 }}>Nivel {n}</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>{user.nombre}</div>
+          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>Nivel {n}</div>
         </div>
         <div style={{ margin: 8, padding: '9px 11px', borderRadius: 7, background: 'rgba(230,126,34,0.04)', border: '1px solid rgba(230,126,34,0.08)' }}>
           <div style={{ fontSize: 9, color: 'var(--accent)', fontWeight: 600, letterSpacing: 0.3 }}>SERVICIO ACTIVO</div>
@@ -122,7 +127,7 @@ export default function ServicioPage({ params }) {
               cursor: x.disabled ? 'not-allowed' : 'pointer',
               opacity: x.disabled ? 0.35 : 1,
               background: sec === x.id ? 'rgba(230,126,34,0.08)' : 'none',
-              color: sec === x.id ? 'var(--accent)' : 'var(--text3)',
+              color: sec === x.id ? 'var(--accent)' : 'rgba(255,255,255,0.55)',
               fontWeight: sec === x.id ? 600 : 400, fontFamily: 'Inter', textAlign: 'left', marginBottom: 1,
             }}>
               <span style={{ fontSize: 13, width: 18, textAlign: 'center' }}>{x.icon}</span>
@@ -401,7 +406,7 @@ function Historial({ svc, user }) {
                   <div style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 500 }}>{h.cargo_momento} · G{h.grupo_momento} · T{h.turno_momento}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: h.promedio >= 3 ? 'var(--green)' : h.promedio >= 2.5 ? 'var(--yellow)' : 'var(--red)' }}>{h.promedio}</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: h.promedio >= 3 ? 'var(--green)' : h.promedio >= 1.6 ? 'var(--yellow)' : 'var(--red)' }}>{h.promedio}</div>
                   <div style={{ fontSize: 9, color: 'var(--text3)' }}>{new Date(h.fecha_hora).toLocaleDateString('es-PE')}</div>
                 </div>
               </div>
@@ -411,7 +416,7 @@ function Historial({ svc, user }) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, marginBottom: 8 }}>
                 {[{ l: 'Seguridad', v: h.nota_1 }, { l: 'Calidad', v: h.nota_2 }, { l: 'Actitud', v: h.nota_3 }, { l: 'Precisión', v: h.nota_4 }].map((d, i) => (
                   <div key={i} style={{ textAlign: 'center', padding: '6px 4px', background: 'rgba(255,255,255,0.02)', borderRadius: 5, border: '1px solid var(--border)' }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: d.v >= 3 ? 'var(--green)' : d.v >= 2 ? 'var(--yellow)' : 'var(--red)' }}>{d.v}</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: d.v >= 3 ? 'var(--green)' : d.v >= 1.6 ? 'var(--yellow)' : 'var(--red)' }}>{d.v}</div>
                     <div style={{ fontSize: 8, color: 'var(--text3)', marginTop: 1 }}>{d.l}</div>
                   </div>
                 ))}
@@ -524,7 +529,7 @@ function Dashboard({ svc, user }) {
       .map(a => ({ ...a, nombre: trabMap[a.dni_trabajador]?.nombres_completos || a.dni_trabajador, cargo: cargoMap[a.id_cargo_actual] || '' }))
 
     const notasBajas = (evals || [])
-      .filter(e => parseFloat(e.promedio) < 2.5)
+      .filter(e => parseFloat(e.promedio) < 1.6)
       .map(e => {
         const asig = asigs.find(a => a.id_asignacion === e.id_asignacion)
         if (!asig) return null
@@ -609,7 +614,7 @@ function Dashboard({ svc, user }) {
   const scoreColor = (v) => {
     const n = parseFloat(v)
     if (isNaN(n)) return 'var(--text3)'
-    return n >= 3 ? 'var(--green)' : n >= 2.5 ? 'var(--yellow)' : 'var(--red)'
+    return n >= 3 ? 'var(--green)' : n >= 1.6 ? 'var(--yellow)' : 'var(--red)'
   }
 
   return (
@@ -883,6 +888,7 @@ function AdminPanel({ svc, user }) {
     { id: 'carga',        label: 'Carga Masiva' },
     { id: 'competencias', label: 'Competencias' },
     { id: 'bitacora',     label: 'Bitácora' },
+    { id: 'evaluadores',  label: 'Análisis Evaluadores' },
     { id: 'usuarios',     label: 'Usuarios' },
     { id: 'gestion',      label: 'Asignaciones' },
     { id: 'servicios',    label: 'Servicios' },
@@ -910,6 +916,7 @@ function AdminPanel({ svc, user }) {
       {tab === 'carga'        && <AdminCarga svc={svc} user={user} />}
       {tab === 'competencias' && <AdminCompetencias />}
       {tab === 'bitacora'     && <AdminBitacoraEditor svc={svc} user={user} />}
+      {tab === 'evaluadores'  && <AdminEvaluadores svc={svc} />}
       {tab === 'usuarios'     && <AdminUsuarios user={user} />}
       {tab === 'gestion'      && <AdminGestion svc={svc} />}
       {tab === 'servicios'    && <AdminServicios user={user} currentSvcId={svc.id_servicio} />}
@@ -1395,7 +1402,7 @@ function Ranking({ svc, user }) {
 
   const avg    = arr => arr.reduce((a, b) => a + b, 0) / arr.length
   const round2 = n   => Math.round(n * 100) / 100
-  const scoreColor = v => { if (!v && v !== 0) return 'var(--text3)'; return v >= 3 ? 'var(--green)' : v >= 2.5 ? 'var(--yellow)' : 'var(--red)' }
+  const scoreColor = v => { if (!v && v !== 0) return 'var(--text3)'; return v >= 3 ? 'var(--green)' : v >= 1.6 ? 'var(--yellow)' : 'var(--red)' }
   const medalColor = p => p === 1 ? '#FFD700' : p === 2 ? '#C0C0C0' : '#CD7F32'
 
   const [podioCargo, setPodioCargo] = useState([])
@@ -1585,7 +1592,7 @@ function Ranking({ svc, user }) {
                 <div style={{ fontSize: 10, color: 'var(--text3)' }}>{grupo.rows.length} evaluados</div>
               </div>
               <div className="card-static" style={{ overflow: 'hidden', overflowX: 'auto' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr 88px 88px 100px 120px', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.3 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '30px 1fr 70px 70px 70px', gap: 6, padding: '8px 12px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.3 }}>
                   <div>#</div><div>TRABAJADOR</div>
                   <div style={{ textAlign: 'right' }}><span style={{ color: 'var(--accent)' }}>{modoRanking === 'actual' ? 'NOTA' : `${(pesos.actual*100).toFixed(0)}%`}</span> {modoRanking === 'actual' ? 'SERVICIO' : 'ACT.'}</div>
                   <div style={{ textAlign: 'right', opacity: modoRanking === 'formula' ? 1 : 0.2 }}><span style={{ color: 'var(--accent2)' }}>{(pesos.historico*100).toFixed(0)}%</span> HIST.</div>
@@ -1593,7 +1600,7 @@ function Ranking({ svc, user }) {
                   <div style={{ paddingLeft: 8 }}>BARRA</div>
                 </div>
                 {grupo.rows.map((r, i) => (
-                  <div key={r.id_asignacion} style={{ display: 'grid', gridTemplateColumns: '40px 1fr 88px 88px 100px 120px', gap: 8, padding: '10px 16px', alignItems: 'center', borderBottom: i < grupo.rows.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', background: r.posicion <= 3 ? 'rgba(255,255,255,0.012)' : 'transparent' }}>
+                  <div key={r.id_asignacion} style={{ display: 'grid', gridTemplateColumns: '30px 1fr 70px 70px 70px', gap: 6, padding: '9px 12px', alignItems: 'center', borderBottom: i < grupo.rows.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', background: r.posicion <= 3 ? 'rgba(255,255,255,0.012)' : 'transparent' }}>
                     <div style={{ fontSize: 13, fontWeight: 700, textAlign: 'center', color: r.posicion <= 3 ? medalColor(r.posicion) : 'var(--text3)' }}>{r.posicion}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
                       <Avatar nombre={r.nombre} foto={r.foto} size={30} />
@@ -1618,12 +1625,19 @@ function Ranking({ svc, user }) {
         </div>
       )}
 
-      <div style={{ marginTop: 14, display: 'flex', gap: 16, fontSize: 10, color: 'var(--text3)' }}>
-        <span>Total evaluados: {totalEval}</span>
-        <span>·</span>
-        <span style={{ color: 'var(--green)' }}>≥ 3.0 Óptimo</span>
-        <span style={{ color: 'var(--yellow)' }}>≥ 2.5 Aceptable</span>
-        <span style={{ color: 'var(--red)' }}>{'< 2.5 Crítico'}</span>
+      <div style={{ marginTop: 16, padding: '10px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 10, color: 'var(--text3)', marginRight: 4 }}>Total evaluados: {totalEval} ·</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: 'var(--green)' }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--green)' }} />≥ 3.0 Óptimo
+        </span>
+        <span style={{ color: 'var(--text3)', fontSize: 10 }}>·</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: 'var(--yellow)' }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--yellow)' }} />≥ 1.6 Aceptable
+        </span>
+        <span style={{ color: 'var(--text3)', fontSize: 10 }}>·</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: 'var(--red)' }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--red)' }} />{'< 1.6 Riesgo'}
+        </span>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
@@ -1693,7 +1707,7 @@ function Perfiles({ svc, user }) {
     }
   }, [perfil]);
 
-  const sc  = v => { if (!v && v !== 0) return 'var(--text3)'; return v >= 3 ? 'var(--green)' : v >= 2.5 ? 'var(--yellow)' : 'var(--red)' }
+  const sc  = v => { if (!v && v !== 0) return 'var(--text3)'; return v >= 3 ? 'var(--green)' : v >= 1.6 ? 'var(--yellow)' : 'var(--red)' }
   const r2  = n  => Math.round(n * 100) / 100
   const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null
 
@@ -1859,7 +1873,7 @@ function Perfiles({ svc, user }) {
     else if (notaActual >= 3.5) texto += "Es un profesional muy sólido, altamente confiable y autónomo. ";
     else if (notaActual >= 3.2) texto += "Es un buen trabajador que cumple de manera consistente con lo que se le pide. ";
     else if (notaActual >= 2.9) texto += "Muestra un desempeño aceptable, aunque todavía tiene margen para pulir algunos detalles. ";
-    else if (notaActual >= 2.5) texto += "Su rendimiento está al límite de lo esperado; requiere acompañamiento constante. ";
+    else if (notaActual >= 1.6) texto += "Su rendimiento está al límite de lo esperado; requiere acompañamiento constante. ";
     else texto += "Actualmente presenta deficiencias serias que están impactando la operación. ";
 
     if (dims) {
@@ -1958,35 +1972,37 @@ function Perfiles({ svc, user }) {
       ) : perfil && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-          <div className="card-static" style={{ padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 24, borderLeft: `4px solid ${sc(perfil.notaActual)}` }}>
-            <Avatar nombre={sel.nombre} foto={sel.foto} size={70} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: -0.5 }}>{sel.nombre.toUpperCase()}</div>
-              <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginTop: 4 }}>{sel.cargoNombre}</div>
-              <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: 10, color: 'var(--text3)', fontFamily: 'monospace' }}>
-                <span>DNI: {sel.dni}</span>
-                <span>GRUPO: {sel.id_grupo}</span>
-                <span>TURNO: {sel.turno}</span>
+          <div className="card-static" style={{ padding: '16px 18px', borderLeft: `4px solid ${sc(perfil.notaActual)}` }}>
+            {/* Fila superior: avatar + nombre + cargo */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+              <Avatar nombre={sel.nombre} foto={sel.foto} size={56} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: -0.3, lineHeight: 1.2 }}>{sel.nombre.toUpperCase()}</div>
+                <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginTop: 4 }}>{sel.cargoNombre}</div>
+                <div style={{ display: 'flex', gap: 12, marginTop: 5, fontSize: 10, color: 'var(--text3)', flexWrap: 'wrap' }}>
+                  <span>DNI: {sel.dni}</span>
+                  <span>G{sel.id_grupo} · T{sel.turno}</span>
+                </div>
               </div>
             </div>
-            
-            <div style={{ display: 'flex', gap: 24, flexShrink: 0 }}>
+            {/* Fila inferior: KPIs en grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
               {[
-                { label: 'SU NOTA ACTUAL', val: perfil.notaActual, sub: `${perfil.evalsActual.length} evals aquí`, color: sc(perfil.notaActual) },
-                { label: 'PROM. CARGO (AQUÍ)', val: perfil.promedioCargoServicio, sub: 'Mismo cargo, este Svc', color: 'var(--accent2)' },
-                { label: 'PROM. CARGO (GLOBAL)', val: perfil.promedioCargoGlobal, sub: 'Mismo cargo, todo Prodise', color: 'var(--text2)' },
-                { label: 'TENDENCIA (Δ)', val: perfil.tendencia !== null ? `${perfil.tendencia > 0 ? '+' : ''}${perfil.tendencia}` : '—', sub: 'Última vs Ant.', color: perfil.tendencia > 0 ? 'var(--green)' : perfil.tendencia < 0 ? 'var(--red)' : 'var(--text3)' },
+                { label: 'NOTA ACTUAL', val: perfil.notaActual, sub: `${perfil.evalsActual.length} evaluaciones`, color: sc(perfil.notaActual) },
+                { label: 'PROM. CARGO (AQUÍ)', val: perfil.promedioCargoServicio, sub: 'Mismo cargo, este servicio', color: 'var(--accent2)' },
+                { label: 'PROM. CARGO (GLOBAL)', val: perfil.promedioCargoGlobal, sub: 'Todo PRODISE', color: 'var(--text2)' },
+                { label: 'TENDENCIA', val: perfil.tendencia !== null ? `${perfil.tendencia > 0 ? '+' : ''}${perfil.tendencia}` : '—', sub: 'Última vs anterior', color: perfil.tendencia > 0 ? 'var(--green)' : perfil.tendencia < 0 ? 'var(--red)' : 'var(--text3)' },
               ].map(k => (
-                <div key={k.label} style={{ textAlign: 'center', minWidth: 70 }}>
-                  <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.5, marginBottom: 4 }}>{k.label}</div>
-                  <div style={{ fontSize: 28, fontWeight: 900, color: k.color, lineHeight: 1, fontFamily: 'monospace' }}>{k.val ?? '—'}</div>
-                  <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 4 }}>{k.sub}</div>
+                <div key={k.label} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: 8, padding: '10px 12px' }}>
+                  <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.4, marginBottom: 4 }}>{k.label}</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: k.color, lineHeight: 1, fontFamily: 'monospace' }}>{k.val ?? '—'}</div>
+                  <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 3 }}>{k.sub}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.5fr 1fr', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }} className="perfil-grid">
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               
@@ -2534,7 +2550,7 @@ function Predictor({ svc, user }) {
   if (scoreFinal > 4.0) scoreFinal = 4.0
   if (scoreFinal < 1.0 && baseScore > 0) scoreFinal = 1.0
 
-  const sc = v => { if (!v) return 'var(--text3)'; return v >= 3 ? 'var(--green)' : v >= 2.5 ? 'var(--yellow)' : 'var(--red)' }
+  const sc = v => { if (!v) return 'var(--text3)'; return v >= 3 ? 'var(--green)' : v >= 1.6 ? 'var(--yellow)' : 'var(--red)' }
 
   return (
     <div className="fade" style={{ display: 'flex', gap: 20, height: 'calc(100vh - 100px)' }}>
@@ -4308,4 +4324,223 @@ function AdminBitacoraEditor({ svc, user }) {
 }
 
 const lbl3 = { fontSize: 10, color: 'rgba(255,255,255,0.35)', fontWeight: 600, letterSpacing: 0.5, display: 'block', marginBottom: 5 }
+
+
+/* =========================================
+   ADMIN — ANÁLISIS DE EVALUADORES
+   Detecta evaluadores permisivos/estrictos
+   ========================================= */
+function AdminEvaluadores({ svc }) {
+  const [datos, setDatos]   = useState([])
+  const [loading, setLoading] = useState(true)
+  const [sel, setSel]       = useState(null)   // evaluador seleccionado para detalle
+  const [detalle, setDetalle] = useState([])
+
+  const r2 = n => Math.round(n * 100) / 100
+  const avg = arr => arr.length ? arr.reduce((a,b) => a+b, 0) / arr.length : null
+  const sc = v => !v && v!==0 ? 'var(--text3)' : v>=3 ? 'var(--green)' : v>=1.6 ? 'var(--yellow)' : 'var(--red)'
+
+  useEffect(() => { load() }, [svc])
+
+  async function load() {
+    setLoading(true)
+    // Traer todas las evaluaciones del servicio con el evaluador
+    const { data: evals } = await supabase
+      .from('historial_evaluaciones')
+      .select('id_evaluacion, dni_evaluador, promedio, nota_1, nota_2, nota_3, nota_4, fecha_evaluacion, cargo_momento')
+      .eq('id_servicio', svc.id_servicio)
+      .order('fecha_evaluacion', { ascending: false })
+
+    if (!evals?.length) { setDatos([]); setLoading(false); return }
+
+    // Agrupar por evaluador
+    const grupos = {}
+    evals.forEach(e => {
+      if (!e.dni_evaluador) return
+      if (!grupos[e.dni_evaluador]) grupos[e.dni_evaluador] = []
+      grupos[e.dni_evaluador].push(e)
+    })
+
+    // Obtener nombres de los evaluadores
+    const dnis = Object.keys(grupos)
+    const { data: users } = await supabase
+      .from('usuarios_sistema')
+      .select('username, dni_asociado')
+      .in('dni_asociado', dnis.filter(Boolean))
+
+    const { data: trabs } = await supabase
+      .from('trabajadores')
+      .select('dni, nombres_completos')
+      .in('dni', dnis.filter(Boolean))
+
+    const nombresMap = Object.fromEntries((trabs || []).map(t => [t.dni, t.nombres_completos]))
+    const userMap = Object.fromEntries((users || []).map(u => [u.dni_asociado, u.username]))
+
+    // Promedio general del servicio para comparar
+    const promsGlobal = evals.map(e => parseFloat(e.promedio))
+    const globalAvg = r2(avg(promsGlobal))
+
+    // Construir estadísticas por evaluador
+    const stats = Object.entries(grupos).map(([dni, evs]) => {
+      const proms = evs.map(e => parseFloat(e.promedio))
+      const notaMedia = r2(avg(proms))
+      const desviacion = r2(Math.sqrt(avg(proms.map(p => Math.pow(p - notaMedia, 2)))) || 0)
+      const verdesPorc = Math.round(proms.filter(p => p >= 3).length / proms.length * 100)
+      const rojaPorc   = Math.round(proms.filter(p => p < 1.6).length / proms.length * 100)
+      const diff = r2(notaMedia - globalAvg)
+
+      // Clasificación del perfil evaluador
+      let perfil, perfilColor, perfilIcon
+      if (diff > 0.4) {
+        perfil = 'Muy permisivo'; perfilColor = '#E67E22'; perfilIcon = '😊'
+      } else if (diff > 0.15) {
+        perfil = 'Permisivo'; perfilColor = '#D4A017'; perfilIcon = '🙂'
+      } else if (diff < -0.4) {
+        perfil = 'Muy estricto'; perfilColor = 'var(--red)'; perfilIcon = '😤'
+      } else if (diff < -0.15) {
+        perfil = 'Estricto'; perfilColor = '#E8A09A'; perfilIcon = '🤨'
+      } else {
+        perfil = 'Calibrado'; perfilColor = 'var(--green)'; perfilIcon = '✅'
+      }
+
+      return {
+        dni, username: userMap[dni] || '—',
+        nombre: nombresMap[dni] || dni,
+        total: evs.length, notaMedia, desviacion,
+        verdesPorc, rojaPorc, diff, perfil, perfilColor, perfilIcon, evs,
+      }
+    }).sort((a, b) => b.diff - a.diff)
+
+    setDatos(stats)
+    setLoading(false)
+  }
+
+  function abrirDetalle(ev) {
+    setSel(ev)
+    // Mostrar sus últimas 10 evaluaciones
+    const detalles = ev.evs.slice(0, 10).map(e => ({
+      ...e,
+      promedio: parseFloat(e.promedio),
+    }))
+    setDetalle(detalles)
+  }
+
+  if (loading) return <p style={{ color: 'var(--text3)', fontSize: 13 }}>Analizando evaluadores...</p>
+
+  if (datos.length === 0) return (
+    <div className="card-static" style={{ padding: '36px 20px', textAlign: 'center' }}>
+      <p style={{ color: 'var(--text3)', fontSize: 13 }}>No hay evaluaciones registradas aún en este servicio.</p>
+    </div>
+  )
+
+  // Calcular promedio global para referencia
+  const globalProm = datos.length ? r2(datos.reduce((a, d) => a + d.notaMedia * d.total, 0) / datos.reduce((a, d) => a + d.total, 0)) : 0
+
+  return (
+    <div className="fade">
+      {/* Header con referencia */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18, padding: '12px 16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 10 }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.4 }}>PROMEDIO GLOBAL SERVICIO</div>
+          <div style={{ fontSize: 24, fontWeight: 900, color: sc(globalProm), fontFamily: 'monospace', lineHeight: 1.2 }}>{globalProm}</div>
+          <div style={{ fontSize: 9, color: 'var(--text3)' }}>línea base para comparar</div>
+        </div>
+        <div style={{ flex: 1, fontSize: 11, color: 'var(--text2)', lineHeight: 1.5 }}>
+          Los evaluadores con diferencia <span style={{ color: '#E67E22', fontWeight: 600 }}>mayor a +0.15</span> tienden a calificar por encima del promedio (<em>permisivos</em>). Los que tienen <span style={{ color: 'var(--red)', fontWeight: 600 }}>menor a -0.15</span> califican más bajo (<em>estrictos</em>). El rango calibrado está entre ±0.15.
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600 }}>EVALUADORES</div>
+          <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--accent2)', fontFamily: 'monospace' }}>{datos.length}</div>
+        </div>
+      </div>
+
+      {/* Lista evaluadores */}
+      <div className="card-static" style={{ overflow: 'hidden', marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 70px 70px 110px', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.3 }}>
+          <div>EVALUADOR</div>
+          <div style={{ textAlign: 'center' }}>EVALS</div>
+          <div style={{ textAlign: 'center' }}>MEDIA</div>
+          <div style={{ textAlign: 'center' }}>vs GLOBAL</div>
+          <div style={{ textAlign: 'center' }}>% VERDE</div>
+          <div style={{ textAlign: 'center' }}>PERFIL</div>
+        </div>
+        {datos.map((ev, i) => (
+          <div key={ev.dni}
+            onClick={() => abrirDetalle(ev)}
+            style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 70px 70px 110px', gap: 8, padding: '11px 16px', alignItems: 'center', borderBottom: i < datos.length-1 ? '1px solid rgba(255,255,255,0.03)' : 'none', cursor: 'pointer', background: sel?.dni === ev.dni ? 'rgba(255,255,255,0.02)' : 'transparent', transition: 'background 0.15s' }}>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600 }}>{ev.nombre.split(' ').slice(0,3).join(' ')}</div>
+              <div style={{ fontSize: 9, color: 'var(--text3)', fontFamily: 'monospace' }}>{ev.username}</div>
+            </div>
+            <div style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: 'var(--accent2)' }}>{ev.total}</div>
+            <div style={{ textAlign: 'center', fontSize: 14, fontWeight: 800, color: sc(ev.notaMedia), fontFamily: 'monospace' }}>{ev.notaMedia}</div>
+            <div style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: ev.diff > 0 ? '#E67E22' : ev.diff < 0 ? 'var(--red)' : 'var(--text3)' }}>
+              {ev.diff > 0 ? '+' : ''}{ev.diff}
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--green)' }}>{ev.verdesPorc}%</div>
+              {ev.rojaPorc > 0 && <div style={{ fontSize: 9, color: 'var(--red)' }}>{ev.rojaPorc}% riesgo</div>}
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: ev.perfilColor, display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+                <span>{ev.perfilIcon}</span>{ev.perfil}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Detalle del evaluador seleccionado */}
+      {sel && (
+        <div className="card-static fade" style={{ padding: '16px 18px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700 }}>{sel.nombre}</div>
+              <div style={{ fontSize: 11, color: sel.perfilColor, fontWeight: 600 }}>{sel.perfilIcon} {sel.perfil} · Promedio: {sel.notaMedia} · σ {sel.desviacion}</div>
+            </div>
+            <button onClick={() => setSel(null)} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 18, cursor: 'pointer' }}>×</button>
+          </div>
+
+          {/* Barra de distribución */}
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, marginBottom: 6 }}>DISTRIBUCIÓN DE NOTAS</div>
+            <div style={{ display: 'flex', height: 28, borderRadius: 6, overflow: 'hidden', gap: 1 }}>
+              {[
+                { label: 'Riesgo <1.6', val: sel.evs.filter(e=>parseFloat(e.promedio)<1.6).length, color: 'var(--red)' },
+                { label: 'Aceptable 1.6-3', val: sel.evs.filter(e=>parseFloat(e.promedio)>=1.6&&parseFloat(e.promedio)<3).length, color: 'var(--yellow)' },
+                { label: 'Óptimo ≥3', val: sel.evs.filter(e=>parseFloat(e.promedio)>=3).length, color: 'var(--green)' },
+              ].map(b => b.val > 0 && (
+                <div key={b.label} title={`${b.label}: ${b.val}`} style={{ flex: b.val, background: b.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'rgba(0,0,0,0.6)' }}>
+                  {b.val > 0 && b.val}
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 14, marginTop: 5 }}>
+              <span style={{ fontSize: 9, color: 'var(--red)' }}>■ Riesgo: {sel.evs.filter(e=>parseFloat(e.promedio)<1.6).length}</span>
+              <span style={{ fontSize: 9, color: 'var(--yellow)' }}>■ Aceptable: {sel.evs.filter(e=>parseFloat(e.promedio)>=1.6&&parseFloat(e.promedio)<3).length}</span>
+              <span style={{ fontSize: 9, color: 'var(--green)' }}>■ Óptimo: {sel.evs.filter(e=>parseFloat(e.promedio)>=3).length}</span>
+            </div>
+          </div>
+
+          {/* Últimas evaluaciones */}
+          <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, marginBottom: 8 }}>ÚLTIMAS {detalle.length} EVALUACIONES</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {detalle.map((e, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: 6 }}>
+                <div style={{ fontSize: 16, fontWeight: 900, color: sc(e.promedio), fontFamily: 'monospace', width: 36 }}>{e.promedio}</div>
+                <div style={{ flex: 1, fontSize: 11, color: 'var(--text2)' }}>{e.cargo_momento || '—'}</div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {[e.nota_1, e.nota_2, e.nota_3, e.nota_4].map((n, ni) => (
+                    <div key={ni} style={{ width: 20, height: 20, borderRadius: 4, background: n>=3?'rgba(39,174,96,0.25)':n>=1.6?'rgba(212,160,23,0.25)':'rgba(192,57,43,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: n>=3?'var(--green)':n>=1.6?'var(--yellow)':'var(--red)' }}>{n}</div>
+                  ))}
+                </div>
+                <div style={{ fontSize: 9, color: 'var(--text3)' }}>{e.fecha_evaluacion ? new Date(e.fecha_evaluacion).toLocaleDateString('es-PE',{day:'2-digit',month:'short'}) : '—'}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
