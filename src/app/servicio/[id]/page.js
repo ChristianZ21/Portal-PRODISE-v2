@@ -7,6 +7,7 @@ import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 import Icon, { Medalla } from '@/components/Icon'
 import Logo from '@/components/Logo'
+import { Deslizador, Contador, BarraScroll, GestoCajon } from '@/components/Vivo'
 
 const NAV_ICON = { evaluar: 'evaluar', historial: 'historial', bitacora: 'bitacora', dashboard: 'dashboard', ranking: 'ranking', perfiles: 'perfiles', buscador: 'buscador', predictor: 'predictor', admin: 'admin' }
 
@@ -95,6 +96,8 @@ export default function ServicioPage({ params }) {
         <div onClick={() => setSidebarOpen(false)} className="sidebar-scrim" aria-hidden="true" />
       )}
 
+      <GestoCajon abierto={sidebarOpen} onCerrar={() => setSidebarOpen(false)} />
+
       {/* ── Barra lateral ── */}
       <aside className={`sidebar ${sidebarOpen ? 'sidebar-open' : ''}`} aria-label="Secciones del servicio">
         <div style={{ padding: '20px 16px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -114,7 +117,8 @@ export default function ServicioPage({ params }) {
         </div>
 
         <nav style={{ flex: 1, padding: '0 8px', overflowY: 'auto' }}>
-          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <ul className="nav-list" style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Deslizador />
             {nav.map(x => (
               <li key={x.id}>
                 <button
@@ -124,7 +128,7 @@ export default function ServicioPage({ params }) {
                   aria-disabled={x.disabled || undefined}
                   title={x.disabled ? 'Tu nivel de acceso no incluye esta sección' : undefined}
                 >
-                  <Icon name={NAV_ICON[x.id]} size={20} />
+                  <span className="nav-tile"><Icon name={NAV_ICON[x.id]} size={18} /></span>
                   <span style={{ flex: 1 }}>{x.label}</span>
                   {x.disabled && <Icon name="lock" size={14} style={{ color: 'var(--text3)' }} />}
                 </button>
@@ -154,10 +158,11 @@ export default function ServicioPage({ params }) {
       <main id="contenido" className="app-main" style={{ flex: 1, padding: '32px 40px 56px', background: 'var(--bg)', overflowY: 'auto', height: '100dvh', position: 'relative' }}>
         {/* Barra superior: solo en móvil (vía CSS) */}
         <div className="hamburger-btn mobile-bar nav-material">
+          <BarraScroll contenedor="#contenido" dep={sec} />
           <button onClick={() => setSidebarOpen(true)} className="icon-btn" aria-label="Abrir menú" aria-expanded={sidebarOpen}>
             <Icon name="menu" size={22} />
           </button>
-          <div style={{ minWidth: 0, flex: 1 }}>
+          <div className="nav-title" style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.2 }}>{actual?.label}</div>
             <div style={{ fontSize: 11, color: 'var(--text3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{svc.nombre_descriptivo}</div>
           </div>
@@ -288,7 +293,7 @@ function Evaluar({ svc, user }) {
               {list.filter(p => p.nombre.toLowerCase().includes(search.toLowerCase())).map(p => (
                 <li key={p.id_asignacion}>
                   <button type="button" onClick={() => pick(p)} className="card list-row">
-                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--fill-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 600, color: 'var(--text2)', flexShrink: 0, overflow: 'hidden' }}>
+                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--brand-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 600, color: 'var(--accent)', flexShrink: 0, overflow: 'hidden' }}>
                       {p.foto ? <img src={p.foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : getInitials(p.nombre)}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -306,7 +311,7 @@ function Evaluar({ svc, user }) {
         <div className="fade" style={{ maxWidth: 760 }}>
           <button className="btn btn-ghost" onClick={() => { setSel(null); setPregs([]) }} style={{ marginBottom: 24 }}><Icon name="back" size={18} />Volver a la lista</button>
           <div style={{ marginBottom: 32, display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--fill-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 600, color: 'var(--text2)', flexShrink: 0, overflow: 'hidden' }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--brand-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 600, color: 'var(--accent)', flexShrink: 0, overflow: 'hidden' }}>
               {sel.foto
                 ? <img src={sel.foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display='none' }} />
                 : getInitials(sel.nombre)
@@ -645,6 +650,7 @@ function Dashboard({ svc, user }) {
 
       {/* Pestañas: control segmentado */}
       <div className="segmented" role="tablist" aria-label="Vista del dashboard" style={{ marginBottom: 24 }}>
+          <Deslizador />
         {[
           { id: 'resumen', label: 'Resumen' },
           { id: 'alertas', label: `Alertas ${alertas.length > 0 ? `(${alertas.length})` : ''}`, badge: alertas.length > 0 },
@@ -701,7 +707,7 @@ function Dashboard({ svc, user }) {
         <div style={{ height: 8, background: 'var(--fill)', borderRadius: 6, overflow: 'hidden' }}>
           <div style={{
             height: '100%', width: `${kpi.pctEval}%`, borderRadius: 6, transition: 'width var(--dur-spring) var(--spring)',
-            background: kpi.pctEval >= 80 ? 'var(--green)' : kpi.pctEval >= 50 ? 'var(--yellow)' : 'var(--red)',
+            background: 'var(--brand)',
           }} />
         </div>
       </div>
@@ -721,7 +727,7 @@ function Dashboard({ svc, user }) {
                   <span style={{ fontSize: 13, fontWeight: 700, color: scoreColor(d.avg), fontVariantNumeric: 'tabular-nums' }}>{d.avg ?? '—'}</span>
                 </div>
                 <div style={{ height: 5, background: 'var(--fill)', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: 3, width: `${d.avg ? (parseFloat(d.avg) / 4) * 100 : 0}%`, background: scoreColor(d.avg), transition: 'width var(--dur-spring) var(--spring)' }} />
+                  <div className="meter-fill" style={{ height: '100%', borderRadius: 3, width: `${d.avg ? (parseFloat(d.avg) / 4) * 100 : 0}%`, background: scoreColor(d.avg), transition: 'width var(--dur-spring) var(--spring)' }} />
                 </div>
               </div>
             ))}
@@ -739,7 +745,7 @@ function Dashboard({ svc, user }) {
                       </span>
                     </div>
                     <div style={{ height: 4, background: 'var(--fill)', borderRadius: 2, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', borderRadius: 2, width: cargo.promedio ? `${(parseFloat(cargo.promedio) / 4) * 100}%` : '0%', background: cargo.promedio ? scoreColor(cargo.promedio) : 'transparent', transition: 'width var(--dur-spring) var(--spring)' }} />
+                      <div className="meter-fill" style={{ height: '100%', borderRadius: 2, width: cargo.promedio ? `${(parseFloat(cargo.promedio) / 4) * 100}%` : '0%', background: cargo.promedio ? scoreColor(cargo.promedio) : 'transparent', transition: 'width var(--dur-spring) var(--spring)' }} />
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 1 }}>{cargo.evaluados} eval.</div>
                   </div>
@@ -764,7 +770,7 @@ function Dashboard({ svc, user }) {
                     </div>
                   </div>
                   <div style={{ height: 5, background: 'var(--fill)', borderRadius: 3, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', borderRadius: 3, width: `${g.pct}%`, background: g.pct >= 80 ? 'var(--green)' : g.pct >= 50 ? 'var(--accent)' : 'var(--text3)', transition: 'width var(--dur-spring) var(--spring)' }} />
+                    <div className="meter-fill" style={{ height: '100%', borderRadius: 3, width: `${g.pct}%`, background: 'var(--brand)', opacity: g.pct >= 50 ? 1 : 0.55, transition: 'width var(--dur-spring) var(--spring)' }} />
                   </div>
                 </div>
               ))}
@@ -838,7 +844,7 @@ function Dashboard({ svc, user }) {
                 <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 2 }}>{kpi.topScorer.cargo}</div>
               </div>
             </div>
-            <div className="num" style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--green)', lineHeight: 1 }}>{kpi.topScorer.nota}</div>
+            <div className="num" style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--green)', lineHeight: 1 }}><Contador valor={kpi.topScorer.nota} /></div>
           </div>
         )}
       </div>
@@ -854,7 +860,7 @@ function KpiCard({ label, value, sub, color }) {
   return (
     <div className="kpi-cell">
       <div style={{ fontSize: 13, color: 'var(--text2)' }}>{label}</div>
-      <div className="num" style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.025em', color: color === 'var(--accent2)' ? 'var(--text)' : color, lineHeight: 1.1, marginTop: 8 }}>{value}</div>
+      <div className="num" style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.025em', color: color === 'var(--accent2)' ? 'var(--text)' : color, lineHeight: 1.1, marginTop: 8 }}><Contador valor={value} /></div>
       <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 4 }}>{sub}</div>
     </div>
   )
@@ -865,9 +871,9 @@ function Avatar({ nombre, foto, size = 36 }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
-      background: 'var(--fill-2)',
+      background: 'var(--brand-soft)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: Math.round(size * 0.36), fontWeight: 600, color: 'var(--text2)', letterSpacing: 0,
+      fontSize: Math.round(size * 0.36), fontWeight: 600, color: 'var(--accent)', letterSpacing: 0,
     }}>
       {foto ? <img src={foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials}
     </div>
@@ -898,6 +904,7 @@ function AdminPanel({ svc, user }) {
       <p className="page-sub" style={{ marginBottom: 24 }}>Control central para {svc.nombre_descriptivo}</p>
 
       <div className="segmented" role="tablist" aria-label="Secciones de administración" style={{ marginBottom: 32, WebkitOverflowScrolling: 'touch' }}>
+          <Deslizador />
         {tabs.map(t => (
           <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => setTab(t.id)} className={`segmented-item ${tab === t.id ? 'is-active' : ''}`} style={{ flexShrink: 0 }}>{t.label}</button>
         ))}
@@ -953,15 +960,15 @@ function AdminResumen({ svc }) {
       <div className="card-static kpi-strip num" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: 16 }}>
         <div className="kpi-cell">
           <div style={{ fontSize: 13, color: 'var(--text2)' }}>Técnicos en el servicio</div>
-          <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1, marginTop: 8 }}>{stats.total}</div>
+          <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1, marginTop: 8 }}><Contador valor={stats.total} /></div>
         </div>
         <div className="kpi-cell">
           <div style={{ fontSize: 13, color: 'var(--text2)' }}>Turno A</div>
-          <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1, marginTop: 8 }}>{stats.turnos.A}</div>
+          <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1, marginTop: 8 }}><Contador valor={stats.turnos.A} /></div>
         </div>
         <div className="kpi-cell">
           <div style={{ fontSize: 13, color: 'var(--text2)' }}>Turno B</div>
-          <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1, marginTop: 8 }}>{stats.turnos.B}</div>
+          <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1, marginTop: 8 }}><Contador valor={stats.turnos.B} /></div>
         </div>
       </div>
       <div className="card-static" style={{ padding: '20px' }}>
@@ -1513,6 +1520,7 @@ function Ranking({ svc, user }) {
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
           <div>
             <div className="segmented" role="radiogroup" aria-label="Modo de ranking">
+          <Deslizador />
               {/* Modo: Solo este servicio */}
               <button role="radio" aria-checked={modoRanking === 'actual'} onClick={() => { setModoRanking('actual'); setUsar7030(false) }} className={`segmented-item ${modoRanking === 'actual' ? 'is-active' : ''}`}>
                 Solo este servicio
@@ -1609,7 +1617,7 @@ function Ranking({ svc, user }) {
                       <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
                         <span style={{ fontSize: 17, fontWeight: 700, color: scoreColor(r.notaFinal), fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{r.notaFinal}</span>
                         <div style={{ width: 64, height: 4, background: 'var(--fill-2)', borderRadius: 2, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', borderRadius: 2, width: `${(r.notaFinal / 4) * 100}%`, background: scoreColor(r.notaFinal), transition: 'width var(--dur-spring) var(--spring)' }} />
+                          <div className="meter-fill" style={{ height: '100%', borderRadius: 2, width: `${(r.notaFinal / 4) * 100}%`, background: scoreColor(r.notaFinal), transition: 'width var(--dur-spring) var(--spring)' }} />
                         </div>
                       </div>
                     </div>
@@ -1735,7 +1743,7 @@ function Podio({ items, medalColor, scoreColor, svcId }) {
               fontSize: isFirst ? 34 : 28, fontWeight: 700, letterSpacing: '-0.03em', color: scoreColor(p.notaFinal),
               lineHeight: 1, fontVariantNumeric: 'tabular-nums',
               marginTop: 8,
-            }}>{p.notaFinal}</div>
+            }}><Contador valor={p.notaFinal} /></div>
 
             {/* Leyenda dinámica */}
             {leyenda && (
@@ -2062,7 +2070,7 @@ function Perfiles({ svc, user }) {
               ].map(k => (
                 <div key={k.label} className="kpi-cell">
                   <div style={{ fontSize: 13, color: 'var(--text2)' }}>{k.label}</div>
-                  <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.025em', color: k.color, lineHeight: 1.1, marginTop: 8, fontVariantNumeric: 'tabular-nums' }}>{k.val ?? '—'}</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.025em', color: k.color, lineHeight: 1.1, marginTop: 8, fontVariantNumeric: 'tabular-nums' }}><Contador valor={k.val ?? '—'} /></div>
                   <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 4 }}>{k.sub}</div>
                 </div>
               ))}
@@ -2645,6 +2653,7 @@ function Predictor({ svc, user }) {
           </div>
 
           <div className="segmented" role="tablist" style={{ display: 'flex', marginTop: 16 }}>
+          <Deslizador />
             <button role="tab" aria-selected={modoIzq === 'lista'} onClick={() => setModoIzq('lista')} className={`segmented-item ${modoIzq === 'lista' ? 'is-active' : ''}`} style={{ flex: 1 }}>Buscador</button>
             <button role="tab" aria-selected={modoIzq === 'masiva'} onClick={() => setModoIzq('masiva')} className={`segmented-item ${modoIzq === 'masiva' ? 'is-active' : ''}`} style={{ flex: 1 }}>Pegar DNI</button>
           </div>
@@ -2734,7 +2743,7 @@ function Predictor({ svc, user }) {
                 
                 <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
                   <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 6 }}>Proyección final</div>
-                  <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', color: sc(scoreFinal), lineHeight: 1 }}>{scoreFinal.toFixed(2)}</div>
+                  <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', color: sc(scoreFinal), lineHeight: 1 }}><Contador valor={scoreFinal.toFixed(2)} duracion={600} /></div>
                 </div>
               </div>
             </div>

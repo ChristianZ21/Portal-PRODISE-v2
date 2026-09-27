@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import Icon from '@/components/Icon'
 import Logo from '@/components/Logo'
 import { MARCA } from '@/config/marca'
+import { BarraScroll } from '@/components/Vivo'
 
 export default function ServiciosPage() {
   const { user, loading, logout } = useAuth()
@@ -44,7 +45,9 @@ export default function ServiciosPage() {
 
       {/* ── Barra de navegación translúcida ── */}
       <header className="nav-material sticky top-0 z-20">
-        <div className="mx-auto flex h-14 w-full max-w-[1100px] items-center justify-between gap-4 px-4 sm:px-8">
+        <BarraScroll titulo="#titulo-servicios" />
+        <div className="relative mx-auto flex h-14 w-full max-w-[1100px] items-center justify-between gap-4 px-4 sm:px-8">
+          <span className="nav-title pointer-events-none absolute left-1/2 -translate-x-1/2 text-headline font-semibold whitespace-nowrap max-sm:hidden" aria-hidden="true">Frentes de trabajo</span>
           <Logo height={28} />
           <div className="flex min-w-0 items-center gap-3">
             <div className="hidden min-w-0 text-right sm:block">
@@ -63,7 +66,7 @@ export default function ServiciosPage() {
       <main id="contenido" className="mx-auto w-full max-w-[1100px] flex-1 px-4 pt-10 pb-16 sm:px-8 sm:pt-14">
 
         <div className="mb-10">
-          <h1 className="text-large font-bold">Frentes de trabajo</h1>
+          <h1 id="titulo-servicios" className="text-large font-bold">Frentes de trabajo</h1>
           <p className="mt-2 text-body text-label-2">Elige el servicio en el que vas a trabajar hoy.</p>
         </div>
 
@@ -160,10 +163,10 @@ function TarjetaServicio({ s, activo, onClick, fecha }) {
         onMouseLeave={() => setHovered(false)}
         className="svc-row group flex w-full items-center gap-4 rounded-lg bg-surface p-3 text-left sm:gap-5 sm:p-4"
       >
-        <div className="relative h-[72px] w-[96px] shrink-0 overflow-hidden rounded-md bg-fill-2 sm:h-20 sm:w-32">
+        <div className="relative h-[72px] w-[96px] shrink-0 overflow-hidden rounded-md bg-brand-soft sm:h-20 sm:w-32">
           {s.fondo_url
-            ? <img src={s.fondo_url} alt="" className="h-full w-full object-cover" />
-            : <Icon name="planta" size={28} style={{ position: 'absolute', inset: 0, margin: 'auto', color: 'var(--text3)' }} />}
+            ? <img src={s.fondo_url} alt="" className="svc-foto h-full w-full object-cover" />
+            : <Icon name="planta" size={30} style={{ position: 'absolute', inset: 0, margin: 'auto', color: 'var(--accent)' }} />}
         </div>
 
         <div className="min-w-0 flex-1">
@@ -178,10 +181,10 @@ function TarjetaServicio({ s, activo, onClick, fecha }) {
           </div>
         </div>
 
-        <span className={`hidden shrink-0 items-center gap-1 text-footnote font-semibold sm:flex ${hovered ? 'text-accent' : 'text-label-3'}`}>
-          Ingresar
+        <span className={`svc-cta flex h-9 shrink-0 items-center gap-1 rounded-full pr-2 pl-2 text-footnote font-semibold sm:pl-4 ${hovered ? 'bg-brand text-on-brand' : 'bg-brand-soft text-accent'}`}>
+          <span className="hidden sm:inline">Ingresar</span>
+          <Icon name="chevron" size={18} className="svc-chevron" />
         </span>
-        <Icon name="chevron" size={20} style={{ color: hovered ? 'var(--accent)' : 'var(--text3)' }} className="svc-chevron" />
       </button>
     </li>
   )
