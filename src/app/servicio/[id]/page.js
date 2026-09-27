@@ -162,7 +162,7 @@ export default function ServicioPage({ params }) {
             <div style={{ fontSize: 11, color: 'var(--text3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{svc.nombre_descriptivo}</div>
           </div>
         </div>
-        <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+        <div key={sec} className="section-enter" style={{ maxWidth: 1240, margin: '0 auto' }}>
         {sec === 'evaluar'   && <Evaluar    svc={svc} user={user} />}
         {sec === 'historial' && <Historial  svc={svc} user={user} />}
         {sec === 'dashboard' && <Dashboard  svc={svc} user={user} />}
@@ -700,7 +700,7 @@ function Dashboard({ svc, user }) {
         </div>
         <div style={{ height: 8, background: 'var(--fill)', borderRadius: 6, overflow: 'hidden' }}>
           <div style={{
-            height: '100%', width: `${kpi.pctEval}%`, borderRadius: 6, transition: 'width 0.8s ease',
+            height: '100%', width: `${kpi.pctEval}%`, borderRadius: 6, transition: 'width var(--dur-spring) var(--spring)',
             background: kpi.pctEval >= 80 ? 'var(--green)' : kpi.pctEval >= 50 ? 'var(--yellow)' : 'var(--red)',
           }} />
         </div>
@@ -721,7 +721,7 @@ function Dashboard({ svc, user }) {
                   <span style={{ fontSize: 13, fontWeight: 700, color: scoreColor(d.avg), fontVariantNumeric: 'tabular-nums' }}>{d.avg ?? '—'}</span>
                 </div>
                 <div style={{ height: 5, background: 'var(--fill)', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: 3, width: `${d.avg ? (parseFloat(d.avg) / 4) * 100 : 0}%`, background: scoreColor(d.avg), transition: 'width 0.8s ease' }} />
+                  <div style={{ height: '100%', borderRadius: 3, width: `${d.avg ? (parseFloat(d.avg) / 4) * 100 : 0}%`, background: scoreColor(d.avg), transition: 'width var(--dur-spring) var(--spring)' }} />
                 </div>
               </div>
             ))}
@@ -739,7 +739,7 @@ function Dashboard({ svc, user }) {
                       </span>
                     </div>
                     <div style={{ height: 4, background: 'var(--fill)', borderRadius: 2, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', borderRadius: 2, width: cargo.promedio ? `${(parseFloat(cargo.promedio) / 4) * 100}%` : '0%', background: cargo.promedio ? scoreColor(cargo.promedio) : 'transparent', transition: 'width 0.8s ease' }} />
+                      <div style={{ height: '100%', borderRadius: 2, width: cargo.promedio ? `${(parseFloat(cargo.promedio) / 4) * 100}%` : '0%', background: cargo.promedio ? scoreColor(cargo.promedio) : 'transparent', transition: 'width var(--dur-spring) var(--spring)' }} />
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 1 }}>{cargo.evaluados} eval.</div>
                   </div>
@@ -764,7 +764,7 @@ function Dashboard({ svc, user }) {
                     </div>
                   </div>
                   <div style={{ height: 5, background: 'var(--fill)', borderRadius: 3, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', borderRadius: 3, width: `${g.pct}%`, background: g.pct >= 80 ? 'var(--green)' : g.pct >= 50 ? 'var(--accent)' : 'var(--text3)', transition: 'width 0.8s ease' }} />
+                    <div style={{ height: '100%', borderRadius: 3, width: `${g.pct}%`, background: g.pct >= 80 ? 'var(--green)' : g.pct >= 50 ? 'var(--accent)' : 'var(--text3)', transition: 'width var(--dur-spring) var(--spring)' }} />
                   </div>
                 </div>
               ))}
@@ -1225,7 +1225,7 @@ function AdminCarga({ svc, user }) {
             <div style={{ width: 1, background: 'var(--border)', margin: '10px 0' }} />
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
               <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>Opción B · Subir archivo CSV</div>
-              <div onClick={() => fileRef.current?.click()} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border)', borderRadius: 12, padding: '20px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.2s', background: 'var(--fill)', minHeight: 160 }} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) { const dt = new DataTransfer(); dt.items.add(f); fileRef.current.files = dt.files; handleFile({ target: fileRef.current }) } }}>
+              <div onClick={() => fileRef.current?.click()} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border)', borderRadius: 12, padding: '20px', textAlign: 'center', cursor: 'pointer', transition: 'border-color var(--dur-quick) ease-out', background: 'var(--fill)', minHeight: 160 }} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) { const dt = new DataTransfer(); dt.items.add(f); fileRef.current.files = dt.files; handleFile({ target: fileRef.current }) } }}>
                 <Icon name="upload" size={32} style={{ margin: '0 auto 12px', color: 'var(--text3)' }} />
                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Arrastra tu CSV aquí</div>
                 <div style={{ fontSize: 13, color: 'var(--text3)' }}>o haz click para buscar</div>
@@ -1609,7 +1609,7 @@ function Ranking({ svc, user }) {
                       <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
                         <span style={{ fontSize: 17, fontWeight: 700, color: scoreColor(r.notaFinal), fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{r.notaFinal}</span>
                         <div style={{ width: 64, height: 4, background: 'var(--fill-2)', borderRadius: 2, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', borderRadius: 2, width: `${(r.notaFinal / 4) * 100}%`, background: scoreColor(r.notaFinal), transition: 'width 0.6s ease' }} />
+                          <div style={{ height: '100%', borderRadius: 2, width: `${(r.notaFinal / 4) * 100}%`, background: scoreColor(r.notaFinal), transition: 'width var(--dur-spring) var(--spring)' }} />
                         </div>
                       </div>
                     </div>
@@ -2328,11 +2328,11 @@ function TrayectoriaSVG({ data, scoreColor }) {
             <g key={i} 
                onMouseEnter={() => setHoverIdx(i)} 
                onMouseLeave={() => setHoverIdx(null)}
-               style={{ cursor: 'crosshair', transition: 'all 0.2s ease' }}>
+               style={{ cursor: 'crosshair', transition: 'r var(--dur-quick) ease-out, fill var(--dur-quick) ease-out' }}>
               
               {isHovered && <line x1={cx} y1={P.t} x2={cx} y2={H - P.b} stroke="color-mix(in srgb, var(--ink) 20%, transparent)" strokeWidth="1" strokeDasharray="3,3" />}
               <circle cx={cx} cy={cy} r="15" fill="transparent" />
-              <circle cx={cx} cy={cy} r={isHovered ? 6 : (d.esActual ? 5 : 3.5)} fill={isHovered ? 'var(--surface)' : (d.esActual ? col : 'var(--bg)')} stroke={col} strokeWidth={d.esActual && !isHovered ? 0 : 2} style={{ transition: 'all 0.2s ease' }} />
+              <circle cx={cx} cy={cy} r={isHovered ? 6 : (d.esActual ? 5 : 3.5)} fill={isHovered ? 'var(--surface)' : (d.esActual ? col : 'var(--bg)')} stroke={col} strokeWidth={d.esActual && !isHovered ? 0 : 2} style={{ transition: 'r var(--dur-quick) ease-out, fill var(--dur-quick) ease-out' }} />
               
               <text x={cx} y={H - 6} textAnchor="middle" fontSize="10" fill={isHovered || d.esActual ? 'var(--text)' : 'var(--text3)'} fontWeight={d.esActual ? '700' : '500'}>
                 Svc {d.svId}
@@ -4535,7 +4535,7 @@ function AdminEvaluadores({ svc }) {
         {datos.map((ev, i) => (
           <div key={ev.dni}
             onClick={() => abrirDetalle(ev)}
-            style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 70px 70px 110px', gap: 8, padding: '11px 16px', alignItems: 'center', borderBottom: i < datos.length-1 ? '1px solid var(--fill)' : 'none', cursor: 'pointer', background: sel?.dni === ev.dni ? 'var(--fill)' : 'transparent', transition: 'background 0.15s' }}>
+            style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 70px 70px 110px', gap: 8, padding: '11px 16px', alignItems: 'center', borderBottom: i < datos.length-1 ? '1px solid var(--fill)' : 'none', cursor: 'pointer', background: sel?.dni === ev.dni ? 'var(--fill)' : 'transparent', transition: 'background-color var(--dur-quick) ease-out' }}>
             <div>
               <div style={{ fontSize: 13, fontWeight: 600 }}>{ev.nombre.split(' ').slice(0,3).join(' ')}</div>
               <div style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'var(--font-mono)' }}>{ev.username}</div>

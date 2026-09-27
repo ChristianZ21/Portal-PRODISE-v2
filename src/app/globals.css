@@ -52,6 +52,13 @@
   --scrim:      rgba(0, 0, 0, 0.32);
   --shadow-float: 0 12px 32px -12px rgba(29, 29, 31, 0.28), 0 2px 6px rgba(29, 29, 31, 0.06);
 
+  /* Movimiento: muelles (damping 1.0 / 0.8, respuesta ~0.35 s) */
+  --spring: linear(0, 0.079, 0.237, 0.404, 0.552, 0.672, 0.764, 0.833, 0.884, 0.919, 0.945, 0.962, 0.974, 0.983, 0.988, 0.992, 0.995, 0.997, 0.998, 0.999, 1);
+  --spring-bounce: linear(0, 0.047, 0.156, 0.292, 0.433, 0.564, 0.678, 0.773, 0.847, 0.904, 0.946, 0.975, 0.994, 1.006, 1.012, 1.015, 1.015, 1.014, 1.012, 1.01, 1.008, 1.006, 1.004, 1.003, 1);
+  --dur-press: 100ms;
+  --dur-quick: 180ms;
+  --dur-spring: 500ms;
+
   /* Tipografía de sistema */
   --font-system: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
   --font-mono:   ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
@@ -198,8 +205,13 @@
 
 /* ─── Componentes compartidos ─────────────────────────────────── */
 @layer components {
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-  .fade { animation: fadeIn 0.35s ease-out forwards; }
+  /* Sin fundido por elemento: la única entrada es la del contenido de cada sección */
+  .fade { }
+  @keyframes section-in { from { opacity: 0; transform: translateY(8px); } }
+  .section-enter { animation: section-in var(--dur-spring) var(--spring) both; }
+
+  @keyframes enter-up { from { opacity: 0; transform: translateY(12px); } }
+  .enter { animation: enter-up 600ms var(--spring) both; }
 
   /* Grupos de contenido: superficie sólida, sin borde ni sombra */
   .card, .card-static {
@@ -222,10 +234,10 @@
     font-weight: 600;
     letter-spacing: -0.01em;
     cursor: pointer;
-    transition: background-color 150ms ease-out, color 150ms ease-out, opacity 150ms ease-out, transform 120ms ease-out;
+    transition: background-color var(--dur-quick) ease-out, color var(--dur-quick) ease-out, opacity var(--dur-quick) ease-out, transform var(--dur-spring) var(--spring);
     -webkit-tap-highlight-color: transparent;
   }
-  .btn:active:not(:disabled) { transform: scale(0.97); }
+  .btn:active:not(:disabled) { transform: scale(0.97); transition-duration: var(--dur-press); transition-timing-function: ease-out; }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .btn-primary {
@@ -364,7 +376,7 @@
   .switch-knob {
     position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; border-radius: 50%;
     background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 0 0 0.5px rgba(0,0,0,0.04);
-    transition: transform 250ms cubic-bezier(0.3, 1.3, 0.5, 1);
+    transition: transform var(--dur-spring) var(--spring-bounce);
   }
   .switch.is-on .switch-knob { transform: translateX(18px); }
 
@@ -401,7 +413,8 @@
     transition: background-color 150ms ease-out, transform 120ms ease-out;
   }
   .act:hover { background: var(--fill-2); }
-  .act:active { transform: scale(0.96); }
+  .act { transition: background-color var(--dur-quick) ease-out, transform var(--dur-spring) var(--spring); }
+  .act:active { transform: scale(0.95); transition-duration: var(--dur-press); }
   .act-icon { width: 32px; padding: 0; }
   .act-danger { color: var(--red); }
   .act-ok { color: var(--green); }
@@ -427,8 +440,10 @@
     backdrop-filter: blur(28px) saturate(180%);
     box-shadow: var(--shadow-float);
   }
-  .modal-scrim { -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); padding: 16px; }
-  .modal-panel { color: var(--text); }
+  .modal-scrim { -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); padding: 16px; animation: scrim-in var(--dur-quick) ease-out both; }
+  .modal-panel { color: var(--text); animation: sheet-in var(--dur-spring) var(--spring) both; transform-origin: 50% 60%; }
+  @keyframes scrim-in { from { opacity: 0; } }
+  @keyframes sheet-in { from { opacity: 0; transform: scale(0.94); filter: blur(6px); } }
   @media (prefers-reduced-transparency: reduce) {
     .nav-material, .modal-material { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
   }
@@ -443,9 +458,11 @@
   .skeleton { background: var(--fill); }
 
   /* Filas de servicio activas */
-  .svc-row { transition: background-color 150ms ease-out, transform 120ms ease-out; -webkit-tap-highlight-color: transparent; }
+  .svc-row { transition: background-color var(--dur-quick) ease-out, transform var(--dur-spring) var(--spring); -webkit-tap-highlight-color: transparent; }
   .svc-row:hover { background: var(--surface-2); }
-  .svc-row:active { transform: scale(0.99); }
+  .svc-row:active { transform: scale(0.985); transition-duration: var(--dur-press); transition-timing-function: ease-out; }
+  .svc-row .svc-chevron { transition: transform var(--dur-spring) var(--spring); }
+  .svc-row:hover .svc-chevron { transform: translateX(3px); }
 
   /* Logo de marca: PNG transparente con letras negras */
   @media (prefers-color-scheme: dark) {
@@ -477,18 +494,20 @@
   flex-direction: column;
   background: var(--surface);
   box-shadow: inset -0.5px 0 0 var(--border);
-  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+  transition: transform var(--dur-spring) var(--spring-bounce);
+  will-change: transform;
 }
-.sidebar-scrim { position: fixed; inset: 0; z-index: 45; background: var(--scrim); }
+.sidebar-scrim { position: fixed; inset: 0; z-index: 45; background: var(--scrim); animation: scrim-in var(--dur-quick) ease-out both; }
 
 .nav-item {
   display: flex; align-items: center; gap: 12px;
   width: 100%; min-height: 40px; padding: 0 12px;
   border: 0; border-radius: 8px; background: transparent;
   color: var(--text2); font-size: 15px; font-weight: 500; text-align: left;
-  transition: background-color 150ms ease-out, color 150ms ease-out;
+  transition: background-color var(--dur-quick) ease-out, color var(--dur-quick) ease-out, transform var(--dur-spring) var(--spring);
   -webkit-tap-highlight-color: transparent;
 }
+.nav-item:active:not([aria-disabled="true"]) { transform: scale(0.98); transition-duration: var(--dur-press); }
 .nav-item:hover { background: var(--fill); color: var(--text); }
 .nav-item:active { background: var(--fill-2); }
 .nav-item.is-active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
@@ -600,4 +619,18 @@
 @media (max-width: 480px) {
   .app-main { padding: 80px 12px 32px !important; }
   .kpi-grid { gap: 8px !important; }
+}
+
+/* ─── Movimiento reducido: sin desplazamientos ni rebotes ─────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+  .section-enter, .enter, .modal-panel, .modal-scrim, .sidebar-scrim { animation: fade-only 160ms ease-out both !important; }
+  @keyframes fade-only { from { opacity: 0; } }
+  .sidebar { transition: none !important; }
+  .spinner { animation: spin 1.6s linear infinite !important; }
 }

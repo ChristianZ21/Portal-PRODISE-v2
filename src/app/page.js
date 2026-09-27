@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import gsap from 'gsap'
 import Logo from '@/components/Logo'
 import Icon from '@/components/Icon'
 import { MARCA } from '@/config/marca'
@@ -16,19 +15,11 @@ export default function LoginPage() {
   const { login, user }         = useAuth()
   const router                  = useRouter()
   const userRef                 = useRef(null)
-  const logoRef   = useRef(null)
   const cardRef   = useRef(null)
-  const bgRef     = useRef(null)
-  const bottomRef = useRef(null)
 
   useEffect(() => {
     if (user) { router.push('/servicios'); return }
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
-    tl.fromTo(bgRef.current,    { opacity: 0 }, { opacity: 1, duration: 1.2 })
-      .fromTo(logoRef.current,  { opacity: 0, y: -28, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.75, ease: 'back.out(1.4)' }, 0.3)
-      .fromTo(cardRef.current,  { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6 }, 0.55)
-      .fromTo(bottomRef.current,{ opacity: 0 }, { opacity: 1, duration: 0.5 }, 0.85)
-    setTimeout(() => userRef.current?.focus(), 800)
+    userRef.current?.focus()
   }, [user, router])
 
   useEffect(() => { if (user) router.push('/servicios') }, [user, router])
@@ -36,12 +27,10 @@ export default function LoginPage() {
   async function handleSubmit(e) {
     e.preventDefault()
     if (!username.trim() || !password.trim()) { setError('Completa usuario y contraseña'); return }
-    gsap.to(cardRef.current, { scale: 0.99, duration: 0.1 })
     setLoading(true); setError('')
     const result = await login(username.trim(), password)
-    gsap.to(cardRef.current, { scale: 1, duration: 0.15 })
     if (!result.success) {
-      gsap.fromTo(cardRef.current, { x: 0 }, { x: 8, duration: 0.06, repeat: 5, yoyo: true, onComplete: () => gsap.set(cardRef.current, { x: 0 }) })
+      sacudir(cardRef.current)
       setError(result.error || 'Credenciales incorrectas')
       setLoading(false)
     }
@@ -51,17 +40,15 @@ export default function LoginPage() {
     <div className="grid min-h-dvh bg-canvas text-label lg:grid-cols-[minmax(0,1.15fr)_minmax(440px,1fr)]">
 
       {/* Fotografía de planta: solo en pantallas anchas */}
-      <div ref={bgRef} aria-hidden="true" className="relative hidden overflow-hidden lg:block" style={{ opacity: 0 }}>
+      <div aria-hidden="true" className="relative hidden overflow-hidden lg:block">
         <img src={MARCA.fondoLogin} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: '85% 20%' }} />
       </div>
 
       <main id="contenido" className="flex flex-col px-6 pt-16 pb-8 sm:px-12 lg:px-16">
-        <div className="my-auto w-full max-w-[360px]">
-          <div ref={logoRef} style={{ opacity: 0 }}>
-            <Logo height={44} />
-          </div>
+        <div className="enter my-auto w-full max-w-[360px]">
+          <Logo height={44} />
 
-          <div ref={cardRef} style={{ opacity: 0 }}>
+          <div ref={cardRef}>
             <h1 className="mt-12 text-title1 font-semibold">Inicia sesión</h1>
             <p className="mt-2 text-body text-label-2">Usa tu usuario y contraseña de {MARCA.nombre}.</p>
 
@@ -113,13 +100,23 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <footer ref={bottomRef} className="mt-16 text-caption text-label-3" style={{ opacity: 0 }}>
+        <footer className="mt-16 text-caption text-label-3">
           {MARCA.razonSocial} © {MARCA.anio} · Desarrollado por {MARCA.creditos}
         </footer>
       </main>
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
+  )
+}
+
+// Sacudida horizontal al fallar el acceso (como el login de macOS).
+// Web Animations: interrumpible y sin dependencias; se omite con movimiento reducido.
+function sacudir(el) {
+  if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  el.animate(
+    [{ transform: 'translateX(0)' }, { transform: 'translateX(-10px)' }, { transform: 'translateX(8px)' },
+     { transform: 'translateX(-6px)' }, { transform: 'translateX(4px)' }, { transform: 'translateX(0)' }],
+    { duration: 420, easing: 'ease-out' }
   )
 }
 
