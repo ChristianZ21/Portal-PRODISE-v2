@@ -43,7 +43,7 @@ export default function ServicioPage({ params }) {
 
   // Nivel 3 no asignado — bloqueo con mensaje
   if (asigCheck === false) return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, fontFamily: 'inherit' }}>
       <div style={{ fontSize: 48 }}>🔒</div>
       <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>No participas en este servicio</div>
       <div style={{ fontSize: 13, color: 'var(--text3)', textAlign: 'center', maxWidth: 320 }}>
@@ -85,12 +85,12 @@ export default function ServicioPage({ params }) {
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', position: 'relative' }}>
       {/* Overlay oscuro móvil */}
       {sidebarOpen && (
-        <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 40 }} />
+        <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', zIndex: 40 }} />
       )}
 
       {/* ── Sidebar ── */}
       <aside style={{
-        width: 210, background: 'rgba(5,5,7,0.99)', borderRight: '1px solid var(--border)',
+        width: 210, background: 'var(--surface)', borderRight: '1px solid var(--border)',
         display: 'flex', flexDirection: 'column', flexShrink: 0,
         height: '100vh', zIndex: 50,
         // Móvil: posición fija, fuera de pantalla por defecto
@@ -99,26 +99,26 @@ export default function ServicioPage({ params }) {
         transform: typeof window !== 'undefined' && window.innerWidth <= 768 && !sidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
         transition: 'transform 0.28s ease',
       }}>
-        <div style={{ padding: '16px 12px 14px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <div style={{ padding: '16px 12px 14px', borderBottom: '1px solid color-mix(in srgb, var(--ink) 5%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
           {/* Glow ambiental */}
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 180, height: 70, background: 'radial-gradient(ellipse, rgba(230,126,34,0.08) 0%, transparent 65%)', filter: 'blur(14px)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 180, height: 70, background: 'radial-gradient(ellipse, color-mix(in srgb, var(--accent) 8%, transparent) 0%, transparent 65%)', filter: 'blur(14px)', pointerEvents: 'none' }} />
           {/* Panel del logo con bordes difuminados estilo login */}
           <div style={{
             position: 'relative',
-            background: 'rgba(255,255,255,0.92)',
+            background: '#ffffff',
             borderRadius: 10,
             padding: '6px 14px',
-            boxShadow: '0 0 0 1px rgba(255,255,255,0.18), 0 0 16px 6px rgba(255,255,255,0.07), 0 0 36px 14px rgba(255,255,255,0.03), 0 4px 12px rgba(0,0,0,0.3)',
+            boxShadow: '0 0 0 1px color-mix(in srgb, var(--ink) 18%, transparent), 0 0 16px 6px color-mix(in srgb, var(--ink) 7%, transparent), 0 0 36px 14px color-mix(in srgb, var(--ink) 3%, transparent), 0 4px 12px rgba(0,0,0,0.3)',
           }}>
             <img src="/logo_prodise.png" alt="PRODISE" style={{ height: 28, objectFit: 'contain', display: 'block' }} />
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="close-sidebar-btn" style={{ position: 'absolute', right: 8, top: 10, background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: 22, cursor: 'pointer', lineHeight: 1, display: 'none' }}>×</button>
+          <button onClick={() => setSidebarOpen(false)} className="close-sidebar-btn" style={{ position: 'absolute', right: 8, top: 10, background: 'none', border: 'none', color: 'var(--text3)', fontSize: 22, cursor: 'pointer', lineHeight: 1, display: 'none' }}>×</button>
         </div>
         <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>{user.nombre}</div>
-          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>Nivel {n}</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)' }}>{user.nombre}</div>
+          <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 1 }}>Nivel {n}</div>
         </div>
-        <div style={{ margin: 8, padding: '9px 11px', borderRadius: 7, background: 'rgba(230,126,34,0.04)', border: '1px solid rgba(230,126,34,0.08)' }}>
+        <div style={{ margin: 8, padding: '9px 11px', borderRadius: 7, background: 'color-mix(in srgb, var(--accent) 4%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 8%, transparent)' }}>
           <div style={{ fontSize: 9, color: 'var(--accent)', fontWeight: 600, letterSpacing: 0.3 }}>SERVICIO ACTIVO</div>
           <div style={{ fontSize: 10, fontWeight: 600, marginTop: 2, lineHeight: 1.3 }}>{svc.nombre_descriptivo}</div>
           <span className={`badge ${svc.tipo === 'PDP' ? 'b-pdp' : 'b-pro'}`} style={{ marginTop: 4 }}>{svc.tipo}</span>
@@ -130,9 +130,9 @@ export default function ServicioPage({ params }) {
               borderRadius: 7, border: 'none', fontSize: 12.5,
               cursor: x.disabled ? 'not-allowed' : 'pointer',
               opacity: x.disabled ? 0.35 : 1,
-              background: sec === x.id ? 'rgba(230,126,34,0.08)' : 'none',
-              color: sec === x.id ? 'var(--accent)' : 'rgba(255,255,255,0.55)',
-              fontWeight: sec === x.id ? 600 : 400, fontFamily: 'Inter', textAlign: 'left', marginBottom: 1,
+              background: sec === x.id ? 'color-mix(in srgb, var(--accent) 8%, transparent)' : 'none',
+              color: sec === x.id ? 'var(--accent)' : 'var(--text2)',
+              fontWeight: sec === x.id ? 600 : 400, fontFamily: 'inherit', textAlign: 'left', marginBottom: 1,
             }}>
               <span style={{ fontSize: 13, width: 18, textAlign: 'center' }}>{x.icon}</span>
               <span style={{ flex: 1 }}>{x.label}</span>
@@ -151,7 +151,7 @@ export default function ServicioPage({ params }) {
         {/* Botón hamburguesa - solo visible en móvil via CSS */}
         <button onClick={() => setSidebarOpen(true)} className="hamburger-btn" style={{
           position: 'fixed', top: 10, left: 10, zIndex: 39,
-          background: 'rgba(5,5,7,0.95)', border: '1px solid rgba(255,255,255,0.1)',
+          background: 'var(--surface)', border: '1px solid color-mix(in srgb, var(--ink) 10%, transparent)',
           borderRadius: 8, padding: '8px 11px', cursor: 'pointer', color: 'var(--text)',
           fontSize: 16, lineHeight: 1, display: 'none',
         }}>☰</button>
@@ -272,7 +272,7 @@ function Evaluar({ svc, user }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {list.filter(p => p.nombre.toLowerCase().includes(search.toLowerCase())).map(p => (
                 <div key={p.id_asignacion} onClick={() => pick(p)} className="card" style={{ padding: '11px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(230,126,34,0.06)', border: '2px solid rgba(230,126,34,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--accent)', flexShrink: 0, overflow: 'hidden' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'color-mix(in srgb, var(--accent) 6%, transparent)', border: '2px solid color-mix(in srgb, var(--accent) 15%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--accent)', flexShrink: 0, overflow: 'hidden' }}>
                     {p.foto ? <img src={p.foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : getInitials(p.nombre)}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -292,7 +292,7 @@ function Evaluar({ svc, user }) {
         <div className="fade">
           <button className="btn btn-ghost" onClick={() => { setSel(null); setPregs([]) }} style={{ marginBottom: 16 }}>← Volver a la lista</button>
           <div className="card-static" style={{ padding: '16px 18px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 62, height: 62, borderRadius: '50%', background: 'rgba(230,126,34,0.06)', border: '2px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: 'var(--accent)', flexShrink: 0, overflow: 'hidden' }}>
+            <div style={{ width: 62, height: 62, borderRadius: '50%', background: 'color-mix(in srgb, var(--accent) 6%, transparent)', border: '2px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: 'var(--accent)', flexShrink: 0, overflow: 'hidden' }}>
               {sel.foto
                 ? <img src={sel.foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display='none' }} />
                 : getInitials(sel.nombre)
@@ -319,7 +319,7 @@ function Evaluar({ svc, user }) {
                       display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 12px', borderRadius: 7,
                       cursor: 'pointer', marginBottom: 3,
                       border: resp[i] === ni + 1 ? '1px solid var(--accent)' : '1px solid var(--border)',
-                      background: resp[i] === ni + 1 ? 'rgba(230,126,34,0.04)' : 'transparent',
+                      background: resp[i] === ni + 1 ? 'color-mix(in srgb, var(--accent) 4%, transparent)' : 'transparent',
                     }}>
                       <input type="radio" name={`q${i}`} checked={resp[i] === ni + 1} onChange={() => setResp({ ...resp, [i]: ni + 1 })} style={{ marginTop: 3, accentColor: 'var(--accent)' }} />
                       <div>
@@ -414,18 +414,18 @@ function Historial({ svc, user }) {
                   <div style={{ fontSize: 9, color: 'var(--text3)' }}>{new Date(h.fecha_hora).toLocaleDateString('es-PE')}</div>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, padding: '5px 10px', background: 'rgba(91,164,207,0.04)', borderRadius: 5 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, padding: '5px 10px', background: 'color-mix(in srgb, var(--accent2) 4%, transparent)', borderRadius: 5 }}>
                 <div style={{ fontSize: 10, color: 'var(--text2)' }}>Evaluado por: <span style={{ fontWeight: 600, color: 'var(--accent2)' }}>{h.nombre_evaluador}</span></div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, marginBottom: 8 }}>
                 {[{ l: 'Seguridad', v: h.nota_1 }, { l: 'Calidad', v: h.nota_2 }, { l: 'Actitud', v: h.nota_3 }, { l: 'Precisión', v: h.nota_4 }].map((d, i) => (
-                  <div key={i} style={{ textAlign: 'center', padding: '6px 4px', background: 'rgba(255,255,255,0.02)', borderRadius: 5, border: '1px solid var(--border)' }}>
+                  <div key={i} style={{ textAlign: 'center', padding: '6px 4px', background: 'color-mix(in srgb, var(--ink) 2%, transparent)', borderRadius: 5, border: '1px solid var(--border)' }}>
                     <div style={{ fontSize: 15, fontWeight: 700, color: d.v >= 3.5 ? 'var(--green)' : d.v >= 2.0 ? 'var(--yellow)' : 'var(--red)' }}>{d.v}</div>
                     <div style={{ fontSize: 8, color: 'var(--text3)', marginTop: 1 }}>{d.l}</div>
                   </div>
                 ))}
               </div>
-              <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.5, padding: '8px 12px', background: 'rgba(255,255,255,0.01)', borderRadius: 6, borderLeft: '2px solid rgba(91,164,207,0.2)' }}>
+              <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.5, padding: '8px 12px', background: 'color-mix(in srgb, var(--ink) 1%, transparent)', borderRadius: 6, borderLeft: '2px solid color-mix(in srgb, var(--accent2) 20%, transparent)' }}>
                 <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, marginBottom: 2 }}>COMENTARIO DEL EVALUADOR</div>
                 {h.comentarios}
               </div>
@@ -639,7 +639,7 @@ function Dashboard({ svc, user }) {
         ].map(t => (
           <button key={t.id} onClick={() => setDashTab(t.id)} style={{
             padding: '7px 16px', background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 13, fontFamily: 'Inter', fontWeight: dashTab === t.id ? 600 : 400,
+            fontSize: 13, fontFamily: 'inherit', fontWeight: dashTab === t.id ? 600 : 400,
             color: dashTab === t.id ? (t.badge ? 'var(--red)' : 'var(--accent)') : 'var(--text3)',
             borderBottom: dashTab === t.id ? `2px solid ${t.badge ? 'var(--red)' : 'var(--accent)'}` : '2px solid transparent',
             marginBottom: -1, transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: 5,
@@ -664,9 +664,9 @@ function Dashboard({ svc, user }) {
               {alertas.map((a, i) => (
                 <div key={i} style={{
                   padding: '12px 16px', borderRadius: 9, fontSize: 12, display: 'flex', alignItems: 'center', gap: 10,
-                  background: a.tipo === 'baja' ? 'rgba(192,57,43,0.07)' : 'rgba(212,160,23,0.07)',
-                  border: `1px solid ${a.tipo === 'baja' ? 'rgba(192,57,43,0.2)' : 'rgba(212,160,23,0.2)'}`,
-                  color: a.tipo === 'baja' ? '#E8A09A' : '#D4A017',
+                  background: a.tipo === 'baja' ? 'color-mix(in srgb, var(--red) 7%, transparent)' : 'color-mix(in srgb, var(--yellow) 7%, transparent)',
+                  border: `1px solid ${a.tipo === 'baja' ? 'color-mix(in srgb, var(--red) 20%, transparent)' : 'color-mix(in srgb, var(--yellow) 20%, transparent)'}`,
+                  color: a.tipo === 'baja' ? 'var(--red)' : 'var(--yellow)',
                 }}>
                   <span style={{ fontSize: 16 }}>{a.tipo === 'baja' ? '⚠' : '◎'}</span>
                   <div style={{ flex: 1 }}>
@@ -696,7 +696,7 @@ function Dashboard({ svc, user }) {
           <span style={{ fontSize: 12, fontWeight: 600 }}>Progreso de evaluación</span>
           <span style={{ fontSize: 12, fontWeight: 700, color: kpi.pctEval >= 80 ? 'var(--green)' : kpi.pctEval >= 50 ? 'var(--yellow)' : 'var(--red)' }}>{kpi.pctEval}%</span>
         </div>
-        <div style={{ height: 8, background: 'rgba(255,255,255,0.05)', borderRadius: 4, overflow: 'hidden' }}>
+        <div style={{ height: 8, background: 'color-mix(in srgb, var(--ink) 5%, transparent)', borderRadius: 4, overflow: 'hidden' }}>
           <div style={{
             height: '100%', width: `${kpi.pctEval}%`, borderRadius: 4, transition: 'width 0.8s ease',
             background: kpi.pctEval >= 80 ? 'var(--green)' : kpi.pctEval >= 50 ? 'var(--yellow)' : 'var(--red)',
@@ -715,9 +715,9 @@ function Dashboard({ svc, user }) {
               <div key={d.dim} style={{ marginBottom: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
                   <span style={{ fontSize: 11, color: 'var(--text2)' }}>{d.dim}</span>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: scoreColor(d.avg), fontFamily: 'monospace' }}>{d.avg ?? '—'}</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: scoreColor(d.avg), fontFamily: 'var(--font-mono)' }}>{d.avg ?? '—'}</span>
                 </div>
-                <div style={{ height: 5, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ height: 5, background: 'color-mix(in srgb, var(--ink) 4%, transparent)', borderRadius: 3, overflow: 'hidden' }}>
                   <div style={{ height: '100%', borderRadius: 3, width: `${d.avg ? (parseFloat(d.avg) / 4) * 100 : 0}%`, background: scoreColor(d.avg), transition: 'width 0.8s ease' }} />
                 </div>
               </div>
@@ -731,11 +731,11 @@ function Dashboard({ svc, user }) {
                   <div key={cargo.cargo} style={{ marginBottom: 8 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3, alignItems: 'center' }}>
                       <span style={{ fontSize: 10, color: 'var(--text2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%' }}>{cargo.cargo}</span>
-                      <span style={{ fontSize: 12, fontWeight: 800, color: cargo.promedio ? scoreColor(cargo.promedio) : 'var(--text3)', fontFamily: 'monospace', flexShrink: 0 }}>
+                      <span style={{ fontSize: 12, fontWeight: 800, color: cargo.promedio ? scoreColor(cargo.promedio) : 'var(--text3)', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
                         {cargo.promedio ?? '—'}
                       </span>
                     </div>
-                    <div style={{ height: 4, background: 'rgba(255,255,255,0.04)', borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ height: 4, background: 'color-mix(in srgb, var(--ink) 4%, transparent)', borderRadius: 2, overflow: 'hidden' }}>
                       <div style={{ height: '100%', borderRadius: 2, width: cargo.promedio ? `${(parseFloat(cargo.promedio) / 4) * 100}%` : '0%', background: cargo.promedio ? scoreColor(cargo.promedio) : 'transparent', transition: 'width 0.8s ease' }} />
                     </div>
                     <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 1 }}>{cargo.evaluados} eval.</div>
@@ -757,10 +757,10 @@ function Dashboard({ svc, user }) {
                     <span style={{ fontSize: 11, color: 'var(--text2)', fontWeight: g.promedio ? 600 : 400 }}>Grupo {g.grupo}</span>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                       <span style={{ fontSize: 9, color: 'var(--text3)' }}>{g.evaluados}/{g.total}</span>
-                      {g.promedio && <span style={{ fontSize: 13, fontWeight: 800, color: scoreColor(g.promedio), fontFamily: 'monospace' }}>{g.promedio}</span>}
+                      {g.promedio && <span style={{ fontSize: 13, fontWeight: 800, color: scoreColor(g.promedio), fontFamily: 'var(--font-mono)' }}>{g.promedio}</span>}
                     </div>
                   </div>
-                  <div style={{ height: 5, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ height: 5, background: 'color-mix(in srgb, var(--ink) 4%, transparent)', borderRadius: 3, overflow: 'hidden' }}>
                     <div style={{ height: '100%', borderRadius: 3, width: `${g.pct}%`, background: g.pct >= 80 ? 'var(--green)' : g.pct >= 50 ? 'var(--accent)' : 'var(--text3)', transition: 'width 0.8s ease' }} />
                   </div>
                 </div>
@@ -778,16 +778,16 @@ function Dashboard({ svc, user }) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
             {actividades.map(a => (
-              <div key={a.id_actividad} style={{ display: 'flex', gap: 12, background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: 8, border: '1px solid var(--border)' }}>
+              <div key={a.id_actividad} style={{ display: 'flex', gap: 12, background: 'color-mix(in srgb, var(--ink) 2%, transparent)', padding: '10px', borderRadius: 8, border: '1px solid var(--border)' }}>
                 {a.meta?.url_foto ? (
                   <img src={a.meta.url_foto} alt="Actividad" style={{ width: 60, height: 60, borderRadius: 6, objectFit: 'cover' }} />
                 ) : (
-                  <div style={{ width: 60, height: 60, borderRadius: 6, background: 'rgba(230,126,34,0.1)', border: '1px solid rgba(230,126,34,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🔧</div>
+                  <div style={{ width: 60, height: 60, borderRadius: 6, background: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🔧</div>
                 )}
                 <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                   <div style={{ fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.nombre_actividad}</div>
                   <div style={{ fontSize: 9, color: 'var(--accent)', fontWeight: 600, marginTop: 2 }}>{a.catalogo_competencias?.nombre}</div>
-                  <div style={{ display: 'flex', gap: 10, fontSize: 9, color: 'var(--text3)', marginTop: 4, fontFamily: 'monospace' }}>
+                  <div style={{ display: 'flex', gap: 10, fontSize: 9, color: 'var(--text3)', marginTop: 4, fontFamily: 'var(--font-mono)' }}>
                     <span>Grupo {a.meta?.id_grupo || 'Gral'}</span>
                     <span>Prog: {a.duracion_programada || '-'}h</span>
                     <span>Real: {a.duracion_horas || '-'}h</span>
@@ -806,14 +806,14 @@ function Dashboard({ svc, user }) {
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.5, marginBottom: 10, textTransform: 'uppercase' }}>Últimas evaluaciones</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 6 }}>
               {recent.slice(0, 8).map((r, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 10px', background: 'rgba(255,255,255,0.02)', borderRadius: 6 }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 10px', background: 'color-mix(in srgb, var(--ink) 2%, transparent)', borderRadius: 6 }}>
                   <Avatar nombre={r.nombre} foto={r.foto} size={30} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.nombre}</div>
                     <div style={{ fontSize: 9, color: 'var(--text3)' }}>{r.cargo}</div>
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: scoreColor(r.nota), fontFamily: 'monospace', lineHeight: 1 }}>{r.nota}</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: scoreColor(r.nota), fontFamily: 'var(--font-mono)', lineHeight: 1 }}>{r.nota}</div>
                     <div style={{ fontSize: 8, color: 'var(--text3)', marginTop: 1 }}>{new Date(r.fecha).toLocaleDateString('es-PE', {day: '2-digit', month: 'short'})}</div>
                   </div>
                 </div>
@@ -823,14 +823,14 @@ function Dashboard({ svc, user }) {
         )}
 
         {kpi.topScorer && (
-          <div className="card-static" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 8, background: 'linear-gradient(160deg, rgba(255,215,0,0.06) 0%, rgba(255,180,0,0.02) 100%)', border: '1px solid rgba(255,215,0,0.2)' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: '#FFD700', letterSpacing: 0.8 }}>🥇 TOP SCORER</div>
+          <div className="card-static" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 8, background: 'linear-gradient(160deg, color-mix(in srgb, var(--gold) 6%, transparent) 0%, color-mix(in srgb, var(--gold) 2%, transparent) 100%)', border: '1px solid color-mix(in srgb, var(--gold) 20%, transparent)' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--gold)', letterSpacing: 0.8 }}>🥇 TOP SCORER</div>
             <Avatar nombre={kpi.topScorer.nombre} foto={kpi.topScorer.foto} size={58} />
             <div>
               <div style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.25 }}>{kpi.topScorer.nombre}</div>
               <div style={{ fontSize: 10, color: 'var(--accent)', marginTop: 2, fontWeight: 600 }}>{kpi.topScorer.cargo}</div>
             </div>
-            <div style={{ fontSize: 30, fontWeight: 900, color: 'var(--green)', lineHeight: 1, fontFamily: 'monospace', textShadow: '0 0 20px rgba(39,174,96,0.4)' }}>{kpi.topScorer.nota}</div>
+            <div style={{ fontSize: 30, fontWeight: 900, color: 'var(--green)', lineHeight: 1, fontFamily: 'var(--font-mono)', textShadow: '0 0 20px color-mix(in srgb, var(--green) 40%, transparent)' }}>{kpi.topScorer.nota}</div>
           </div>
         )}
       </div>
@@ -857,7 +857,7 @@ function Avatar({ nombre, foto, size = 36 }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
-      background: 'rgba(230,126,34,0.08)', border: '1.5px solid rgba(230,126,34,0.15)',
+      background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1.5px solid color-mix(in srgb, var(--accent) 15%, transparent)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontSize: size * 0.3, fontWeight: 700, color: 'var(--accent)',
     }}>
@@ -893,7 +893,7 @@ function AdminPanel({ svc, user }) {
         {tabs.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             padding: '8px 14px', background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 12, fontFamily: 'Inter', fontWeight: tab === t.id ? 600 : 400,
+            fontSize: 12, fontFamily: 'inherit', fontWeight: tab === t.id ? 600 : 400,
             color: tab === t.id ? 'var(--accent)' : 'var(--text3)',
             borderBottom: tab === t.id ? '2px solid var(--accent)' : '2px solid transparent',
             marginBottom: -1, transition: 'color 0.2s', whiteSpace: 'nowrap', flexShrink: 0,
@@ -967,7 +967,7 @@ function AdminResumen({ svc }) {
          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text2)', marginBottom: 16 }}>DESGLOSE POR ESPECIALIDAD (CARGOS)</div>
          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
             {stats.cargos.map(([nombre, cant]) => (
-               <div key={nombre} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: 'rgba(255,255,255,0.02)', borderRadius: 6, border: '1px solid var(--border)' }}>
+               <div key={nombre} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: 'color-mix(in srgb, var(--ink) 2%, transparent)', borderRadius: 6, border: '1px solid var(--border)' }}>
                  <span style={{ fontSize: 11, fontWeight: 600 }}>{nombre}</span>
                  <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--accent2)' }}>{cant}</span>
                </div>
@@ -1186,7 +1186,7 @@ function AdminCarga({ svc, user }) {
                 { col: 'TURNO', req: true, desc: 'Letra A o B' },
                 { col: 'ID_GRUPO', req: true, desc: 'Número o MASTER' },
               ].map(c => (
-                <div key={c.col} style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: 7, border: '1px solid var(--border)' }}>
+                <div key={c.col} style={{ padding: '10px 12px', background: 'color-mix(in srgb, var(--ink) 2%, transparent)', borderRadius: 7, border: '1px solid var(--border)' }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', marginBottom: 3 }}>{c.col}</div>
                   <div style={{ fontSize: 10, color: 'var(--text3)', lineHeight: 1.4 }}>{c.desc}</div>
                 </div>
@@ -1194,11 +1194,11 @@ function AdminCarga({ svc, user }) {
             </div>
             
             {cargos.length > 0 && (
-              <div style={{ marginTop: 16, padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ marginTop: 16, padding: '12px', background: 'color-mix(in srgb, var(--ink) 2%, transparent)', borderRadius: 8, border: '1px solid color-mix(in srgb, var(--ink) 5%, transparent)' }}>
                 <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text2)', marginBottom: 10 }}>CATÁLOGO ESTRICTO DE CARGOS PERMITIDOS (Copia y pega exacto):</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {cargos.map(c => (
-                    <span key={c.id_cargo} style={{ padding: '4px 8px', background: 'rgba(91,164,207,0.08)', borderRadius: 4, fontSize: 10, color: 'var(--accent2)', border: '1px solid rgba(91,164,207,0.2)', fontFamily: 'monospace' }}>
+                    <span key={c.id_cargo} style={{ padding: '4px 8px', background: 'color-mix(in srgb, var(--accent2) 8%, transparent)', borderRadius: 4, fontSize: 10, color: 'var(--accent2)', border: '1px solid color-mix(in srgb, var(--accent2) 20%, transparent)', fontFamily: 'var(--font-mono)' }}>
                       {c.nombre_oficial}
                     </span>
                   ))}
@@ -1217,14 +1217,14 @@ function AdminCarga({ svc, user }) {
                 value={textoPegado} 
                 onChange={e => setTextoPegado(e.target.value)} 
                 placeholder="Selecciona tus 5 columnas en Excel (incluyendo los encabezados), cópialas y presiona aquí Ctrl + V..."
-                style={{ flex: 1, minHeight: 160, resize: 'none', fontFamily: 'monospace', fontSize: 11, whiteSpace: 'pre', border: '2px dashed var(--green)', background: 'rgba(39,174,96,0.03)' }}
+                style={{ flex: 1, minHeight: 160, resize: 'none', fontFamily: 'var(--font-mono)', fontSize: 11, whiteSpace: 'pre', border: '2px dashed var(--green)', background: 'color-mix(in srgb, var(--green) 3%, transparent)' }}
               />
-              <button className="btn" onClick={procesarPegadoExcel} disabled={!textoPegado} style={{ marginTop: 10, background: 'var(--green)', color: '#000', fontWeight: 800 }}>Procesar datos pegados</button>
+              <button className="btn" onClick={procesarPegadoExcel} disabled={!textoPegado} style={{ marginTop: 10, background: 'var(--green)', color: 'var(--on-accent)', fontWeight: 800 }}>Procesar datos pegados</button>
             </div>
             <div style={{ width: 1, background: 'var(--border)', margin: '10px 0' }} />
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
               <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: 'var(--text2)' }}>Opción B: Subir archivo CSV</div>
-              <div onClick={() => fileRef.current?.click()} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border)', borderRadius: 12, padding: '20px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.2s', background: 'rgba(255,255,255,0.01)', minHeight: 160 }} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) { const dt = new DataTransfer(); dt.items.add(f); fileRef.current.files = dt.files; handleFile({ target: fileRef.current }) } }}>
+              <div onClick={() => fileRef.current?.click()} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border)', borderRadius: 12, padding: '20px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.2s', background: 'color-mix(in srgb, var(--ink) 1%, transparent)', minHeight: 160 }} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) { const dt = new DataTransfer(); dt.items.add(f); fileRef.current.files = dt.files; handleFile({ target: fileRef.current }) } }}>
                 <div style={{ fontSize: 32, marginBottom: 10 }}>📁</div>
                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Arrastra tu CSV aquí</div>
                 <div style={{ fontSize: 11, color: 'var(--text3)' }}>o haz click para buscar</div>
@@ -1253,14 +1253,14 @@ function AdminCarga({ svc, user }) {
           </div>
 
           {errors.length > 0 ? (
-            <div className="card-static" style={{ padding: '16px 20px', marginBottom: 14, border: '1px solid var(--red)', background: 'rgba(231,76,60,0.05)' }}>
+            <div className="card-static" style={{ padding: '16px 20px', marginBottom: 14, border: '1px solid var(--red)', background: 'color-mix(in srgb, var(--red) 5%, transparent)' }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--red)', marginBottom: 8 }}>⚠️ Carga Bloqueada por Errores</div>
               <div style={{ fontSize: 11, color: 'var(--text2)', marginBottom: 12 }}>El archivo contiene datos inválidos o cargos que no existen en el catálogo. <strong>Debes corregir tu archivo Excel y volver a pegarlo.</strong> No se permite la subida parcial.</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 200, overflowY: 'auto' }}>
                 {errors.map((e, i) => (
-                  <div key={i} style={{ fontSize: 11, padding: '7px 10px', background: 'rgba(192,57,43,0.05)', borderRadius: 6, borderLeft: '2px solid rgba(192,57,43,0.3)' }}>
+                  <div key={i} style={{ fontSize: 11, padding: '7px 10px', background: 'color-mix(in srgb, var(--red) 5%, transparent)', borderRadius: 6, borderLeft: '2px solid color-mix(in srgb, var(--red) 30%, transparent)' }}>
                     <span style={{ fontWeight: 600 }}>Fila {e.fila}</span> — {e.dni} {e.nombre && `· ${e.nombre}`}
-                    <div style={{ color: '#E8A09A', marginTop: 2 }}>{e.errores.join(' · ')}</div>
+                    <div style={{ color: 'var(--red)', marginTop: 2 }}>{e.errores.join(' · ')}</div>
                   </div>
                 ))}
               </div>
@@ -1279,8 +1279,8 @@ function AdminCarga({ svc, user }) {
                   </thead>
                   <tbody>
                     {rows.slice(0, 5).map((r, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                        <td style={{ padding: '5px 8px', fontFamily: 'monospace' }}>{r.dni}</td>
+                      <tr key={i} style={{ borderBottom: '1px solid color-mix(in srgb, var(--ink) 3%, transparent)' }}>
+                        <td style={{ padding: '5px 8px', fontFamily: 'var(--font-mono)' }}>{r.dni}</td>
                         <td style={{ padding: '5px 8px', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.nombre}</td>
                         <td style={{ padding: '5px 8px', color: 'var(--accent)' }}>{r.cargoNombre}</td>
                         <td style={{ padding: '5px 8px' }}>{r.turno}</td>
@@ -1316,7 +1316,7 @@ function AdminCarga({ svc, user }) {
           {stats.erroresCarga?.length > 0 && (
             <div style={{ marginBottom: 20, textAlign: 'left', maxWidth: 500, margin: '0 auto 20px' }}>
               {stats.erroresCarga.map((e, i) => (
-                <div key={i} style={{ fontSize: 11, padding: '6px 10px', marginBottom: 4, background: 'rgba(192,57,43,0.07)', borderRadius: 6, color: '#E8A09A' }}>
+                <div key={i} style={{ fontSize: 11, padding: '6px 10px', marginBottom: 4, background: 'color-mix(in srgb, var(--red) 7%, transparent)', borderRadius: 6, color: 'var(--red)' }}>
                   {e.dni} — {e.nombre}: {e.error}
                 </div>
               ))}
@@ -1393,7 +1393,7 @@ function Ranking({ svc, user }) {
   const avg    = arr => arr.reduce((a, b) => a + b, 0) / arr.length
   const round2 = n   => Math.round(n * 100) / 100
   const scoreColor = v => { if (!v && v !== 0) return 'var(--text3)'; return v >= 3.5 ? 'var(--green)' : v >= 2.0 ? 'var(--yellow)' : 'var(--red)' }
-  const medalColor = p => p === 1 ? '#FFD700' : p === 2 ? '#C0C0C0' : '#CD7F32'
+  const medalColor = p => p === 1 ? 'var(--gold)' : p === 2 ? 'var(--silver)' : 'var(--bronze)'
 
   const [podioCargo, setPodioCargo] = useState([])
 
@@ -1512,13 +1512,13 @@ function Ranking({ svc, user }) {
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {/* Modo: Solo este servicio */}
           <button onClick={() => { setModoRanking('actual'); setUsar7030(false) }}
-            style={{ padding: '8px 14px', borderRadius: 8, border: `1px solid ${modoRanking === 'actual' ? 'var(--accent2)' : 'var(--border)'}`, background: modoRanking === 'actual' ? 'rgba(91,164,207,0.1)' : 'rgba(255,255,255,0.03)', color: modoRanking === 'actual' ? 'var(--accent2)' : 'var(--text3)', fontSize: 12, fontWeight: modoRanking === 'actual' ? 700 : 400, cursor: 'pointer', fontFamily: 'Inter', transition: 'all 0.15s' }}>
+            style={{ padding: '8px 14px', borderRadius: 8, border: `1px solid ${modoRanking === 'actual' ? 'var(--accent2)' : 'var(--border)'}`, background: modoRanking === 'actual' ? 'color-mix(in srgb, var(--accent2) 10%, transparent)' : 'color-mix(in srgb, var(--ink) 3%, transparent)', color: modoRanking === 'actual' ? 'var(--accent2)' : 'var(--text3)', fontSize: 12, fontWeight: modoRanking === 'actual' ? 700 : 400, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
             Solo este servicio
             {modoRanking === 'actual' && <div style={{ fontSize: 9, opacity: 0.7, marginTop: 1 }}>Sin historial previo</div>}
           </button>
           {/* Modo: Fórmula 70/30 */}
           <button onClick={() => { setModoRanking('formula'); setUsar7030(true) }}
-            style={{ padding: '8px 14px', borderRadius: 8, border: `1px solid ${modoRanking === 'formula' ? 'var(--accent)' : 'var(--border)'}`, background: modoRanking === 'formula' ? 'rgba(230,126,34,0.08)' : 'rgba(255,255,255,0.03)', color: modoRanking === 'formula' ? 'var(--accent)' : 'var(--text3)', fontSize: 12, fontWeight: modoRanking === 'formula' ? 700 : 400, cursor: 'pointer', fontFamily: 'Inter', transition: 'all 0.15s' }}>
+            style={{ padding: '8px 14px', borderRadius: 8, border: `1px solid ${modoRanking === 'formula' ? 'var(--accent)' : 'var(--border)'}`, background: modoRanking === 'formula' ? 'color-mix(in srgb, var(--accent) 8%, transparent)' : 'color-mix(in srgb, var(--ink) 3%, transparent)', color: modoRanking === 'formula' ? 'var(--accent)' : 'var(--text3)', fontSize: 12, fontWeight: modoRanking === 'formula' ? 700 : 400, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
             Fórmula 70/30
             {modoRanking === 'formula' && <div style={{ fontSize: 9, opacity: 0.7, marginTop: 1 }}>{(pesos.actual*100).toFixed(0)}% actual + {(pesos.historico*100).toFixed(0)}% hist.</div>}
           </button>
@@ -1540,24 +1540,24 @@ function Ranking({ svc, user }) {
           <div style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 600, marginBottom: 5 }}>FILTRAR POR CARGO</div>
           <select className="input" value={cargoSelPodio} onChange={e => setCargoSelPodio(e.target.value === 'TODOS' ? 'TODOS' : parseInt(e.target.value))}
             style={{ fontSize: 12, background: 'var(--bg2)', color: 'var(--text)' }}>
-            <option value="TODOS" style={{ background: '#0c0c10', color: '#E8E8E8' }}>Mostrar todos los cargos</option>
-            {cargos.map(c => <option key={c.id} value={c.id} style={{ background: '#0c0c10', color: '#E8E8E8' }}>{c.nombre}{!c.tieneEvals ? ' (sin eval.)' : ''}</option>)}
+            <option value="TODOS" style={{ background: 'var(--bg2)', color: 'var(--text)' }}>Mostrar todos los cargos</option>
+            {cargos.map(c => <option key={c.id} value={c.id} style={{ background: 'var(--bg2)', color: 'var(--text)' }}>{c.nombre}{!c.tieneEvals ? ' (sin eval.)' : ''}</option>)}
           </select>
         </div>
         <div style={{ minWidth: 110 }}>
           <div style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 600, marginBottom: 5 }}>TURNO</div>
           <select className="input" value={turnoFiltro} onChange={e => setTurnoFiltro(e.target.value)} style={{ fontSize: 12, background: 'var(--bg2)', color: 'var(--text)' }}>
-            <option style={{ background: '#0c0c10' }} value="TODOS">Todos</option>
-            <option style={{ background: '#0c0c10' }} value="A">Turno A</option>
-            <option style={{ background: '#0c0c10' }} value="B">Turno B</option>
+            <option style={{ background: 'var(--bg2)' }} value="TODOS">Todos</option>
+            <option style={{ background: 'var(--bg2)' }} value="A">Turno A</option>
+            <option style={{ background: 'var(--bg2)' }} value="B">Turno B</option>
           </select>
         </div>
         {grupos.length > 0 && (
           <div style={{ minWidth: 110 }}>
             <div style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 600, marginBottom: 5 }}>GRUPO</div>
             <select className="input" value={grupoFiltro} onChange={e => setGrupoFiltro(e.target.value)} style={{ fontSize: 12, background: 'var(--bg2)', color: 'var(--text)' }}>
-              <option style={{ background: '#0c0c10' }} value="TODOS">Todos</option>
-              {grupos.map(g => <option key={g} value={g} style={{ background: '#0c0c10' }}>Grupo {g}</option>)}
+              <option style={{ background: 'var(--bg2)' }} value="TODOS">Todos</option>
+              {grupos.map(g => <option key={g} value={g} style={{ background: 'var(--bg2)' }}>Grupo {g}</option>)}
             </select>
           </div>
         )}
@@ -1589,7 +1589,7 @@ function Ranking({ svc, user }) {
                   <div style={{ textAlign: 'right' }}>FINAL</div>
                 </div>
                 {grupo.rows.map((r, i) => (
-                  <div key={r.id_asignacion} style={{ borderBottom: i < grupo.rows.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', background: r.posicion <= 3 ? 'rgba(255,255,255,0.012)' : 'transparent' }}>
+                  <div key={r.id_asignacion} style={{ borderBottom: i < grupo.rows.length - 1 ? '1px solid color-mix(in srgb, var(--ink) 3%, transparent)' : 'none', background: r.posicion <= 3 ? 'color-mix(in srgb, var(--ink) 1.2%, transparent)' : 'transparent' }}>
                     <div className="rank-row-content" style={{ display: 'grid', gridTemplateColumns: '28px 1fr 64px 64px 90px', gap: 4, padding: '9px 12px', alignItems: 'center' }}>
                       <div style={{ fontSize: 12, fontWeight: 800, textAlign: 'center', color: r.posicion <= 3 ? medalColor(r.posicion) : 'var(--text3)' }}>
                         {r.posicion <= 3 ? ['🥇','🥈','🥉'][r.posicion-1] : r.posicion}
@@ -1604,8 +1604,8 @@ function Ranking({ svc, user }) {
                       <div style={{ textAlign: 'right', fontSize: 13, fontWeight: 700, color: scoreColor(r.notaActual) }}>{r.notaActual}</div>
                       <div style={{ textAlign: 'right', fontSize: 12, color: usar7030 ? 'var(--accent2)' : 'var(--text3)', opacity: usar7030 ? 1 : 0.2 }}>{usar7030 ? (r.notaHist ?? '—') : '—'}</div>
                       <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
-                        <span style={{ fontSize: 15, fontWeight: 900, color: scoreColor(r.notaFinal), fontFamily: 'monospace' }}>{r.notaFinal}</span>
-                        <div style={{ width: 60, height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+                        <span style={{ fontSize: 15, fontWeight: 900, color: scoreColor(r.notaFinal), fontFamily: 'var(--font-mono)' }}>{r.notaFinal}</span>
+                        <div style={{ width: 60, height: 4, background: 'color-mix(in srgb, var(--ink) 6%, transparent)', borderRadius: 2, overflow: 'hidden' }}>
                           <div style={{ height: '100%', borderRadius: 2, width: `${(r.notaFinal / 4) * 100}%`, background: scoreColor(r.notaFinal), transition: 'width 0.6s ease' }} />
                         </div>
                       </div>
@@ -1618,7 +1618,7 @@ function Ranking({ svc, user }) {
         </div>
       )}
 
-      <div style={{ marginTop: 16, padding: '10px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+      <div style={{ marginTop: 16, padding: '10px 14px', background: 'color-mix(in srgb, var(--ink) 3%, transparent)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
         <span style={{ fontSize: 10, color: 'var(--text3)', marginRight: 4 }}>Total evaluados: {totalEval} ·</span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: 'var(--green)' }}>
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--green)' }} />≥ 3.5 Óptimo
@@ -1639,8 +1639,8 @@ function Ranking({ svc, user }) {
 
 function ToggleSwitch({ on, onChange, color, label, sub }) {
   return (
-    <div onClick={() => onChange(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', cursor: 'pointer', background: on ? `${color}14` : 'rgba(255,255,255,0.03)', border: `1px solid ${on ? `${color}44` : 'var(--border)'}`, borderRadius: 8, transition: 'all 0.2s', userSelect: 'none' }}>
-      <div style={{ width: 32, height: 18, borderRadius: 9, position: 'relative', transition: 'background 0.2s', background: on ? color : 'rgba(255,255,255,0.1)' }}>
+    <div onClick={() => onChange(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', cursor: 'pointer', background: on ? `color-mix(in srgb, ${color} 8%, transparent)` : 'color-mix(in srgb, var(--ink) 3%, transparent)', border: `1px solid ${on ? `color-mix(in srgb, ${color} 27%, transparent)` : 'var(--border)'}`, borderRadius: 8, transition: 'all 0.2s', userSelect: 'none' }}>
+      <div style={{ width: 32, height: 18, borderRadius: 9, position: 'relative', transition: 'background 0.2s', background: on ? color : 'color-mix(in srgb, var(--ink) 10%, transparent)' }}>
         <div style={{ position: 'absolute', top: 3, left: on ? 16 : 3, width: 12, height: 12, borderRadius: '50%', background: 'white', transition: 'left 0.2s' }} />
       </div>
       <div style={{ fontSize: 11 }}>
@@ -1700,17 +1700,17 @@ function Podio({ items, medalColor, scoreColor, svcId }) {
           <div key={p.id_asignacion} style={{
             flex: podioFlex(pos), minWidth: 0, position: 'relative', textAlign: 'center',
             background: isFirst
-              ? 'linear-gradient(160deg, rgba(255,215,0,0.09) 0%, rgba(255,180,0,0.04) 100%)'
-              : pos===2 ? 'rgba(192,192,192,0.04)' : 'rgba(205,127,50,0.04)',
-            border: `1px solid ${isFirst ? 'rgba(255,215,0,0.32)' : pos===2 ? 'rgba(192,192,192,0.16)' : 'rgba(205,127,50,0.16)'}`,
+              ? 'linear-gradient(160deg, color-mix(in srgb, var(--gold) 9%, transparent) 0%, color-mix(in srgb, var(--gold) 4%, transparent) 100%)'
+              : pos===2 ? 'color-mix(in srgb, var(--silver) 4%, transparent)' : 'color-mix(in srgb, var(--bronze) 4%, transparent)',
+            border: `1px solid ${isFirst ? 'color-mix(in srgb, var(--gold) 32%, transparent)' : pos===2 ? 'color-mix(in srgb, var(--silver) 16%, transparent)' : 'color-mix(in srgb, var(--bronze) 16%, transparent)'}`,
             borderRadius: 14, padding: isFirst ? '18px 12px 14px' : '14px 10px 12px',
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
-            boxShadow: isFirst ? '0 0 28px rgba(255,215,0,0.1), 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,215,0,0.12)' : '0 2px 12px rgba(0,0,0,0.2)',
+            boxShadow: isFirst ? '0 0 28px color-mix(in srgb, var(--gold) 10%, transparent), 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 color-mix(in srgb, var(--gold) 12%, transparent)' : '0 2px 12px rgba(0,0,0,0.2)',
           }}>
 
             {/* Badge victorias históricas */}
             {v > 0 && (
-              <div style={{ position: 'absolute', top: -8, right: -8, background: 'rgba(255,215,0,0.18)', border: '1px solid rgba(255,215,0,0.35)', borderRadius: 10, padding: '2px 6px', fontSize: 9, fontWeight: 800, color: '#FFD700', zIndex: 2 }}>
+              <div style={{ position: 'absolute', top: -8, right: -8, background: 'color-mix(in srgb, var(--gold) 18%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 35%, transparent)', borderRadius: 10, padding: '2px 6px', fontSize: 9, fontWeight: 800, color: 'var(--gold)', zIndex: 2 }}>
                 🏆×{v}
               </div>
             )}
@@ -1739,19 +1739,19 @@ function Podio({ items, medalColor, scoreColor, svcId }) {
             {/* Nota */}
             <div style={{
               fontSize: isFirst ? 32 : 24, fontWeight: 900, color: scoreColor(p.notaFinal),
-              lineHeight: 1, fontFamily: 'monospace',
+              lineHeight: 1, fontFamily: 'var(--font-mono)',
               textShadow: isFirst ? `0 0 20px ${scoreColor(p.notaFinal)}66` : 'none',
               marginTop: 2,
             }}>{p.notaFinal}</div>
 
             {/* Leyenda dinámica */}
             {leyenda && (
-              <div style={{ fontSize: 9, color: isFirst ? '#FFD700' : 'rgba(255,255,255,0.45)', fontWeight: 700, marginTop: 2 }}>
+              <div style={{ fontSize: 9, color: isFirst ? 'var(--gold)' : 'var(--text2)', fontWeight: 700, marginTop: 2 }}>
                 {leyenda}
               </div>
             )}
             {cercanoPrimero && (
-              <div style={{ fontSize: 9, color: 'rgba(192,192,192,0.55)' }}>🎯 -{Math.abs((p.notaFinal||0)-(items[0].notaFinal||0)).toFixed(2)} del 1°</div>
+              <div style={{ fontSize: 9, color: 'color-mix(in srgb, var(--silver) 55%, transparent)' }}>🎯 -{Math.abs((p.notaFinal||0)-(items[0].notaFinal||0)).toFixed(2)} del 1°</div>
             )}
           </div>
         )
@@ -2012,14 +2012,14 @@ function Perfiles({ svc, user }) {
         {loadingLista ? <p style={{ color: 'var(--text3)', fontSize: 13 }}>Cargando directorio...</p> : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
             {filtrados.map(t => (
-              <div key={t.id_asignacion} onClick={() => seleccionar(t)} className="card" style={{ padding: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, border: '1px solid rgba(255,255,255,0.03)' }}>
+              <div key={t.id_asignacion} onClick={() => seleccionar(t)} className="card" style={{ padding: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, border: '1px solid color-mix(in srgb, var(--ink) 3%, transparent)' }}>
                 <Avatar nombre={t.nombre} foto={t.foto} size={42} />
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div style={{ fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.nombre}</div>
                   <div style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 600, marginTop: 2 }}>{t.cargoNombre}</div>
-                  <div style={{ fontSize: 9, color: 'var(--text3)', fontFamily: 'monospace', marginTop: 2 }}>G{t.id_grupo} | T{t.turno}</div>
+                  <div style={{ fontSize: 9, color: 'var(--text3)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>G{t.id_grupo} | T{t.turno}</div>
                 </div>
-                {t.evaluado ? <div style={{ fontSize: 18, fontWeight: 800, color: sc(t.promedio), flexShrink: 0, fontFamily: 'monospace' }}>{t.promedio}</div> : <div style={{ fontSize: 10, color: 'var(--text3)' }}>S/E</div>}
+                {t.evaluado ? <div style={{ fontSize: 18, fontWeight: 800, color: sc(t.promedio), flexShrink: 0, fontFamily: 'var(--font-mono)' }}>{t.promedio}</div> : <div style={{ fontSize: 10, color: 'var(--text3)' }}>S/E</div>}
               </div>
             ))}
           </div>
@@ -2064,9 +2064,9 @@ function Perfiles({ svc, user }) {
                 { label: 'PROM. CARGO (GLOBAL)', val: perfil.promedioCargoGlobal, sub: 'Todo PRODISE', color: 'var(--text2)' },
                 { label: 'TENDENCIA', val: perfil.tendencia !== null ? `${perfil.tendencia > 0 ? '+' : ''}${perfil.tendencia}` : '—', sub: 'Última vs anterior', color: perfil.tendencia > 0 ? 'var(--green)' : perfil.tendencia < 0 ? 'var(--red)' : 'var(--text3)' },
               ].map(k => (
-                <div key={k.label} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: 8, padding: '10px 12px' }}>
+                <div key={k.label} style={{ background: 'color-mix(in srgb, var(--ink) 2%, transparent)', borderRadius: 8, padding: '10px 12px' }}>
                   <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.4, marginBottom: 4 }}>{k.label}</div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: k.color, lineHeight: 1, fontFamily: 'monospace' }}>{k.val ?? '—'}</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: k.color, lineHeight: 1, fontFamily: 'var(--font-mono)' }}>{k.val ?? '—'}</div>
                   <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 3 }}>{k.sub}</div>
                 </div>
               ))}
@@ -2084,7 +2084,7 @@ function Perfiles({ svc, user }) {
                     <RadarSVG dims={perfil.dims} grupoDims={perfil.cargoServicioDims} size={180} color={sc(perfil.notaActual)} />
                     <div style={{ display: 'flex', gap: 16, marginTop: 16, fontSize: 9, color: 'var(--text3)', fontWeight: 600 }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, background: sc(perfil.notaActual), opacity: 0.6, borderRadius: 2 }} /> Trabajador</span>
-                      {perfil.cargoServicioDims && <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, background: 'rgba(150,160,170,0.3)', border: '1px solid rgba(180,190,200,0.6)', borderRadius: 2 }} /> Promedio Cargo</span>}
+                      {perfil.cargoServicioDims && <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, background: 'color-mix(in srgb, var(--accent2) 30%, transparent)', border: '1px solid color-mix(in srgb, var(--accent2) 60%, transparent)', borderRadius: 2 }} /> Promedio Cargo</span>}
                     </div>
                   </>
                 ) : <div style={{ padding: '40px 0', fontSize: 11, color: 'var(--text3)' }}>Requiere evaluación para generar radar</div>}
@@ -2110,23 +2110,23 @@ function Perfiles({ svc, user }) {
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 4 }}>
                             <span style={{ fontSize: 11, fontWeight: 600 }}>{label}</span>
                             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                              {deltaCargo !== null && <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'monospace', color: deltaCargo >= 0 ? 'var(--green)' : 'var(--red)' }}>{deltaCargo >= 0 ? `+${deltaCargo}` : deltaCargo} vs Cargo</span>}
-                              <span style={{ fontSize: 14, fontWeight: 800, color: sc(miNota), fontFamily: 'monospace' }}>{miNota.toFixed(2)}</span>
+                              {deltaCargo !== null && <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)', color: deltaCargo >= 0 ? 'var(--green)' : 'var(--red)' }}>{deltaCargo >= 0 ? `+${deltaCargo}` : deltaCargo} vs Cargo</span>}
+                              <span style={{ fontSize: 14, fontWeight: 800, color: sc(miNota), fontFamily: 'var(--font-mono)' }}>{miNota.toFixed(2)}</span>
                             </div>
                           </div>
                           
-                          <div style={{ height: 16, position: 'relative', background: 'rgba(0,0,0,0.2)', borderRadius: 4, border: '1px solid rgba(255,255,255,0.05)', marginTop: 4 }}>
-                             <div style={{ position: 'absolute', left: '33.3%', top: 0, bottom: 0, borderLeft: '1px dashed rgba(255,255,255,0.06)' }} />
-                             <div style={{ position: 'absolute', left: '66.6%', top: 0, bottom: 0, borderLeft: '1px dashed rgba(255,255,255,0.06)' }} />
+                          <div style={{ height: 16, position: 'relative', background: 'var(--fill-2)', borderRadius: 4, border: '1px solid color-mix(in srgb, var(--ink) 5%, transparent)', marginTop: 4 }}>
+                             <div style={{ position: 'absolute', left: '33.3%', top: 0, bottom: 0, borderLeft: '1px dashed color-mix(in srgb, var(--ink) 6%, transparent)' }} />
+                             <div style={{ position: 'absolute', left: '66.6%', top: 0, bottom: 0, borderLeft: '1px dashed color-mix(in srgb, var(--ink) 6%, transparent)' }} />
                              
                              {widthPct > 0 && (
-                               <div style={{ position: 'absolute', left: `${minPct}%`, width: `${widthPct}%`, top: 5, bottom: 5, background: isPositive ? 'rgba(39,174,96,0.35)' : 'rgba(231,76,60,0.35)', borderRadius: 2 }} />
+                               <div style={{ position: 'absolute', left: `${minPct}%`, width: `${widthPct}%`, top: 5, bottom: 5, background: isPositive ? 'color-mix(in srgb, var(--green) 35%, transparent)' : 'color-mix(in srgb, var(--red) 35%, transparent)', borderRadius: 2 }} />
                              )}
                              
                              <div style={{ position: 'absolute', left: `${pctCargo}%`, top: -3, bottom: -3, width: 2, background: 'var(--text3)', transform: 'translateX(-50%)', zIndex: 2 }} title="Promedio Cargo" />
-                             <div style={{ position: 'absolute', left: `${pctMe}%`, top: 2, bottom: 2, width: 8, background: sc(miNota), borderRadius: 4, transform: 'translateX(-50%)', zIndex: 3, boxShadow: '0 0 5px rgba(0,0,0,0.8)' }} title="Nota Trabajador" />
+                             <div style={{ position: 'absolute', left: `${pctMe}%`, top: 2, bottom: 2, width: 8, background: sc(miNota), borderRadius: 4, transform: 'translateX(-50%)', zIndex: 3, boxShadow: '0 0 0 2px var(--surface)' }} title="Nota Trabajador" />
                           </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 8, color: 'var(--text3)', fontFamily: 'monospace' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 8, color: 'var(--text3)', fontFamily: 'var(--font-mono)' }}>
                             <span>Nivel 1</span><span>Nivel 4</span>
                           </div>
                         </div>
@@ -2156,12 +2156,12 @@ function Perfiles({ svc, user }) {
                       <div>COMPETENCIA</div><div style={{ textAlign: 'center' }}>DOMINIO</div><div style={{ textAlign: 'right' }}>EXPERIENCIA</div>
                     </div>
                     {perfil.competencias.map((c, i) => (
-                      <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 60px 80px', gap: 10, alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                      <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 60px 80px', gap: 10, alignItems: 'center', padding: '6px 0', borderBottom: '1px solid color-mix(in srgb, var(--ink) 2%, transparent)' }}>
                         <div style={{ fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={c.nombre}>{c.nombre || `Cód: ${c.id_competencia}`}</div>
                         <div style={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-                          {[1,2,3,4,5].map(s => <div key={s} style={{ width: 8, height: 8, borderRadius: 2, background: s <= (c.nivel_dominio || 0) ? 'var(--accent)' : 'rgba(255,255,255,0.05)' }} />)}
+                          {[1,2,3,4,5].map(s => <div key={s} style={{ width: 8, height: 8, borderRadius: 2, background: s <= (c.nivel_dominio || 0) ? 'var(--accent)' : 'color-mix(in srgb, var(--ink) 5%, transparent)' }} />)}
                         </div>
-                        <div style={{ textAlign: 'right', fontSize: 10, fontFamily: 'monospace', color: c.veces_ejecutado > 5 ? 'var(--green)' : 'var(--text2)' }}>
+                        <div style={{ textAlign: 'right', fontSize: 10, fontFamily: 'var(--font-mono)', color: c.veces_ejecutado > 5 ? 'var(--green)' : 'var(--text2)' }}>
                           {c.veces_ejecutado || 0} ejec.
                         </div>
                       </div>
@@ -2176,14 +2176,14 @@ function Perfiles({ svc, user }) {
               <div className="card-static" style={{ padding: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8 }}>DIAGNÓSTICO IA</div>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: loadingAi ? 'var(--accent)' : 'var(--green)', display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: 4 }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: loadingAi ? 'var(--accent)' : 'var(--green)', display: 'flex', alignItems: 'center', gap: 4, background: 'color-mix(in srgb, var(--ink) 5%, transparent)', padding: '4px 8px', borderRadius: 4 }}>
                     {loadingAi ? '⏳ SINTETIZANDO...' : '✓ ANÁLISIS COMPLETADO'}
                   </div>
                 </div>
                 {loadingAi ? (
                   <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 10, color: 'var(--text3)' }}>El sistema está cruzando variables de rendimiento...</div>
                 ) : aiResumen ? (
-                  <div style={{ fontSize: 11, color: 'var(--text2)', lineHeight: 1.5, padding: '10px 12px', background: 'rgba(230,126,34,0.05)', borderLeft: '3px solid var(--accent)', borderRadius: 4 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text2)', lineHeight: 1.5, padding: '10px 12px', background: 'color-mix(in srgb, var(--accent) 5%, transparent)', borderLeft: '3px solid var(--accent)', borderRadius: 4 }}>
                     {aiResumen}
                   </div>
                 ) : null}
@@ -2194,12 +2194,12 @@ function Perfiles({ svc, user }) {
                   <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8, marginBottom: 8 }}>POLIVALENCIA</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {perfil.habilidades.map((h, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(91,164,207,0.06)', border: '1px solid rgba(91,164,207,0.1)', borderRadius: 6 }}>
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'color-mix(in srgb, var(--accent2) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--accent2) 10%, transparent)', borderRadius: 6 }}>
                         <div>
                           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent2)' }}>{h.cargoNombre}</div>
                           {h.fecha_certificacion && <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 2 }}>Cert: {new Date(h.fecha_certificacion).toLocaleDateString('es-PE')}</div>}
                         </div>
-                        <div style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: h.estado === 'VIGENTE' ? 'rgba(39,174,96,0.15)' : 'rgba(241,196,15,0.15)', color: h.estado === 'VIGENTE' ? 'var(--green)' : 'var(--yellow)' }}>
+                        <div style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: h.estado === 'VIGENTE' ? 'color-mix(in srgb, var(--green) 15%, transparent)' : 'color-mix(in srgb, var(--yellow) 15%, transparent)', color: h.estado === 'VIGENTE' ? 'var(--green)' : 'var(--yellow)' }}>
                           {h.estado}
                         </div>
                       </div>
@@ -2212,7 +2212,7 @@ function Perfiles({ svc, user }) {
                 <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8, marginBottom: 10 }}>OBSERVACIONES</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', flex: 1 }}>
                   {perfil.comentarios?.length > 0 ? perfil.comentarios.map((c, i) => (
-                    <div key={i} style={{ fontSize: 10, color: 'var(--text2)', lineHeight: 1.5, padding: '8px 10px', background: 'rgba(255,255,255,0.02)', borderRadius: 6, borderLeft: '2px solid var(--border)' }}>
+                    <div key={i} style={{ fontSize: 10, color: 'var(--text2)', lineHeight: 1.5, padding: '8px 10px', background: 'color-mix(in srgb, var(--ink) 2%, transparent)', borderRadius: 6, borderLeft: '2px solid var(--border)' }}>
                       "{c}"
                     </div>
                   )) : <div style={{ fontSize: 10, color: 'var(--text3)' }}>No hay comentarios cualitativos en las evaluaciones de este servicio.</div>}
@@ -2260,18 +2260,18 @@ function RadarSVG({ dims, grupoDims, size = 200, color }) {
   return (
     <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', maxWidth: size, height: 'auto', display: 'block', overflow: 'visible' }}>
       {rings.map((ring, i) => (
-        <polygon key={i} points={ring.map(p => `${p.x},${p.y}`).join(' ')} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+        <polygon key={i} points={ring.map(p => `${p.x},${p.y}`).join(' ')} fill="none" stroke="color-mix(in srgb, var(--ink) 5%, transparent)" strokeWidth="1" />
       ))}
       {axes.map((a, i) => {
         const p = getPoint(4, a.angle)
-        return <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+        return <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="color-mix(in srgb, var(--ink) 10%, transparent)" strokeWidth="1" />
       })}
 
       {grupoPoly && (
-        <polygon points={grupoPoly} fill="rgba(150, 160, 170, 0.2)" stroke="rgba(180, 190, 200, 0.6)" strokeWidth="1.5" strokeDasharray="4,4" />
+        <polygon points={grupoPoly} fill="color-mix(in srgb, var(--accent2) 20%, transparent)" stroke="color-mix(in srgb, var(--accent2) 60%, transparent)" strokeWidth="1.5" strokeDasharray="4,4" />
       )}
 
-      <polygon points={userPoly} fill={`${color}44`} stroke={color} strokeWidth="2.5" strokeLinejoin="round" />
+      <polygon points={userPoly} fill={`color-mix(in srgb, ${color} 27%, transparent)`} stroke={color} strokeWidth="2.5" strokeLinejoin="round" />
       {userPts.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="3.5" fill={color} />)}
 
       {axes.map((a, i) => {
@@ -2309,8 +2309,8 @@ function TrayectoriaSVG({ data, scoreColor }) {
 
         {[1, 2, 3, 4].map(v => (
           <g key={v}>
-            <line x1={P.l} y1={toY(v)} x2={W - P.r} y2={toY(v)} stroke={v === 3 ? 'rgba(39,174,96,0.2)' : 'rgba(255,255,255,0.05)'} strokeWidth="1" strokeDasharray={v === 3 ? '4,4' : undefined} />
-            <text x={P.l - 6} y={toY(v)} textAnchor="end" alignmentBaseline="middle" fontSize="8" fill="var(--text3)" fontFamily="monospace">{v}.0</text>
+            <line x1={P.l} y1={toY(v)} x2={W - P.r} y2={toY(v)} stroke={v === 3 ? 'color-mix(in srgb, var(--green) 20%, transparent)' : 'color-mix(in srgb, var(--ink) 5%, transparent)'} strokeWidth="1" strokeDasharray={v === 3 ? '4,4' : undefined} />
+            <text x={P.l - 6} y={toY(v)} textAnchor="end" alignmentBaseline="middle" fontSize="8" fill="var(--text3)" fontFamily="var(--font-mono)">{v}.0</text>
           </g>
         ))}
 
@@ -2328,9 +2328,9 @@ function TrayectoriaSVG({ data, scoreColor }) {
                onMouseLeave={() => setHoverIdx(null)}
                style={{ cursor: 'crosshair', transition: 'all 0.2s ease' }}>
               
-              {isHovered && <line x1={cx} y1={P.t} x2={cx} y2={H - P.b} stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="3,3" />}
+              {isHovered && <line x1={cx} y1={P.t} x2={cx} y2={H - P.b} stroke="color-mix(in srgb, var(--ink) 20%, transparent)" strokeWidth="1" strokeDasharray="3,3" />}
               <circle cx={cx} cy={cy} r="15" fill="transparent" />
-              <circle cx={cx} cy={cy} r={isHovered ? 6 : (d.esActual ? 5 : 3.5)} fill={isHovered ? '#fff' : (d.esActual ? col : 'var(--bg)')} stroke={col} strokeWidth={d.esActual && !isHovered ? 0 : 2} style={{ transition: 'all 0.2s ease' }} />
+              <circle cx={cx} cy={cy} r={isHovered ? 6 : (d.esActual ? 5 : 3.5)} fill={isHovered ? 'var(--surface)' : (d.esActual ? col : 'var(--bg)')} stroke={col} strokeWidth={d.esActual && !isHovered ? 0 : 2} style={{ transition: 'all 0.2s ease' }} />
               
               <text x={cx} y={H - 6} textAnchor="middle" fontSize="8" fill={isHovered || d.esActual ? 'var(--text)' : 'var(--text3)'} fontWeight={d.esActual ? '700' : '500'}>
                 Svc {d.svId}
@@ -2346,21 +2346,21 @@ function TrayectoriaSVG({ data, scoreColor }) {
           left: (toX(hoverIdx) / W) * 100 > 70 ? `calc(${(toX(hoverIdx) / W) * 100}% - 180px)` : (toX(hoverIdx) / W) * 100 < 30 ? `calc(${(toX(hoverIdx) / W) * 100}% + 15px)` : `calc(${(toX(hoverIdx) / W) * 100}% - 85px)`,
           top: `calc(${(toY(data[hoverIdx].promedio) / H) * 100}% - 85px)`,
           width: 170,
-          background: 'rgba(15, 15, 20, 0.98)',
+          background: 'var(--surface)',
           backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255,255,255,0.15)',
+          border: '1px solid color-mix(in srgb, var(--ink) 15%, transparent)',
           borderRadius: 8,
           padding: '10px 12px',
-          boxShadow: '0 8px 30px rgba(0,0,0,0.6)',
+          boxShadow: 'var(--shadow-float)',
           pointerEvents: 'none',
           zIndex: 10,
           display: 'flex', flexDirection: 'column', gap: 6
         }}>
           <div style={{ fontSize: 9, color: 'var(--accent2)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>{data[hoverIdx].tipo}</div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', lineHeight: 1.4, wordWrap: 'break-word' }}>{data[hoverIdx].nombre}</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', lineHeight: 1.4, wordWrap: 'break-word' }}>{data[hoverIdx].nombre}</div>
           
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 4, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-            <div style={{ fontSize: 22, fontWeight: 900, color: scoreColor(data[hoverIdx].promedio), lineHeight: 1, fontFamily: 'monospace' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 4, paddingTop: 6, borderTop: '1px solid color-mix(in srgb, var(--ink) 10%, transparent)' }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: scoreColor(data[hoverIdx].promedio), lineHeight: 1, fontFamily: 'var(--font-mono)' }}>
               {data[hoverIdx].promedio.toFixed(2)}
             </div>
             {hoverIdx > 0 && (
@@ -2427,7 +2427,7 @@ function Buscador({ svc, user }) {
 
   const renderEstrellas = (nivel) => (
     <div style={{ display: 'flex', gap: 2 }}>
-      {[1, 2, 3, 4, 5].map(s => <div key={s} style={{ width: 10, height: 10, borderRadius: '50%', background: s <= (nivel || 0) ? 'var(--accent)' : 'rgba(255,255,255,0.08)' }} />)}
+      {[1, 2, 3, 4, 5].map(s => <div key={s} style={{ width: 10, height: 10, borderRadius: '50%', background: s <= (nivel || 0) ? 'var(--accent)' : 'color-mix(in srgb, var(--ink) 8%, transparent)' }} />)}
     </div>
   )
 
@@ -2466,14 +2466,14 @@ function Buscador({ svc, user }) {
                 <Avatar nombre={r.nombres_completos} foto={r.url_foto} size={42} />
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.nombres_completos}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text3)', fontFamily: 'monospace' }}>DNI: {r.dni}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text3)', fontFamily: 'var(--font-mono)' }}>DNI: {r.dni}</div>
                 </div>
               </div>
 
               {r.habilidades.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {r.habilidades.map((h, i) => (
-                    <span key={i} style={{ fontSize: 9, padding: '4px 8px', borderRadius: 4, background: 'rgba(91,164,207,0.1)', color: 'var(--accent2)', border: '1px solid rgba(91,164,207,0.2)' }}>
+                    <span key={i} style={{ fontSize: 9, padding: '4px 8px', borderRadius: 4, background: 'color-mix(in srgb, var(--accent2) 10%, transparent)', color: 'var(--accent2)', border: '1px solid color-mix(in srgb, var(--accent2) 20%, transparent)' }}>
                       ★ {h.catalogo_cargos?.nombre_oficial}
                     </span>
                   ))}
@@ -2481,7 +2481,7 @@ function Buscador({ svc, user }) {
               )}
 
               {r.competencias.length > 0 ? (
-                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '10px 12px', borderRadius: 8 }}>
+                <div style={{ background: 'color-mix(in srgb, var(--ink) 2%, transparent)', padding: '10px 12px', borderRadius: 8 }}>
                   <div style={{ fontSize: 9, fontWeight: 600, color: 'var(--text3)', letterSpacing: 0.5, marginBottom: 8 }}>COMPETENCIAS TÉCNICAS ({r.competencias.length})</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {r.competencias.slice(0, 3).map(c => (
@@ -2640,9 +2640,9 @@ function Predictor({ svc, user }) {
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: 6, marginTop: 14, background: 'rgba(255,255,255,0.03)', padding: 4, borderRadius: 8 }}>
-            <button onClick={() => setModoIzq('lista')} style={{ flex: 1, padding: '6px', fontSize: 11, borderRadius: 6, border: 'none', background: modoIzq === 'lista' ? 'var(--accent)' : 'transparent', color: modoIzq === 'lista' ? '#fff' : 'var(--text3)', fontWeight: 600, cursor: 'pointer' }}>Buscador</button>
-            <button onClick={() => setModoIzq('masiva')} style={{ flex: 1, padding: '6px', fontSize: 11, borderRadius: 6, border: 'none', background: modoIzq === 'masiva' ? 'var(--accent)' : 'transparent', color: modoIzq === 'masiva' ? '#fff' : 'var(--text3)', fontWeight: 600, cursor: 'pointer' }}>Pegar DNIs</button>
+          <div style={{ display: 'flex', gap: 6, marginTop: 14, background: 'color-mix(in srgb, var(--ink) 3%, transparent)', padding: 4, borderRadius: 8 }}>
+            <button onClick={() => setModoIzq('lista')} style={{ flex: 1, padding: '6px', fontSize: 11, borderRadius: 6, border: 'none', background: modoIzq === 'lista' ? 'var(--accent)' : 'transparent', color: modoIzq === 'lista' ? 'var(--on-accent)' : 'var(--text3)', fontWeight: 600, cursor: 'pointer' }}>Buscador</button>
+            <button onClick={() => setModoIzq('masiva')} style={{ flex: 1, padding: '6px', fontSize: 11, borderRadius: 6, border: 'none', background: modoIzq === 'masiva' ? 'var(--accent)' : 'transparent', color: modoIzq === 'masiva' ? 'var(--on-accent)' : 'var(--text3)', fontWeight: 600, cursor: 'pointer' }}>Pegar DNIs</button>
           </div>
         </div>
         
@@ -2658,11 +2658,11 @@ function Predictor({ svc, user }) {
                    <div key={p.dni} onClick={() => toggleTrabajador(p.dni)} style={{
                      display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', 
                      borderRadius: 6, cursor: 'pointer', marginBottom: 4,
-                     background: sel ? 'rgba(230,126,34,0.08)' : 'transparent',
-                     border: `1px solid ${sel ? 'rgba(230,126,34,0.3)' : 'transparent'}`
+                     background: sel ? 'color-mix(in srgb, var(--accent) 8%, transparent)' : 'transparent',
+                     border: `1px solid ${sel ? 'color-mix(in srgb, var(--accent) 30%, transparent)' : 'transparent'}`
                    }}>
                      <div style={{ width: 14, height: 14, borderRadius: 3, border: `1px solid ${sel ? 'var(--accent)' : 'var(--text3)'}`, background: sel ? 'var(--accent)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                       {sel && <span style={{ color: '#fff', fontSize: 10 }}>✓</span>}
+                       {sel && <span style={{ color: 'var(--on-accent)', fontSize: 10 }}>✓</span>}
                      </div>
                      <div style={{ flex: 1, minWidth: 0 }}>
                        <div style={{ fontSize: 11, fontWeight: sel ? 700 : 500, color: sel ? 'var(--accent)' : 'var(--text2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.nombre}</div>
@@ -2678,7 +2678,7 @@ function Predictor({ svc, user }) {
                <div style={{ fontSize: 11, color: 'var(--text3)', lineHeight: 1.4 }}>Copia la columna desde tu Excel, haz clic en la caja punteada y presiona <strong>Ctrl + V</strong>.</div>
                
                {!dnisPegados ? (
-                 <textarea className="input" value={dnisPegados} onChange={e => setDnisPegados(e.target.value)} placeholder="Haz clic aquí y presiona Ctrl + V 📋" style={{ flex: 1, resize: 'none', fontSize: 14, fontWeight: 600, textAlign: 'center', border: '2px dashed var(--accent)', background: 'rgba(230,126,34,0.04)', borderRadius: 8, paddingTop: '40%', cursor: 'pointer', color: 'var(--text)' }} />
+                 <textarea className="input" value={dnisPegados} onChange={e => setDnisPegados(e.target.value)} placeholder="Haz clic aquí y presiona Ctrl + V 📋" style={{ flex: 1, resize: 'none', fontSize: 14, fontWeight: 600, textAlign: 'center', border: '2px dashed var(--accent)', background: 'color-mix(in srgb, var(--accent) 4%, transparent)', borderRadius: 8, paddingTop: '40%', cursor: 'pointer', color: 'var(--text)' }} />
                ) : (
                  <div className="fade" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, overflow: 'hidden' }}>
                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -2687,9 +2687,9 @@ function Predictor({ svc, user }) {
                    </div>
                    <div style={{ flex: 1, overflowY: 'auto', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--bg2)' }}>
                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10, textAlign: 'left' }}>
-                       <thead style={{ background: 'rgba(255,255,255,0.05)', position: 'sticky', top: 0 }}><tr><th style={{ padding: '6px 8px', borderBottom: '1px solid var(--border)', color: 'var(--text3)' }}>DNI</th><th style={{ padding: '6px 8px', borderBottom: '1px solid var(--border)', color: 'var(--text3)' }}>Estado</th></tr></thead>
+                       <thead style={{ background: 'color-mix(in srgb, var(--ink) 5%, transparent)', position: 'sticky', top: 0 }}><tr><th style={{ padding: '6px 8px', borderBottom: '1px solid var(--border)', color: 'var(--text3)' }}>DNI</th><th style={{ padding: '6px 8px', borderBottom: '1px solid var(--border)', color: 'var(--text3)' }}>Estado</th></tr></thead>
                        <tbody>
-                         {previewDnis.map((item, i) => (<tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}><td style={{ padding: '6px 8px', fontFamily: 'monospace', color: item.existe ? 'var(--text)' : 'var(--text3)' }}>{item.dni}</td><td style={{ padding: '6px 8px', color: item.existe ? 'var(--green)' : 'var(--red)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 140 }}>{item.existe ? item.nombre : 'No asignado'}</td></tr>))}
+                         {previewDnis.map((item, i) => (<tr key={i} style={{ borderBottom: '1px solid color-mix(in srgb, var(--ink) 2%, transparent)' }}><td style={{ padding: '6px 8px', fontFamily: 'var(--font-mono)', color: item.existe ? 'var(--text)' : 'var(--text3)' }}>{item.dni}</td><td style={{ padding: '6px 8px', color: item.existe ? 'var(--green)' : 'var(--red)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 140 }}>{item.existe ? item.nombre : 'No asignado'}</td></tr>))}
                          {previewDnis.length === 0 && <tr><td colSpan="2" style={{ padding: '16px', textAlign: 'center', color: 'var(--text3)' }}>Sin números válidos.</td></tr>}
                        </tbody>
                      </table>
@@ -2732,7 +2732,7 @@ function Predictor({ svc, user }) {
                 </div>
                 <div style={{ fontSize: 20, color: 'var(--text3)' }}>=</div>
                 
-                <div style={{ padding: '14px 24px', background: 'rgba(255,255,255,0.03)', borderRadius: 12, border: `2px solid ${sc(scoreFinal)}` }}>
+                <div style={{ padding: '14px 24px', background: 'color-mix(in srgb, var(--ink) 3%, transparent)', borderRadius: 12, border: `2px solid ${sc(scoreFinal)}` }}>
                   <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 4 }}>PROYECCIÓN FINAL</div>
                   <div style={{ fontSize: 36, fontWeight: 900, color: sc(scoreFinal), lineHeight: 1 }}>{scoreFinal.toFixed(2)}</div>
                 </div>
@@ -2742,7 +2742,7 @@ function Predictor({ svc, user }) {
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 16, flex: 1 }}>
               <div className="card-static" style={{ padding: '16px', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1, marginBottom: 10 }}>MAPA DE AFINIDAD (Visual)</div>
-                <div style={{ flex: 1, position: 'relative', background: 'rgba(5,5,7,0.3)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                <div style={{ flex: 1, position: 'relative', background: 'var(--fill)', borderRadius: 8, border: '1px solid var(--border)' }}>
                   <RedAfinidadSVG cuadrilla={cuadrilla} afinidades={afinidades} />
                 </div>
                 <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 10, fontSize: 9, color: 'var(--text3)' }}>
@@ -2756,11 +2756,11 @@ function Predictor({ svc, user }) {
                   <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1, marginBottom: 10 }}>ADVERTENCIAS DE CONFLICTO</div>
                   <div style={{ flex: 1, overflowY: 'auto' }}>
                     {advertencias.length === 0 ? (
-                      <div style={{ fontSize: 11, color: 'var(--green)', padding: '10px', background: 'rgba(39,174,96,0.08)', borderRadius: 6 }}>✓ No se detectaron conflictos históricos.</div>
+                      <div style={{ fontSize: 11, color: 'var(--green)', padding: '10px', background: 'color-mix(in srgb, var(--green) 8%, transparent)', borderRadius: 6 }}>✓ No se detectaron conflictos históricos.</div>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                         {advertencias.map((adv, i) => (
-                          <div key={i} style={{ fontSize: 11, color: '#E8A09A', padding: '8px', background: 'rgba(192,57,43,0.08)', borderRadius: 6, borderLeft: '3px solid var(--red)' }}>⚠️ {adv}</div>
+                          <div key={i} style={{ fontSize: 11, color: 'var(--red)', padding: '8px', background: 'color-mix(in srgb, var(--red) 8%, transparent)', borderRadius: 6, borderLeft: '3px solid var(--red)' }}>⚠️ {adv}</div>
                         ))}
                       </div>
                     )}
@@ -2775,7 +2775,7 @@ function Predictor({ svc, user }) {
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                         {bonos.map((bono, i) => (
-                          <div key={i} style={{ fontSize: 11, color: 'var(--green)', padding: '8px', background: 'rgba(39,174,96,0.08)', borderRadius: 6, borderLeft: '3px solid var(--green)' }}>⭐ {bono}</div>
+                          <div key={i} style={{ fontSize: 11, color: 'var(--green)', padding: '8px', background: 'color-mix(in srgb, var(--green) 8%, transparent)', borderRadius: 6, borderLeft: '3px solid var(--green)' }}>⭐ {bono}</div>
                         ))}
                       </div>
                     )}
@@ -2822,11 +2822,11 @@ function RedAfinidadSVG({ cuadrilla, afinidades }) {
       ))}
       {nodes.map((n) => (
         <g key={n.dni}>
-           <circle cx={n.x} cy={n.y} r="18" fill="rgba(230,126,34,0.15)" stroke="var(--accent)" strokeWidth="2" />
+           <circle cx={n.x} cy={n.y} r="18" fill="color-mix(in srgb, var(--accent) 15%, transparent)" stroke="var(--accent)" strokeWidth="2" />
            <text x={n.x} y={n.y+4} textAnchor="middle" fontSize="11" fill="var(--accent)" fontWeight="800">
              {n.nombre.substring(0,2).toUpperCase()}
            </text>
-           <text x={n.x} y={n.y+28} textAnchor="middle" fontSize="10" fill="#fff" fontWeight="600">{n.nombre.split(' ')[0]}</text>
+           <text x={n.x} y={n.y+28} textAnchor="middle" fontSize="10" fill="var(--text)" fontWeight="600">{n.nombre.split(' ')[0]}</text>
            <text x={n.x} y={n.y+40} textAnchor="middle" fontSize="8" fill="var(--text3)">{n.cargo.substring(0, 15)}</text>
         </g>
       ))}
@@ -2982,7 +2982,7 @@ function AdminUsuarios({ user: currentUser }) {
   }
 
   const nivelColor = n => n === 1 ? 'var(--accent)' : n === 2 ? 'var(--accent2)' : 'var(--green)'
-  const nivelBg    = n => n === 1 ? 'rgba(230,126,34,0.08)' : n === 2 ? 'rgba(91,164,207,0.08)' : 'rgba(39,174,96,0.08)'
+  const nivelBg    = n => n === 1 ? 'color-mix(in srgb, var(--accent) 8%, transparent)' : n === 2 ? 'color-mix(in srgb, var(--accent2) 8%, transparent)' : 'color-mix(in srgb, var(--green) 8%, transparent)'
 
   if (loading) return <p style={{ color: 'var(--text3)', fontSize: 13 }}>Cargando usuarios...</p>
 
@@ -3007,11 +3007,11 @@ function AdminUsuarios({ user: currentUser }) {
         </div>
 
         {usuarios.map((u, i) => (
-          <div key={u.username} style={{ display: 'grid', gridTemplateColumns: '140px 1fr 140px 80px 120px 100px', gap: 8, padding: '11px 16px', alignItems: 'center', borderBottom: i < usuarios.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', opacity: u.estado === 'INACTIVO' ? 0.45 : 1 }}>
+          <div key={u.username} style={{ display: 'grid', gridTemplateColumns: '140px 1fr 140px 80px 120px 100px', gap: 8, padding: '11px 16px', alignItems: 'center', borderBottom: i < usuarios.length - 1 ? '1px solid color-mix(in srgb, var(--ink) 3%, transparent)' : 'none', opacity: u.estado === 'INACTIVO' ? 0.45 : 1 }}>
             {/* Username */}
-            <div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'monospace', color: u.username === currentUser.username ? 'var(--accent)' : 'var(--text)' }}>
+            <div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)', color: u.username === currentUser.username ? 'var(--accent)' : 'var(--text)' }}>
               {u.username}
-              {u.username === currentUser.username && <span style={{ fontSize: 8, color: 'var(--accent)', marginLeft: 6, fontFamily: 'Inter' }}>tú</span>}
+              {u.username === currentUser.username && <span style={{ fontSize: 8, color: 'var(--accent)', marginLeft: 6, fontFamily: 'inherit' }}>tú</span>}
             </div>
 
             {/* Trabajador */}
@@ -3039,14 +3039,14 @@ function AdminUsuarios({ user: currentUser }) {
 
             {/* Acciones */}
             <div style={{ display: 'flex', gap: 5, justifyContent: 'flex-end' }}>
-              <button onClick={() => abrirEditar(u)} style={{ padding: '4px 9px', fontSize: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: 5, color: 'var(--text2)', cursor: 'pointer', fontFamily: 'Inter' }}>
+              <button onClick={() => abrirEditar(u)} style={{ padding: '4px 9px', fontSize: 10, background: 'color-mix(in srgb, var(--ink) 5%, transparent)', border: '1px solid var(--border)', borderRadius: 5, color: 'var(--text2)', cursor: 'pointer', fontFamily: 'inherit' }}>
                 ✏ Editar
               </button>
-              <button onClick={() => toggleEstado(u)} style={{ padding: '4px 9px', fontSize: 10, background: 'transparent', border: '1px solid var(--border)', borderRadius: 5, color: u.estado === 'ACTIVO' ? 'var(--yellow)' : 'var(--green)', cursor: 'pointer', fontFamily: 'Inter' }}>
+              <button onClick={() => toggleEstado(u)} style={{ padding: '4px 9px', fontSize: 10, background: 'transparent', border: '1px solid var(--border)', borderRadius: 5, color: u.estado === 'ACTIVO' ? 'var(--yellow)' : 'var(--green)', cursor: 'pointer', fontFamily: 'inherit' }}>
                 {u.estado === 'ACTIVO' ? '⏸' : '▶'}
               </button>
               {u.username !== currentUser.username && (
-                <button onClick={() => setConfirmDelete(u.username)} style={{ padding: '4px 9px', fontSize: 10, background: 'transparent', border: '1px solid rgba(192,57,43,0.25)', borderRadius: 5, color: 'var(--red)', cursor: 'pointer', fontFamily: 'Inter' }}>
+                <button onClick={() => setConfirmDelete(u.username)} style={{ padding: '4px 9px', fontSize: 10, background: 'transparent', border: '1px solid color-mix(in srgb, var(--red) 25%, transparent)', borderRadius: 5, color: 'var(--red)', cursor: 'pointer', fontFamily: 'inherit' }}>
                   ✕
                 </button>
               )}
@@ -3057,13 +3057,13 @@ function AdminUsuarios({ user: currentUser }) {
 
       {/* Confirm delete */}
       {confirmDelete && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
           <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 12, padding: '24px 28px', maxWidth: 320, textAlign: 'center' }}>
             <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>¿Eliminar usuario?</div>
             <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 20 }}>Se eliminará <strong style={{ color: 'var(--text)' }}>{confirmDelete}</strong> permanentemente.</div>
             <div style={{ display: 'flex', gap: 10 }}>
               <button className="btn btn-ghost" onClick={() => setConfirmDelete(null)} style={{ flex: 1, fontSize: 12 }}>Cancelar</button>
-              <button onClick={() => eliminar(confirmDelete)} style={{ flex: 1, padding: '9px', background: 'var(--red)', border: 'none', borderRadius: 8, color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>Eliminar</button>
+              <button onClick={() => eliminar(confirmDelete)} style={{ flex: 1, padding: '9px', background: 'var(--red)', border: 'none', borderRadius: 8, color: 'var(--on-accent)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Eliminar</button>
             </div>
           </div>
         </div>
@@ -3071,7 +3071,7 @@ function AdminUsuarios({ user: currentUser }) {
 
       {/* Modal formulario */}
       {showForm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
           <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '26px 28px', width: '100%', maxWidth: 440 }}>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -3087,7 +3087,7 @@ function AdminUsuarios({ user: currentUser }) {
                 <input className="input" value={form.username} placeholder="Ej: RCHANCAY"
                   onChange={e => setForm(f => ({ ...f, username: e.target.value.toUpperCase() }))}
                   disabled={!!editando}
-                  style={{ fontFamily: 'monospace', opacity: editando ? 0.6 : 1 }}
+                  style={{ fontFamily: 'var(--font-mono)', opacity: editando ? 0.6 : 1 }}
                 />
                 <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 3 }}>Solo letras y números, sin espacios. Se guardará en MAYÚSCULAS.</div>
               </div>
@@ -3100,17 +3100,17 @@ function AdminUsuarios({ user: currentUser }) {
                   onChange={e => setBusquedaDni(e.target.value)}
                   style={{ marginBottom: 6 }}
                 />
-                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 7, overflow: 'hidden' }}>
+                <div style={{ background: 'color-mix(in srgb, var(--ink) 3%, transparent)', border: '1px solid var(--border)', borderRadius: 7, overflow: 'hidden' }}>
                   {/* Opción ninguno */}
                   <div onClick={() => { setForm(f => ({...f, dni_asociado: ''})); setBusquedaDni('') }}
-                    style={{ padding: '7px 12px', fontSize: 11, cursor: 'pointer', background: !form.dni_asociado ? 'rgba(230,126,34,0.07)' : 'transparent', color: !form.dni_asociado ? 'var(--accent)' : 'var(--text3)', borderBottom: '1px solid var(--border)' }}>
+                    style={{ padding: '7px 12px', fontSize: 11, cursor: 'pointer', background: !form.dni_asociado ? 'color-mix(in srgb, var(--accent) 7%, transparent)' : 'transparent', color: !form.dni_asociado ? 'var(--accent)' : 'var(--text3)', borderBottom: '1px solid var(--border)' }}>
                     — Sin vincular
                   </div>
                   {trabajadoresFiltrados().map(t => (
                     <div key={t.dni} onClick={() => { setForm(f => ({...f, dni_asociado: t.dni})); setBusquedaDni(t.nombres_completos) }}
-                      style={{ padding: '7px 12px', fontSize: 11, cursor: 'pointer', background: form.dni_asociado === t.dni ? 'rgba(230,126,34,0.07)' : 'transparent', color: form.dni_asociado === t.dni ? 'var(--accent)' : 'var(--text2)', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                      style={{ padding: '7px 12px', fontSize: 11, cursor: 'pointer', background: form.dni_asociado === t.dni ? 'color-mix(in srgb, var(--accent) 7%, transparent)' : 'transparent', color: form.dni_asociado === t.dni ? 'var(--accent)' : 'var(--text2)', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid color-mix(in srgb, var(--ink) 3%, transparent)' }}>
                       <span style={{ fontWeight: form.dni_asociado === t.dni ? 600 : 400 }}>{t.nombres_completos}</span>
-                      <span style={{ color: 'var(--text3)', fontFamily: 'monospace' }}>{t.dni}</span>
+                      <span style={{ color: 'var(--text3)', fontFamily: 'var(--font-mono)' }}>{t.dni}</span>
                     </div>
                   ))}
                 </div>
@@ -3121,9 +3121,9 @@ function AdminUsuarios({ user: currentUser }) {
               <div>
                 <label style={lbl}>NIVEL DE ACCESO</label>
                 <select className="input" value={form.nivel_acceso} onChange={e => setForm(f => ({...f, nivel_acceso: parseInt(e.target.value)}))} style={{ background: 'var(--bg2)' }}>
-                  <option value={1} style={{ background: '#0c0c10' }}>Nivel 1 — Admin (acceso total)</option>
-                  <option value={2} style={{ background: '#0c0c10' }}>Nivel 2 — Planner / Coordinador</option>
-                  <option value={3} style={{ background: '#0c0c10' }}>Nivel 3 — Supervisor (solo evaluar)</option>
+                  <option value={1} style={{ background: 'var(--bg2)' }}>Nivel 1 — Admin (acceso total)</option>
+                  <option value={2} style={{ background: 'var(--bg2)' }}>Nivel 2 — Planner / Coordinador</option>
+                  <option value={3} style={{ background: 'var(--bg2)' }}>Nivel 3 — Supervisor (solo evaluar)</option>
                 </select>
               </div>
 
@@ -3136,14 +3136,14 @@ function AdminUsuarios({ user: currentUser }) {
                     style={{ flex: 1 }}
                   />
                   <button type="button" onClick={generarPassword}
-                    style={{ padding: '0 14px', background: 'rgba(91,164,207,0.1)', border: '1px solid rgba(91,164,207,0.2)', borderRadius: 8, color: 'var(--accent2)', fontSize: 11, cursor: 'pointer', fontFamily: 'Inter', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    style={{ padding: '0 14px', background: 'color-mix(in srgb, var(--accent2) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent2) 20%, transparent)', borderRadius: 8, color: 'var(--accent2)', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, whiteSpace: 'nowrap' }}>
                     🎲 Generar
                   </button>
                 </div>
                 {form.password && (
-                  <div style={{ marginTop: 8, padding: '8px 12px', background: 'rgba(39,174,96,0.07)', border: '1px solid rgba(39,174,96,0.15)', borderRadius: 7 }}>
+                  <div style={{ marginTop: 8, padding: '8px 12px', background: 'color-mix(in srgb, var(--green) 7%, transparent)', border: '1px solid color-mix(in srgb, var(--green) 15%, transparent)', borderRadius: 7 }}>
                     <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 4 }}>CONTRASEÑA QUE VERÁ EL USUARIO:</div>
-                    <div style={{ fontSize: 14, fontWeight: 800, fontFamily: 'monospace', color: 'var(--green)', letterSpacing: 1 }}>{form.password}</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--green)', letterSpacing: 1 }}>{form.password}</div>
                     <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 4 }}>Se guardará encriptada en la base de datos. Comparte esta contraseña con el usuario.</div>
                   </div>
                 )}
@@ -3154,8 +3154,8 @@ function AdminUsuarios({ user: currentUser }) {
                 <div>
                   <label style={lbl}>ESTADO</label>
                   <select className="input" value={form.estado} onChange={e => setForm(f => ({...f, estado: e.target.value}))} style={{ background: 'var(--bg2)' }}>
-                    <option value="ACTIVO" style={{ background: '#0c0c10' }}>ACTIVO</option>
-                    <option value="INACTIVO" style={{ background: '#0c0c10' }}>INACTIVO</option>
+                    <option value="ACTIVO" style={{ background: 'var(--bg2)' }}>ACTIVO</option>
+                    <option value="INACTIVO" style={{ background: 'var(--bg2)' }}>INACTIVO</option>
                   </select>
                 </div>
               )}
@@ -3193,7 +3193,7 @@ function AdminUsuarios({ user: currentUser }) {
   )
 }
 
-const lbl = { fontSize: 10, color: 'rgba(255,255,255,0.35)', fontWeight: 600, letterSpacing: 0.5, display: 'block', marginBottom: 5 }
+const lbl = { fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.5, display: 'block', marginBottom: 5 }
 
 /* =========================================
    BITÁCORA DE ACTIVIDADES (Vinculación Tarea ↔ Personal)
@@ -3330,11 +3330,11 @@ function Bitacora({ svc, user }) {
           ) : actividades.map(a => (
             <div key={a.id_actividad} className="card-static" onClick={() => abrirDetalle(a)} style={{ padding: '16px', display: 'flex', gap: 14, alignItems: 'center', cursor: 'pointer', transition: 'transform 0.2s', border: '1px solid var(--border)' }}>
               {a.meta?.url_foto ? (
-                 <div style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(255,255,255,0.1)' }}>
+                 <div style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', flexShrink: 0, border: '1px solid color-mix(in srgb, var(--ink) 10%, transparent)' }}>
                     <img src={a.meta.url_foto} alt="Trabajo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                  </div>
               ) : (
-                 <div style={{ width: 80, height: 80, borderRadius: 6, background: 'rgba(230,126,34,0.05)', border: '1px solid rgba(230,126,34,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>👷</div>
+                 <div style={{ width: 80, height: 80, borderRadius: 6, background: 'color-mix(in srgb, var(--accent) 5%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 15%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>👷</div>
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 2 }}>{a.catalogo_competencias?.nombre}</div>
@@ -3413,7 +3413,7 @@ function Bitacora({ svc, user }) {
           
           <div className="card-static" style={{ padding: '24px', display: 'flex', gap: 24, alignItems: 'center' }}>
             {selAct.meta?.url_foto && (
-               <div style={{ width: 220, height: 140, borderRadius: 8, overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(255,255,255,0.1)' }}>
+               <div style={{ width: 220, height: 140, borderRadius: 8, overflow: 'hidden', flexShrink: 0, border: '1px solid color-mix(in srgb, var(--ink) 10%, transparent)' }}>
                   <img src={selAct.meta.url_foto} alt="Trabajo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                </div>
             )}
@@ -3446,11 +3446,11 @@ function Bitacora({ svc, user }) {
             </div>
             
             {personalAsignado.length === 0 ? (
-               <div style={{ padding: '30px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: 8, border: '1px dashed var(--border)', color: 'var(--text3)', fontSize: 12 }}>No hay técnicos registrados en el Grupo {selAct.meta?.id_grupo} para este servicio.</div>
+               <div style={{ padding: '30px', textAlign: 'center', background: 'color-mix(in srgb, var(--ink) 2%, transparent)', borderRadius: 8, border: '1px dashed var(--border)', color: 'var(--text3)', fontSize: 12 }}>No hay técnicos registrados en el Grupo {selAct.meta?.id_grupo} para este servicio.</div>
             ) : (
                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
                   {personalAsignado.map(p => (
-                     <div key={p.dni} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 8 }}>
+                     <div key={p.dni} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px', background: 'color-mix(in srgb, var(--ink) 2%, transparent)', border: '1px solid var(--border)', borderRadius: 8 }}>
                         <Avatar nombre={p.nombres_completos} foto={p.url_foto} size={36} />
                         <div style={{ minWidth: 0 }}>
                            <div style={{ fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.nombres_completos}</div>
@@ -3569,7 +3569,7 @@ function AdminGestion({ svc }) {
         <div className="card-static" style={{ overflow: 'hidden', marginBottom: 16 }}>
           <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', fontSize: 10, fontWeight: 600, color: 'var(--text3)', letterSpacing: 0.4 }}>ACTIVOS EN SERVICIO</div>
           {activos.map((a, i) => (
-            <div key={a.id_asignacion} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderBottom: i < activos.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+            <div key={a.id_asignacion} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderBottom: i < activos.length - 1 ? '1px solid color-mix(in srgb, var(--ink) 3%, transparent)' : 'none' }}>
               <Avatar nombre={a.nombre} foto={a.foto} size={30} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.nombre}</div>
@@ -3577,11 +3577,11 @@ function AdminGestion({ svc }) {
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
                 <button onClick={() => setConfirmDni({ id: a.id_asignacion, nombre: a.nombre, accion: 'desactivar' })}
-                  style={{ padding: '4px 10px', fontSize: 10, background: 'rgba(212,160,23,0.08)', border: '1px solid rgba(212,160,23,0.2)', borderRadius: 5, color: 'var(--yellow)', cursor: 'pointer', fontFamily: 'Inter' }}>
+                  style={{ padding: '4px 10px', fontSize: 10, background: 'color-mix(in srgb, var(--yellow) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--yellow) 20%, transparent)', borderRadius: 5, color: 'var(--yellow)', cursor: 'pointer', fontFamily: 'inherit' }}>
                   ⏸ Desactivar
                 </button>
                 <button onClick={() => setConfirmDni({ id: a.id_asignacion, nombre: a.nombre, accion: 'eliminar' })}
-                  style={{ padding: '4px 10px', fontSize: 10, background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', borderRadius: 5, color: 'var(--red)', cursor: 'pointer', fontFamily: 'Inter' }}>
+                  style={{ padding: '4px 10px', fontSize: 10, background: 'color-mix(in srgb, var(--red) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--red) 20%, transparent)', borderRadius: 5, color: 'var(--red)', cursor: 'pointer', fontFamily: 'inherit' }}>
                   ✕ Quitar
                 </button>
               </div>
@@ -3595,14 +3595,14 @@ function AdminGestion({ svc }) {
         <div className="card-static" style={{ overflow: 'hidden' }}>
           <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', fontSize: 10, fontWeight: 600, color: 'var(--text3)', letterSpacing: 0.4 }}>INACTIVOS</div>
           {inactivos.map((a, i) => (
-            <div key={a.id_asignacion} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderBottom: i < inactivos.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', opacity: 0.55 }}>
+            <div key={a.id_asignacion} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderBottom: i < inactivos.length - 1 ? '1px solid color-mix(in srgb, var(--ink) 3%, transparent)' : 'none', opacity: 0.55 }}>
               <Avatar nombre={a.nombre} foto={a.foto} size={30} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.nombre}</div>
                 <div style={{ fontSize: 9, color: 'var(--text3)' }}>{a.cargoNombre} · G{a.id_grupo} · T{a.turno}</div>
               </div>
               <button onClick={() => reactivar(a.id_asignacion)}
-                style={{ padding: '4px 10px', fontSize: 10, background: 'rgba(39,174,96,0.08)', border: '1px solid rgba(39,174,96,0.2)', borderRadius: 5, color: 'var(--green)', cursor: 'pointer', fontFamily: 'Inter' }}>
+                style={{ padding: '4px 10px', fontSize: 10, background: 'color-mix(in srgb, var(--green) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--green) 20%, transparent)', borderRadius: 5, color: 'var(--green)', cursor: 'pointer', fontFamily: 'inherit' }}>
                 ▶ Reactivar
               </button>
             </div>
@@ -3618,7 +3618,7 @@ function AdminGestion({ svc }) {
 
       {/* Modal confirmación */}
       {confirmDni && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
           <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 12, padding: '24px 28px', maxWidth: 340, textAlign: 'center' }}>
             <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
               {confirmDni.accion === 'desactivar' ? '¿Desactivar del servicio?' : '¿Eliminar del servicio?'}
@@ -3637,7 +3637,7 @@ function AdminGestion({ svc }) {
               <button onClick={() => confirmDni.accion === 'desactivar'
                 ? desactivar(confirmDni.id, confirmDni.nombre)
                 : eliminarAsignacion(confirmDni.id, confirmDni.nombre)}
-                style={{ flex: 1, padding: '9px', background: confirmDni.accion === 'desactivar' ? 'var(--yellow)' : 'var(--red)', border: 'none', borderRadius: 8, color: confirmDni.accion === 'desactivar' ? '#000' : 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>
+                style={{ flex: 1, padding: '9px', background: confirmDni.accion === 'desactivar' ? 'var(--yellow)' : 'var(--red)', border: 'none', borderRadius: 8, color: confirmDni.accion === 'desactivar' ? 'var(--on-accent)' : 'var(--on-accent)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                 {confirmDni.accion === 'desactivar' ? 'Desactivar' : 'Eliminar'}
               </button>
             </div>
@@ -3726,7 +3726,7 @@ function AdminServicios({ user, currentSvcId }) {
   }
 
   const estadoColor = e => e === 'ACTIVO' ? 'var(--green)' : e === 'INACTIVO' ? 'var(--yellow)' : 'var(--text3)'
-  const estadoBg    = e => e === 'ACTIVO' ? 'rgba(39,174,96,0.08)' : e === 'INACTIVO' ? 'rgba(212,160,23,0.08)' : 'rgba(255,255,255,0.04)'
+  const estadoBg    = e => e === 'ACTIVO' ? 'color-mix(in srgb, var(--green) 8%, transparent)' : e === 'INACTIVO' ? 'color-mix(in srgb, var(--yellow) 8%, transparent)' : 'color-mix(in srgb, var(--ink) 4%, transparent)'
 
   if (loading) return <p style={{ color: 'var(--text3)', fontSize: 13 }}>Cargando servicios...</p>
 
@@ -3752,8 +3752,8 @@ function AdminServicios({ user, currentSvcId }) {
         {servicios.map(s => (
           <div key={s.id_servicio} style={{
             display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
-            background: s.id_servicio === currentSvcId ? 'rgba(230,126,34,0.04)' : 'rgba(255,255,255,0.02)',
-            border: `1px solid ${s.id_servicio === currentSvcId ? 'rgba(230,126,34,0.15)' : 'var(--border)'}`,
+            background: s.id_servicio === currentSvcId ? 'color-mix(in srgb, var(--accent) 4%, transparent)' : 'color-mix(in srgb, var(--ink) 2%, transparent)',
+            border: `1px solid ${s.id_servicio === currentSvcId ? 'color-mix(in srgb, var(--accent) 15%, transparent)' : 'var(--border)'}`,
             borderRadius: 10, opacity: s.estado === 'ARCHIVADO' ? 0.45 : 1,
           }}>
             {/* Estado dot */}
@@ -3780,18 +3780,18 @@ function AdminServicios({ user, currentSvcId }) {
             <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
               {s.estado !== 'ACTIVO' && (
                 <button onClick={async () => { await supabase.from('servicios').update({ estado: 'ACTIVO' }).eq('id_servicio', s.id_servicio); loadServicios() }}
-                  style={{ padding: '3px 8px', fontSize: 9, background: 'rgba(39,174,96,0.1)', border: '1px solid rgba(39,174,96,0.2)', borderRadius: 4, color: 'var(--green)', cursor: 'pointer', fontFamily: 'Inter' }}>Activar</button>
+                  style={{ padding: '3px 8px', fontSize: 9, background: 'color-mix(in srgb, var(--green) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--green) 20%, transparent)', borderRadius: 4, color: 'var(--green)', cursor: 'pointer', fontFamily: 'inherit' }}>Activar</button>
               )}
               {s.estado !== 'INACTIVO' && (
                 <button onClick={async () => { await supabase.from('servicios').update({ estado: 'INACTIVO' }).eq('id_servicio', s.id_servicio); loadServicios() }}
-                  style={{ padding: '3px 8px', fontSize: 9, background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.2)', borderRadius: 4, color: 'var(--yellow)', cursor: 'pointer', fontFamily: 'Inter' }}>Desactivar</button>
+                  style={{ padding: '3px 8px', fontSize: 9, background: 'color-mix(in srgb, var(--yellow) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--yellow) 20%, transparent)', borderRadius: 4, color: 'var(--yellow)', cursor: 'pointer', fontFamily: 'inherit' }}>Desactivar</button>
               )}
               {s.estado !== 'ARCHIVADO' && (
                 <button onClick={async () => { await supabase.from('servicios').update({ estado: 'ARCHIVADO' }).eq('id_servicio', s.id_servicio); loadServicios() }}
-                  style={{ padding: '3px 8px', fontSize: 9, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: 4, color: 'var(--text3)', cursor: 'pointer', fontFamily: 'Inter' }}>Archivar</button>
+                  style={{ padding: '3px 8px', fontSize: 9, background: 'color-mix(in srgb, var(--ink) 5%, transparent)', border: '1px solid var(--border)', borderRadius: 4, color: 'var(--text3)', cursor: 'pointer', fontFamily: 'inherit' }}>Archivar</button>
               )}
               <button onClick={() => abrirEditar(s)}
-                style={{ padding: '3px 8px', fontSize: 9, background: 'rgba(91,164,207,0.08)', border: '1px solid rgba(91,164,207,0.15)', borderRadius: 4, color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'Inter' }}>✏ Editar</button>
+                style={{ padding: '3px 8px', fontSize: 9, background: 'color-mix(in srgb, var(--accent2) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent2) 15%, transparent)', borderRadius: 4, color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'inherit' }}>✏ Editar</button>
             </div>
           </div>
         ))}
@@ -3799,7 +3799,7 @@ function AdminServicios({ user, currentSvcId }) {
 
       {/* Modal formulario */}
       {showForm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
           <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '24px 26px', width: '100%', maxWidth: 500, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <div style={{ fontSize: 14, fontWeight: 700 }}>{editando ? 'Editar servicio' : 'Nuevo servicio'}</div>
@@ -3883,7 +3883,7 @@ function AdminServicios({ user, currentSvcId }) {
   )
 }
 
-const lbl2 = { fontSize: 10, color: 'rgba(255,255,255,0.35)', fontWeight: 600, letterSpacing: 0.5, display: 'block', marginBottom: 5 }
+const lbl2 = { fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.5, display: 'block', marginBottom: 5 }
 
 
 /* =========================================
@@ -3996,7 +3996,7 @@ function AdminPersonal({ svc }) {
       {resultados.length > 0 && (
         <div className="card-static" style={{ overflow: 'hidden' }}>
           {resultados.map((t, i) => (
-            <div key={t.dni} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 16px', borderBottom: i < resultados.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+            <div key={t.dni} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 16px', borderBottom: i < resultados.length - 1 ? '1px solid color-mix(in srgb, var(--ink) 3%, transparent)' : 'none' }}>
               <Avatar nombre={t.nombres_completos} foto={t.url_foto} size={34} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 600 }}>{t.nombres_completos}</div>
@@ -4005,7 +4005,7 @@ function AdminPersonal({ svc }) {
                   {t.asig && ` · Actual: ${t.cargoActualNombre} · G${t.asig.id_grupo} T${t.asig.turno}`}
                 </div>
               </div>
-              <button onClick={() => abrirEditar(t)} style={{ padding: '5px 12px', fontSize: 11, background: 'rgba(91,164,207,0.08)', border: '1px solid rgba(91,164,207,0.2)', borderRadius: 6, color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'Inter' }}>
+              <button onClick={() => abrirEditar(t)} style={{ padding: '5px 12px', fontSize: 11, background: 'color-mix(in srgb, var(--accent2) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent2) 20%, transparent)', borderRadius: 6, color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'inherit' }}>
                 ✏ Editar
               </button>
             </div>
@@ -4015,7 +4015,7 @@ function AdminPersonal({ svc }) {
 
       {/* Modal edición */}
       {editando && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
           <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '22px 24px', width: '100%', maxWidth: 460 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
               <div style={{ fontSize: 14, fontWeight: 700 }}>Editar — {editando.nombres_completos}</div>
@@ -4031,13 +4031,13 @@ function AdminPersonal({ svc }) {
                 <div>
                   <label style={lbl3}>CARGO MÁXIMO (perfil)</label>
                   <select className="input" value={form.cargo_max_id} onChange={e => setForm(f => ({...f, cargo_max_id: e.target.value}))} style={{ background: 'var(--bg2)' }}>
-                    {cargos.map(c => <option key={c.id_cargo} value={c.id_cargo} style={{ background: '#0c0c10' }}>{c.nombre_oficial}</option>)}
+                    {cargos.map(c => <option key={c.id_cargo} value={c.id_cargo} style={{ background: 'var(--bg2)' }}>{c.nombre_oficial}</option>)}
                   </select>
                 </div>
                 <div>
                   <label style={lbl3}>CARGO EN ESTE SERVICIO</label>
                   <select className="input" value={form.id_cargo_actual} onChange={e => setForm(f => ({...f, id_cargo_actual: e.target.value}))} style={{ background: 'var(--bg2)' }}>
-                    {cargos.map(c => <option key={c.id_cargo} value={c.id_cargo} style={{ background: '#0c0c10' }}>{c.nombre_oficial}</option>)}
+                    {cargos.map(c => <option key={c.id_cargo} value={c.id_cargo} style={{ background: 'var(--bg2)' }}>{c.nombre_oficial}</option>)}
                   </select>
                 </div>
               </div>
@@ -4153,7 +4153,7 @@ function AdminCompetencias() {
           </div>
           <div className="card-static" style={{ overflow: 'hidden' }}>
             {comps.map((comp, i) => (
-              <div key={comp.id_competencia} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: i < comps.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+              <div key={comp.id_competencia} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: i < comps.length - 1 ? '1px solid color-mix(in srgb, var(--ink) 3%, transparent)' : 'none' }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: critColor(comp.nivel_criticidad), flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 12, fontWeight: 600 }}>{comp.nombre}</div>
@@ -4163,8 +4163,8 @@ function AdminCompetencias() {
                   {criticidades.find(c => c.v === comp.nivel_criticidad)?.l}
                 </div>
                 <div style={{ display: 'flex', gap: 5 }}>
-                  <button onClick={() => abrirEditar(comp)} style={{ padding: '3px 9px', fontSize: 10, background: 'rgba(91,164,207,0.08)', border: '1px solid rgba(91,164,207,0.2)', borderRadius: 5, color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'Inter' }}>✏</button>
-                  <button onClick={() => setConfirmDel(comp)} style={{ padding: '3px 9px', fontSize: 10, background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.15)', borderRadius: 5, color: 'var(--red)', cursor: 'pointer', fontFamily: 'Inter' }}>✕</button>
+                  <button onClick={() => abrirEditar(comp)} style={{ padding: '3px 9px', fontSize: 10, background: 'color-mix(in srgb, var(--accent2) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent2) 20%, transparent)', borderRadius: 5, color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'inherit' }}>✏</button>
+                  <button onClick={() => setConfirmDel(comp)} style={{ padding: '3px 9px', fontSize: 10, background: 'color-mix(in srgb, var(--red) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--red) 15%, transparent)', borderRadius: 5, color: 'var(--red)', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
                 </div>
               </div>
             ))}
@@ -4174,7 +4174,7 @@ function AdminCompetencias() {
 
       {/* Modal */}
       {editando && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
           <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '22px 24px', width: '100%', maxWidth: 440 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
               <div style={{ fontSize: 14, fontWeight: 700 }}>{editando === 'nuevo' ? 'Nueva competencia' : 'Editar competencia'}</div>
@@ -4186,13 +4186,13 @@ function AdminCompetencias() {
                 <div>
                   <label style={lbl3}>CATEGORÍA</label>
                   <select className="input" value={form.categoria} onChange={e => setForm(f => ({...f, categoria: e.target.value}))} style={{ background: 'var(--bg2)' }}>
-                    {categorias.map(cat => <option key={cat} value={cat} style={{ background: '#0c0c10' }}>{cat}</option>)}
+                    {categorias.map(cat => <option key={cat} value={cat} style={{ background: 'var(--bg2)' }}>{cat}</option>)}
                   </select>
                 </div>
                 <div>
                   <label style={lbl3}>CRITICIDAD</label>
                   <select className="input" value={form.nivel_criticidad} onChange={e => setForm(f => ({...f, nivel_criticidad: e.target.value}))} style={{ background: 'var(--bg2)' }}>
-                    {criticidades.map(c => <option key={c.v} value={c.v} style={{ background: '#0c0c10' }}>{c.v} — {c.l}</option>)}
+                    {criticidades.map(c => <option key={c.v} value={c.v} style={{ background: 'var(--bg2)' }}>{c.v} — {c.l}</option>)}
                   </select>
                 </div>
               </div>
@@ -4210,13 +4210,13 @@ function AdminCompetencias() {
 
       {/* Confirm delete */}
       {confirmDel && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
           <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 12, padding: '24px 28px', maxWidth: 320, textAlign: 'center' }}>
             <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>¿Eliminar competencia?</div>
             <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 20 }}><strong style={{ color: 'var(--text)' }}>{confirmDel.nombre}</strong></div>
             <div style={{ display: 'flex', gap: 10 }}>
               <button className="btn btn-ghost" onClick={() => setConfirmDel(null)} style={{ flex: 1 }}>Cancelar</button>
-              <button onClick={() => eliminar(confirmDel.id_competencia)} style={{ flex: 1, padding: '9px', background: 'var(--red)', border: 'none', borderRadius: 8, color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>Eliminar</button>
+              <button onClick={() => eliminar(confirmDel.id_competencia)} style={{ flex: 1, padding: '9px', background: 'var(--red)', border: 'none', borderRadius: 8, color: 'var(--on-accent)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Eliminar</button>
             </div>
           </div>
         </div>
@@ -4307,11 +4307,11 @@ function AdminBitacoraEditor({ svc, user }) {
             let meta = {}
             try { meta = JSON.parse(act.checklist_generado) } catch {}
             return (
-              <div key={act.id_actividad} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 10 }}>
+              <div key={act.id_actividad} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'color-mix(in srgb, var(--ink) 2%, transparent)', border: '1px solid var(--border)', borderRadius: 10 }}>
                 {meta.url_foto ? (
                   <img src={meta.url_foto} alt="" style={{ width: 56, height: 56, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
                 ) : (
-                  <div style={{ width: 56, height: 56, borderRadius: 6, background: 'rgba(230,126,34,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🔧</div>
+                  <div style={{ width: 56, height: 56, borderRadius: 6, background: 'color-mix(in srgb, var(--accent) 8%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🔧</div>
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{act.nombre_actividad}</div>
@@ -4322,8 +4322,8 @@ function AdminBitacoraEditor({ svc, user }) {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                  <button onClick={() => abrirEditar(act)} style={{ padding: '4px 10px', fontSize: 10, background: 'rgba(91,164,207,0.08)', border: '1px solid rgba(91,164,207,0.2)', borderRadius: 5, color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'Inter' }}>✏ Editar</button>
-                  <button onClick={() => setConfirmDel(act)} style={{ padding: '4px 10px', fontSize: 10, background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.15)', borderRadius: 5, color: 'var(--red)', cursor: 'pointer', fontFamily: 'Inter' }}>✕</button>
+                  <button onClick={() => abrirEditar(act)} style={{ padding: '4px 10px', fontSize: 10, background: 'color-mix(in srgb, var(--accent2) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent2) 20%, transparent)', borderRadius: 5, color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'inherit' }}>✏ Editar</button>
+                  <button onClick={() => setConfirmDel(act)} style={{ padding: '4px 10px', fontSize: 10, background: 'color-mix(in srgb, var(--red) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--red) 15%, transparent)', borderRadius: 5, color: 'var(--red)', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
                 </div>
               </div>
             )
@@ -4333,7 +4333,7 @@ function AdminBitacoraEditor({ svc, user }) {
 
       {/* Modal edición */}
       {editando && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
           <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '22px 24px', width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
               <div style={{ fontSize: 14, fontWeight: 700 }}>Editar actividad</div>
@@ -4345,7 +4345,7 @@ function AdminBitacoraEditor({ svc, user }) {
                 <label style={lbl3}>COMPETENCIA / TIPO DE TRABAJO</label>
                 <select className="input" value={form.id_competencia} onChange={e => setForm(f => ({...f, id_competencia: e.target.value}))} style={{ background: 'var(--bg2)' }}>
                   <option value="">— Sin competencia —</option>
-                  {comps.map(c => <option key={c.id_competencia} value={c.id_competencia} style={{ background: '#0c0c10' }}>{c.nombre}</option>)}
+                  {comps.map(c => <option key={c.id_competencia} value={c.id_competencia} style={{ background: 'var(--bg2)' }}>{c.nombre}</option>)}
                 </select>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
@@ -4378,14 +4378,14 @@ function AdminBitacoraEditor({ svc, user }) {
 
       {/* Confirm delete */}
       {confirmDel && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
           <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 12, padding: '24px 28px', maxWidth: 320, textAlign: 'center' }}>
             <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>¿Eliminar esta actividad?</div>
             <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 6 }}><strong style={{ color: 'var(--text)' }}>{confirmDel.nombre_actividad}</strong></div>
             <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 20 }}>Se eliminará también todo el detalle asociado.</div>
             <div style={{ display: 'flex', gap: 10 }}>
               <button className="btn btn-ghost" onClick={() => setConfirmDel(null)} style={{ flex: 1 }}>Cancelar</button>
-              <button onClick={() => eliminar(confirmDel.id_actividad)} style={{ flex: 1, padding: '9px', background: 'var(--red)', border: 'none', borderRadius: 8, color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>Eliminar</button>
+              <button onClick={() => eliminar(confirmDel.id_actividad)} style={{ flex: 1, padding: '9px', background: 'var(--red)', border: 'none', borderRadius: 8, color: 'var(--on-accent)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Eliminar</button>
             </div>
           </div>
         </div>
@@ -4394,7 +4394,7 @@ function AdminBitacoraEditor({ svc, user }) {
   )
 }
 
-const lbl3 = { fontSize: 10, color: 'rgba(255,255,255,0.35)', fontWeight: 600, letterSpacing: 0.5, display: 'block', marginBottom: 5 }
+const lbl3 = { fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.5, display: 'block', marginBottom: 5 }
 
 
 /* =========================================
@@ -4460,13 +4460,13 @@ function AdminEvaluadores({ svc }) {
       // Clasificación del perfil evaluador
       let perfil, perfilColor, perfilIcon
       if (diff > 0.4) {
-        perfil = 'Muy permisivo'; perfilColor = '#E67E22'; perfilIcon = '😊'
+        perfil = 'Muy permisivo'; perfilColor = 'var(--accent)'; perfilIcon = '😊'
       } else if (diff > 0.15) {
-        perfil = 'Permisivo'; perfilColor = '#D4A017'; perfilIcon = '🙂'
+        perfil = 'Permisivo'; perfilColor = 'var(--yellow)'; perfilIcon = '🙂'
       } else if (diff < -0.4) {
         perfil = 'Muy estricto'; perfilColor = 'var(--red)'; perfilIcon = '😤'
       } else if (diff < -0.15) {
-        perfil = 'Estricto'; perfilColor = '#E8A09A'; perfilIcon = '🤨'
+        perfil = 'Estricto'; perfilColor = 'var(--red)'; perfilIcon = '🤨'
       } else {
         perfil = 'Calibrado'; perfilColor = 'var(--green)'; perfilIcon = '✅'
       }
@@ -4508,18 +4508,18 @@ function AdminEvaluadores({ svc }) {
   return (
     <div className="fade">
       {/* Header con referencia */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18, padding: '12px 16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18, padding: '12px 16px', background: 'color-mix(in srgb, var(--ink) 2%, transparent)', border: '1px solid var(--border)', borderRadius: 10 }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.4 }}>PROMEDIO GLOBAL SERVICIO</div>
-          <div style={{ fontSize: 24, fontWeight: 900, color: sc(globalProm), fontFamily: 'monospace', lineHeight: 1.2 }}>{globalProm}</div>
+          <div style={{ fontSize: 24, fontWeight: 900, color: sc(globalProm), fontFamily: 'var(--font-mono)', lineHeight: 1.2 }}>{globalProm}</div>
           <div style={{ fontSize: 9, color: 'var(--text3)' }}>línea base para comparar</div>
         </div>
         <div style={{ flex: 1, fontSize: 11, color: 'var(--text2)', lineHeight: 1.5 }}>
-          Los evaluadores con diferencia <span style={{ color: '#E67E22', fontWeight: 600 }}>mayor a +0.15</span> tienden a calificar por encima del promedio (<em>permisivos</em>). Los que tienen <span style={{ color: 'var(--red)', fontWeight: 600 }}>menor a -0.15</span> califican más bajo (<em>estrictos</em>). El rango calibrado está entre ±0.15.
+          Los evaluadores con diferencia <span style={{ color: 'var(--accent)', fontWeight: 600 }}>mayor a +0.15</span> tienden a calificar por encima del promedio (<em>permisivos</em>). Los que tienen <span style={{ color: 'var(--red)', fontWeight: 600 }}>menor a -0.15</span> califican más bajo (<em>estrictos</em>). El rango calibrado está entre ±0.15.
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600 }}>EVALUADORES</div>
-          <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--accent2)', fontFamily: 'monospace' }}>{datos.length}</div>
+          <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--accent2)', fontFamily: 'var(--font-mono)' }}>{datos.length}</div>
         </div>
       </div>
 
@@ -4536,14 +4536,14 @@ function AdminEvaluadores({ svc }) {
         {datos.map((ev, i) => (
           <div key={ev.dni}
             onClick={() => abrirDetalle(ev)}
-            style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 70px 70px 110px', gap: 8, padding: '11px 16px', alignItems: 'center', borderBottom: i < datos.length-1 ? '1px solid rgba(255,255,255,0.03)' : 'none', cursor: 'pointer', background: sel?.dni === ev.dni ? 'rgba(255,255,255,0.02)' : 'transparent', transition: 'background 0.15s' }}>
+            style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 70px 70px 110px', gap: 8, padding: '11px 16px', alignItems: 'center', borderBottom: i < datos.length-1 ? '1px solid color-mix(in srgb, var(--ink) 3%, transparent)' : 'none', cursor: 'pointer', background: sel?.dni === ev.dni ? 'color-mix(in srgb, var(--ink) 2%, transparent)' : 'transparent', transition: 'background 0.15s' }}>
             <div>
               <div style={{ fontSize: 12, fontWeight: 600 }}>{ev.nombre.split(' ').slice(0,3).join(' ')}</div>
-              <div style={{ fontSize: 9, color: 'var(--text3)', fontFamily: 'monospace' }}>{ev.username}</div>
+              <div style={{ fontSize: 9, color: 'var(--text3)', fontFamily: 'var(--font-mono)' }}>{ev.username}</div>
             </div>
             <div style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: 'var(--accent2)' }}>{ev.total}</div>
-            <div style={{ textAlign: 'center', fontSize: 14, fontWeight: 800, color: sc(ev.notaMedia), fontFamily: 'monospace' }}>{ev.notaMedia}</div>
-            <div style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: ev.diff > 0 ? '#E67E22' : ev.diff < 0 ? 'var(--red)' : 'var(--text3)' }}>
+            <div style={{ textAlign: 'center', fontSize: 14, fontWeight: 800, color: sc(ev.notaMedia), fontFamily: 'var(--font-mono)' }}>{ev.notaMedia}</div>
+            <div style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: ev.diff > 0 ? 'var(--accent)' : ev.diff < 0 ? 'var(--red)' : 'var(--text3)' }}>
               {ev.diff > 0 ? '+' : ''}{ev.diff}
             </div>
             <div style={{ textAlign: 'center' }}>
@@ -4579,7 +4579,7 @@ function AdminEvaluadores({ svc }) {
                 { label: 'Aceptable 2.0-3.5', val: sel.evs.filter(e=>parseFloat(e.promedio)>=2.0&&parseFloat(e.promedio)<3.5).length, color: 'var(--yellow)' },
                 { label: 'Óptimo ≥3.5', val: sel.evs.filter(e=>parseFloat(e.promedio)>=3.5).length, color: 'var(--green)' },
               ].map(b => b.val > 0 && (
-                <div key={b.label} title={`${b.label}: ${b.val}`} style={{ flex: b.val, background: b.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'rgba(0,0,0,0.6)' }}>
+                <div key={b.label} title={`${b.label}: ${b.val}`} style={{ flex: b.val, background: b.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'var(--on-accent)' }}>
                   {b.val > 0 && b.val}
                 </div>
               ))}
@@ -4595,12 +4595,12 @@ function AdminEvaluadores({ svc }) {
           <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, marginBottom: 8 }}>ÚLTIMAS {detalle.length} EVALUACIONES</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {detalle.map((e, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: 6 }}>
-                <div style={{ fontSize: 16, fontWeight: 900, color: sc(e.promedio), fontFamily: 'monospace', width: 36 }}>{e.promedio}</div>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 12px', background: 'color-mix(in srgb, var(--ink) 2%, transparent)', borderRadius: 6 }}>
+                <div style={{ fontSize: 16, fontWeight: 900, color: sc(e.promedio), fontFamily: 'var(--font-mono)', width: 36 }}>{e.promedio}</div>
                 <div style={{ flex: 1, fontSize: 11, color: 'var(--text2)' }}>{e.cargo_momento || '—'}</div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   {[e.nota_1, e.nota_2, e.nota_3, e.nota_4].map((n, ni) => (
-                    <div key={ni} style={{ width: 20, height: 20, borderRadius: 4, background: n>=3.5?'rgba(39,174,96,0.25)':n>=2.0?'rgba(212,160,23,0.25)':'rgba(192,57,43,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: n>=3.5?'var(--green)':n>=2.0?'var(--yellow)':'var(--red)' }}>{n}</div>
+                    <div key={ni} style={{ width: 20, height: 20, borderRadius: 4, background: n>=3.5?'color-mix(in srgb, var(--green) 25%, transparent)':n>=2.0?'color-mix(in srgb, var(--yellow) 25%, transparent)':'color-mix(in srgb, var(--red) 25%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: n>=3.5?'var(--green)':n>=2.0?'var(--yellow)':'var(--red)' }}>{n}</div>
                   ))}
                 </div>
                 <div style={{ fontSize: 9, color: 'var(--text3)' }}>{e.fecha_hora ? new Date(e.fecha_hora).toLocaleDateString('es-PE',{day:'2-digit',month:'short'}) : '—'}</div>
