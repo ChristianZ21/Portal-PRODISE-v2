@@ -40,11 +40,12 @@ export default function LoginPage() {
     <div className="grid min-h-dvh bg-canvas text-label lg:grid-cols-[minmax(0,1.15fr)_minmax(440px,1fr)]">
 
       {/* Fotografía de planta: solo en pantallas anchas */}
-      <div aria-hidden="true" className="relative hidden overflow-hidden lg:block">
+      {/* Fotografía de planta: franja superior en móvil, mitad izquierda en escritorio */}
+      <div aria-hidden="true" className="login-foto relative h-56 overflow-hidden sm:h-72 lg:h-auto">
         <img src={MARCA.fondoLogin} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: '85% 20%' }} />
       </div>
 
-      <main id="contenido" className="flex flex-col px-6 pt-16 pb-8 sm:px-12 lg:px-16">
+      <main id="contenido" className="relative -mt-10 flex flex-col px-6 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-12 lg:mt-0 lg:px-16 lg:pt-16">
         <div className="enter my-auto w-full max-w-[360px]">
           <Logo height={44} />
 

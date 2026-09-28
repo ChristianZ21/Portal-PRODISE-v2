@@ -67,17 +67,16 @@ function escalar(texto, f) {
 }
 export function Contador({ valor, duracion = 900 }) {
   const texto = valor == null ? '' : String(valor)
-  const animable = NUM.test(texto)
-  NUM.lastIndex = 0
+  const animable = /\d/.test(texto)
   const [salida, setSalida] = useState(() => (animable && !movimientoReducido() ? escalar(texto, 0) : texto))
   useEffect(() => {
-    if (!animable || movimientoReducido()) { setSalida(texto); return }
+    const estatico = !animable || movimientoReducido()
     const w = (2 * Math.PI) / (duracion / 1000 * 0.62)
     let raf, t0
     const paso = now => {
       if (t0 === undefined) t0 = now
       const t = (now - t0) / 1000
-      const f = t * 1000 >= duracion ? 1 : 1 - (1 + w * t) * Math.exp(-w * t)
+      const f = estatico || t * 1000 >= duracion ? 1 : 1 - (1 + w * t) * Math.exp(-w * t)
       setSalida(escalar(texto, f))
       if (f < 1) raf = requestAnimationFrame(paso)
     }

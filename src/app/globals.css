@@ -520,6 +520,11 @@
     .logo-marca { filter: invert(1) hue-rotate(180deg) saturate(1.4); }
   }
 
+  /* Foto del login: en móvil se funde con el fondo bajo el formulario */
+  @media (max-width: 1023px) {
+    .login-foto { -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent); mask-image: linear-gradient(to bottom, #000 55%, transparent); }
+  }
+
   .skip-link {
     position: absolute; left: 16px; top: -64px; z-index: 100;
     padding: 10px 16px; border-radius: 10px;
@@ -543,6 +548,8 @@
   z-index: 50;
   display: flex;
   flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
   background: var(--surface);
   box-shadow: inset -0.5px 0 0 var(--border);
   transition: transform var(--dur-spring) var(--spring-bounce);
@@ -588,9 +595,36 @@
 
 .hamburger-btn { display: none; }
 .close-sidebar-btn { display: none; }
+
+/* Barra de pestañas inferior (móvil) */
+.tab-bar { display: none; }
+.tab-bar-inner { position: relative; display: flex; gap: 2px; padding: 6px 8px; }
+.tab-bar-inner > .thumb { background: var(--brand-soft); border-radius: 14px; }
+.tab-item {
+  position: relative; z-index: 1; flex: 1; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-height: 50px; border-radius: 14px;
+  font-size: 11px; font-weight: 500; letter-spacing: 0; color: var(--text3);
+  transition: color var(--dur-quick) ease-out, transform var(--dur-spring) var(--spring-bounce);
+  -webkit-tap-highlight-color: transparent;
+}
+.tab-item span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tab-item.is-active { color: var(--accent); font-weight: 600; }
+.tab-item:active { transform: scale(0.92); transition-duration: var(--dur-quick), 80ms; }
+
+/* Barra fija de guardado (Evaluar) */
+.save-bar {
+  position: sticky; bottom: 16px; z-index: 5;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 12px 12px 12px 20px; border-radius: 16px;
+}
+.save-bar { background: color-mix(in srgb, var(--surface) 82%, transparent); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); box-shadow: var(--shadow-float); }
+.save-progress { position: absolute; left: 16px; right: 16px; top: 0; height: 3px; border-radius: 3px; overflow: hidden; background: var(--fill); }
+.save-progress > span { display: block; height: 100%; background: var(--brand); transform-origin: left; transition: transform var(--dur-spring) var(--spring); }
+@media (prefers-reduced-transparency: reduce) { .save-bar { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; } }
 .mobile-bar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 39;
-  height: 56px; padding: 0 12px 0 6px; gap: 6px;
+  height: calc(56px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) 12px 0 6px; gap: 6px;
 }
 
 @media (pointer: coarse) {
@@ -620,6 +654,16 @@
     box-shadow: var(--shadow-float);
   }
   .sidebar-open { transform: translateX(0) !important; }
+  .tab-bar {
+    display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: inset 0 0.5px 0 var(--border);
+  }
+  .save-bar { bottom: calc(76px + env(safe-area-inset-bottom)); padding-left: 16px; gap: 12px; }
+  /* La pestaña "Más" abre el menú: la barra superior queda solo para el título */
+  .mobile-bar > .icon-btn { display: none; }
+  .mobile-bar { padding-left: 16px; }
+  .save-bar .btn { min-width: 0 !important; flex: 1; }
   /* El cajón deja el desplazamiento horizontal al gesto de cierre */
   .sidebar, .sidebar * { touch-action: pan-y; }
   .close-sidebar-btn { display: flex !important; }
@@ -629,7 +673,7 @@
     justify-content: center;
   }
 
-  .app-main { padding: 80px 16px 40px !important; }
+  .app-main { padding: calc(80px + env(safe-area-inset-top)) 16px calc(104px + env(safe-area-inset-bottom)) !important; }
 
   .perfil-grid { grid-template-columns: 1fr !important; }
 
@@ -682,7 +726,7 @@
 }
 
 @media (max-width: 480px) {
-  .app-main { padding: 80px 12px 32px !important; }
+  .app-main { padding: calc(80px + env(safe-area-inset-top)) 12px calc(104px + env(safe-area-inset-bottom)) !important; }
   .kpi-grid { gap: 8px !important; }
 }
 

@@ -44,7 +44,7 @@ export default function ServiciosPage() {
     <div className="flex min-h-dvh flex-col bg-canvas text-label">
 
       {/* ── Barra de navegación translúcida ── */}
-      <header className="nav-material sticky top-0 z-20">
+      <header className="nav-material sticky top-0 z-20 pt-[env(safe-area-inset-top)]">
         <BarraScroll titulo="#titulo-servicios" />
         <div className="relative mx-auto flex h-14 w-full max-w-[1100px] items-center justify-between gap-4 px-4 sm:px-8">
           <span className="nav-title pointer-events-none absolute left-1/2 -translate-x-1/2 text-headline font-semibold whitespace-nowrap max-sm:hidden" aria-hidden="true">Frentes de trabajo</span>

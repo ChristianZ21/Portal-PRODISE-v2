@@ -3,8 +3,6 @@ import { useState, useEffect, use, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '@/lib/supabase'
-import gsap from 'gsap'
-import { useGSAP } from '@gsap/react'
 import Icon, { Medalla } from '@/components/Icon'
 import Logo from '@/components/Logo'
 import { Deslizador, Contador, BarraScroll, GestoCajon } from '@/components/Vivo'
@@ -88,6 +86,10 @@ export default function ServicioPage({ params }) {
   });
 
   const actual = nav.find(x => x.id === sec)
+  // Pestañas inferiores en móvil: las secciones de uso diario permitidas + "Más"
+  const TABS = ['evaluar', 'dashboard', 'ranking', 'perfiles']
+  const tabs = nav.filter(x => TABS.includes(x.id) && !x.disabled)
+  const enTab = tabs.some(x => x.id === sec)
 
   return (
     <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', position: 'relative', background: 'var(--bg)' }}>
@@ -179,6 +181,23 @@ export default function ServicioPage({ params }) {
         {sec === 'bitacora'  && <Bitacora svc={svc} user={user} />}
         </div>
       </main>
+
+      {/* ── Barra de pestañas: solo en móvil (vía CSS) ── */}
+      <nav className="tab-bar nav-material" aria-label="Secciones principales">
+        <div className="tab-bar-inner">
+          <Deslizador />
+          {tabs.map(x => (
+            <button key={x.id} onClick={() => { setSec(x.id); setSidebarOpen(false) }} className={`tab-item ${sec === x.id ? 'is-active' : ''}`} aria-current={sec === x.id ? 'page' : undefined}>
+              <Icon name={NAV_ICON[x.id]} size={24} strokeWidth={sec === x.id ? 2 : 1.75} />
+              <span>{x.id === 'perfiles' ? 'Perfiles' : x.label}</span>
+            </button>
+          ))}
+          <button onClick={() => setSidebarOpen(true)} className={`tab-item ${!enTab ? 'is-active' : ''}`} aria-label="Más secciones" aria-expanded={sidebarOpen}>
+            <Icon name="menu" size={24} strokeWidth={!enTab ? 2 : 1.75} />
+            <span>{!enTab && actual ? actual.label.replace(' 360°', '') : 'Más'}</span>
+          </button>
+        </div>
+      </nav>
     </div>
   )
 }
@@ -350,7 +369,14 @@ function Evaluar({ svc, user }) {
                 <textarea id="eval-obs" className="input" placeholder="Describe el desempeño del trabajador (mínimo 20 caracteres)" value={comment} onChange={e => setComment(e.target.value)} rows={4} style={{ resize: 'vertical', background: 'var(--surface)' }} />
                 <div className="num" style={{ fontSize: 13, marginTop: 8, color: comment.length >= 20 ? 'var(--green)' : 'var(--text3)' }}>{comment.length}/20 caracteres mínimos</div>
               </div>
-              <button className="btn btn-primary" onClick={save} disabled={saving} style={{ maxWidth: 280 }}>{saving ? 'Guardando…' : 'Guardar evaluación'}</button>
+              <div className="save-bar">
+                <div className="num" style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.35 }}>
+                  <div><strong style={{ color: 'var(--text)', fontWeight: 600 }}>{Object.keys(resp).length}/{pregs.length}</strong> dimensiones</div>
+                  <div style={{ color: comment.trim().length >= 20 ? 'var(--green)' : 'var(--text3)' }}>{comment.trim().length >= 20 ? 'Observación lista' : 'Falta la observación'}</div>
+                </div>
+                <div className="save-progress" aria-hidden="true"><span style={{ transform: `scaleX(${(Object.keys(resp).length + (comment.trim().length >= 20 ? 1 : 0)) / (pregs.length + 1)})` }} /></div>
+                <button className="btn btn-primary" onClick={save} disabled={saving} style={{ width: 'auto', minWidth: 200 }}>{saving ? 'Guardando…' : 'Guardar evaluación'}</button>
+              </div>
             </div>
           )}
         </div>
@@ -469,19 +495,6 @@ function Dashboard({ svc, user }) {
   const [actividades, setActividades] = useState([])
 
   useEffect(() => { loadAll() }, [svc])
-
-  // GSAP Animations
-  useGSAP(() => {
-    if (!loading) {
-      gsap.from(".card-static", {
-        y: 30,
-        opacity: 0,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: "power2.out"
-      });
-    }
-  }, [loading]);
 
   async function loadAll() {
     setLoading(true)
