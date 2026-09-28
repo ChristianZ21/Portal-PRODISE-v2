@@ -8,8 +8,8 @@ export default function manifest() {
     description: MARCA.descripcion,
     start_url: '/',
     display: 'standalone',
-    background_color: '#f5f5f7',
-    theme_color: '#f5f5f7',
+    background_color: '#111113',
+    theme_color: '#111113',
     icons: [
       { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
       { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },

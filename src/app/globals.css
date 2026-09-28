@@ -12,7 +12,7 @@
    Los nombres antiguos (--bg, --text2, --accent…) se conservan
    porque las pantallas los consumen directamente.               */
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
 
   /* Neutros · claro */
   --ink:        #1d1d1f;              /* base para tintes sobre el fondo */
@@ -69,40 +69,39 @@
   --font-mono:   ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-/* Oscuro · sigue la preferencia del sistema */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ink:        #f5f5f7;
-    --bg:         #111113;
-    --bg2:        #1c1c1e;
-    --surface:    #1c1c1e;
-    --surface-2:  #232326;
-    --text:       #f5f5f7;
-    --text2:      #c7c7cc;
-    --text3:      #98989d;            /* 5.9:1 sobre #1c1c1e */
-    --fill:       rgba(245, 245, 247, 0.06);
-    --fill-2:     rgba(245, 245, 247, 0.1);
-    --border:     rgba(245, 245, 247, 0.12);
-    --separator:  rgba(245, 245, 247, 0.08);
-    --border-h:   rgba(245, 245, 247, 0.24);
+/* Oscuro · siempre activo en todos los dispositivos (decisión de marca).
+   Los valores claros de arriba quedan como base de referencia. */
+:root {
+  --ink:        #f5f5f7;
+  --bg:         #111113;
+  --bg2:        #1c1c1e;
+  --surface:    #1c1c1e;
+  --surface-2:  #232326;
+  --text:       #f5f5f7;
+  --text2:      #c7c7cc;
+  --text3:      #98989d;            /* 5.9:1 sobre #1c1c1e */
+  --fill:       rgba(245, 245, 247, 0.06);
+  --fill-2:     rgba(245, 245, 247, 0.1);
+  --border:     rgba(245, 245, 247, 0.12);
+  --separator:  rgba(245, 245, 247, 0.08);
+  --border-h:   rgba(245, 245, 247, 0.24);
 
-    --brand-soft: color-mix(in srgb, var(--brand) 20%, transparent);
-    --accent:     #ff9f45;
-    --on-accent:  #1d1d1f;            /* 8.3:1 */
-    --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
-    --accent2:    #aeb4bc;
+  --brand-soft: color-mix(in srgb, var(--brand) 20%, transparent);
+  --accent:     #ff9f45;
+  --on-accent:  #1d1d1f;            /* 8.3:1 */
+  --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
+  --accent2:    #aeb4bc;
 
-    --green:      #3dd68c;
-    --yellow:     #f5c451;
-    --red:        #ff6b5e;
-    --gold:       #f2c94c;
-    --silver:     #c0c6ce;
-    --bronze:     #e0a070;
+  --green:      #3dd68c;
+  --yellow:     #f5c451;
+  --red:        #ff6b5e;
+  --gold:       #f2c94c;
+  --silver:     #c0c6ce;
+  --bronze:     #e0a070;
 
-    --material:   rgba(28, 28, 30, 0.72);
-    --scrim:      rgba(0, 0, 0, 0.56);
-    --shadow-float: 0 16px 40px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(245, 245, 247, 0.06);
-  }
+  --material:   rgba(28, 28, 30, 0.72);
+  --scrim:      rgba(0, 0, 0, 0.56);
+  --shadow-float: 0 16px 40px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(245, 245, 247, 0.06);
 }
 
 @media (prefers-contrast: more) {
@@ -386,7 +385,7 @@
   }
   .segmented-item:hover:not(.is-active) { background: var(--fill); }
   .segmented-item.is-active { color: var(--text); background: var(--surface); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(0,0,0,0.04); }
-  @media (prefers-color-scheme: dark) { .segmented-item.is-active { background: #636366; } }
+  .segmented-item.is-active { background: #636366; }
   @media (pointer: coarse) { .segmented-item { min-height: 40px; } }
 
   /* Indicador deslizante (control segmentado y menú) */
@@ -398,7 +397,7 @@
     will-change: transform, width;
   }
   .segmented > .thumb { background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(0,0,0,0.04); }
-  @media (prefers-color-scheme: dark) { .segmented > .thumb { background: #636366; } }
+  .segmented > .thumb { background: #636366; }
   .segmented > .segmented-item { position: relative; z-index: 1; }
   .segmented:has(> .thumb) > .segmented-item.is-active { background: transparent; box-shadow: none; }
 
@@ -517,10 +516,8 @@
   .svc-foto { transition: transform 700ms var(--spring); }
   .svc-row:hover .svc-foto { transform: scale(1.06); }
 
-  /* Logo de marca: PNG transparente con letras negras */
-  @media (prefers-color-scheme: dark) {
-    .logo-marca { filter: invert(1) hue-rotate(180deg) saturate(1.4); }
-  }
+  /* Logo de marca: PNG transparente con letras negras; en el tema oscuro se aclaran */
+  .logo-marca { filter: invert(1) hue-rotate(180deg) saturate(1.4); }
 
   /* Foto del login: en móvil se funde con el fondo bajo el formulario */
   @media (max-width: 1023px) {
@@ -620,16 +617,16 @@
 .user-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 16px; padding: 14px 16px; }
 .user-actions { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
 
-/* Barra fija de guardado (Evaluar) */
+/* Barra de guardado (Evaluar): va al final del formulario, en su sitio;
+   no flota sobre las preguntas */
 .save-bar {
-  position: sticky; bottom: 16px; z-index: 5;
+  position: relative;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 12px 12px 12px 20px; border-radius: 16px;
 }
-.save-bar { background: color-mix(in srgb, var(--surface) 82%, transparent); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); box-shadow: var(--shadow-float); }
+.save-bar { background: var(--surface); box-shadow: inset 0 0 0 0.5px var(--border); }
 .save-progress { position: absolute; left: 16px; right: 16px; top: 0; height: 3px; border-radius: 3px; overflow: hidden; background: var(--fill); }
 .save-progress > span { display: block; height: 100%; background: var(--brand); transform-origin: left; transition: transform var(--dur-spring) var(--spring); }
-@media (prefers-reduced-transparency: reduce) { .save-bar { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; } }
 .mobile-bar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 39;
   height: calc(56px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) 12px 0 6px; gap: 6px;
@@ -672,9 +669,7 @@
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
-  /* El borde inferior del área de contenido ya queda sobre la barra de pestañas
-     (ver padding de .app-main), así que la barra de guardado se pega a él. */
-  .save-bar { bottom: 0; padding-left: 16px; gap: 12px; background: var(--surface); }
+  .save-bar { padding-left: 16px; gap: 12px; }
   /* Hojas modales al estilo iOS: suben desde abajo */
   .sheet-scrim { align-items: flex-end !important; padding: 0 !important; }
   .sheet-panel {
