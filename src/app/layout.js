@@ -2,9 +2,14 @@ import './globals.css'
 import { AuthProvider } from '../context/AuthContext'
 import { MARCA } from '@/config/marca'
 
-export const metadata = { title: `${MARCA.nombre} — ${MARCA.producto}`, description: MARCA.descripcion }
+export const metadata = {
+  title: `${MARCA.nombre} — ${MARCA.producto}`,
+  description: MARCA.descripcion,
+  appleWebApp: { capable: true, title: MARCA.nombre, statusBarStyle: 'default' },
+}
 
 export const viewport = {
+  viewportFit: 'cover',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#f5f5f7' },
     { media: '(prefers-color-scheme: dark)', color: '#111113' },
