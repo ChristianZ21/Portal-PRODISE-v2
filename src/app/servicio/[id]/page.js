@@ -5,6 +5,11 @@ import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
+import Icon, { Medalla } from '@/components/Icon'
+import Logo from '@/components/Logo'
+import { Deslizador, Contador, BarraScroll, GestoCajon } from '@/components/Vivo'
+
+const NAV_ICON = { evaluar: 'evaluar', historial: 'historial', bitacora: 'bitacora', dashboard: 'dashboard', ranking: 'ranking', perfiles: 'perfiles', buscador: 'buscador', predictor: 'predictor', admin: 'admin' }
 
 export default function ServicioPage({ params }) {
   const { id } = use(params)
@@ -36,24 +41,25 @@ export default function ServicioPage({ params }) {
   }, [user, svc, id])
 
   if (loading || !user || !svc || asigCheck === null) return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-      <p style={{ color: 'var(--text3)', fontSize: 13 }}>Cargando...</p>
+    <div role="status" aria-label="Cargando" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100dvh', background: 'var(--bg)' }}>
+      <span className="spinner" />
     </div>
   )
 
   // Nivel 3 no asignado — bloqueo con mensaje
   if (asigCheck === false) return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, fontFamily: 'Inter, sans-serif' }}>
-      <div style={{ fontSize: 48 }}>🔒</div>
-      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>No participas en este servicio</div>
-      <div style={{ fontSize: 13, color: 'var(--text3)', textAlign: 'center', maxWidth: 320 }}>
-        No estás asignado a <strong style={{ color: 'var(--text2)' }}>{svc.nombre_descriptivo}</strong>.<br />
-        Contacta a tu coordinador o planner si crees que es un error.
+    <main id="contenido" style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center' }}>
+      <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--fill)', color: 'var(--text2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name="lock" size={26} />
       </div>
-      <button className="btn btn-ghost" onClick={() => router.push('/servicios')} style={{ marginTop: 8 }}>
-        ← Volver a mis servicios
+      <h1 style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', marginTop: 24 }}>No participas en este servicio</h1>
+      <p style={{ fontSize: 15, color: 'var(--text2)', maxWidth: 360, marginTop: 8 }}>
+        No estás asignado a <strong style={{ color: 'var(--text)', fontWeight: 600 }}>{svc.nombre_descriptivo}</strong>. Si crees que es un error, avisa a tu coordinador o planner.
+      </p>
+      <button className="btn btn-ghost" onClick={() => router.push('/servicios')} style={{ marginTop: 32, minHeight: 44, fontSize: 15 }}>
+        <Icon name="back" size={18} /> Volver a mis servicios
       </button>
-    </div>
+    </main>
   )
 
   const n = user.nivel
@@ -81,80 +87,87 @@ export default function ServicioPage({ params }) {
     return { ...x, disabled: !allowed };
   });
 
+  const actual = nav.find(x => x.id === sec)
+
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', position: 'relative' }}>
-      {/* Overlay oscuro móvil */}
+    <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', position: 'relative', background: 'var(--bg)' }}>
+      {/* Velo del menú en móvil */}
       {sidebarOpen && (
-        <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 40 }} />
+        <div onClick={() => setSidebarOpen(false)} className="sidebar-scrim" aria-hidden="true" />
       )}
 
-      {/* ── Sidebar ── */}
-      <aside style={{
-        width: 210, background: 'rgba(5,5,7,0.99)', borderRight: '1px solid var(--border)',
-        display: 'flex', flexDirection: 'column', flexShrink: 0,
-        height: '100vh', zIndex: 50,
-        // Móvil: posición fija, fuera de pantalla por defecto
-        position: typeof window !== 'undefined' && window.innerWidth <= 768 ? 'fixed' : 'sticky',
-        top: 0,
-        transform: typeof window !== 'undefined' && window.innerWidth <= 768 && !sidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
-        transition: 'transform 0.28s ease',
-      }}>
-        <div style={{ padding: '16px 12px 14px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-          {/* Glow ambiental */}
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 180, height: 70, background: 'radial-gradient(ellipse, rgba(230,126,34,0.08) 0%, transparent 65%)', filter: 'blur(14px)', pointerEvents: 'none' }} />
-          {/* Panel del logo con bordes difuminados estilo login */}
-          <div style={{
-            position: 'relative',
-            background: 'rgba(255,255,255,0.92)',
-            borderRadius: 10,
-            padding: '6px 14px',
-            boxShadow: '0 0 0 1px rgba(255,255,255,0.18), 0 0 16px 6px rgba(255,255,255,0.07), 0 0 36px 14px rgba(255,255,255,0.03), 0 4px 12px rgba(0,0,0,0.3)',
-          }}>
-            <img src="/logo_prodise.png" alt="PRODISE" style={{ height: 28, objectFit: 'contain', display: 'block' }} />
+      <GestoCajon abierto={sidebarOpen} onCerrar={() => setSidebarOpen(false)} />
+
+      {/* ── Barra lateral ── */}
+      <aside className={`sidebar ${sidebarOpen ? 'sidebar-open' : ''}`} aria-label="Secciones del servicio">
+        <div style={{ padding: '20px 16px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <Logo height={28} />
+          <button onClick={() => setSidebarOpen(false)} className="close-sidebar-btn icon-btn" aria-label="Cerrar menú">
+            <Icon name="close" size={20} />
+          </button>
+        </div>
+
+        <div style={{ padding: '4px 16px 20px' }}>
+          <div style={{ fontSize: 11, color: 'var(--text3)' }}>Servicio</div>
+          <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.3, marginTop: 4, letterSpacing: '-0.01em' }}>{svc.nombre_descriptivo}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+            <span className={`badge ${svc.tipo === 'PDP' ? 'b-pdp' : 'b-pro'}`}>{svc.tipo}</span>
+            {svc.codigo_otp && <span style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'var(--font-mono)' }}>{svc.codigo_otp}</span>}
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="close-sidebar-btn" style={{ position: 'absolute', right: 8, top: 10, background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: 22, cursor: 'pointer', lineHeight: 1, display: 'none' }}>×</button>
         </div>
-        <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>{user.nombre}</div>
-          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>Nivel {n}</div>
-        </div>
-        <div style={{ margin: 8, padding: '9px 11px', borderRadius: 7, background: 'rgba(230,126,34,0.04)', border: '1px solid rgba(230,126,34,0.08)' }}>
-          <div style={{ fontSize: 9, color: 'var(--accent)', fontWeight: 600, letterSpacing: 0.3 }}>SERVICIO ACTIVO</div>
-          <div style={{ fontSize: 10, fontWeight: 600, marginTop: 2, lineHeight: 1.3 }}>{svc.nombre_descriptivo}</div>
-          <span className={`badge ${svc.tipo === 'PDP' ? 'b-pdp' : 'b-pro'}`} style={{ marginTop: 4 }}>{svc.tipo}</span>
-        </div>
-        <nav style={{ flex: 1, padding: '6px 6px', overflowY: 'auto' }}>
-          {nav.map(x => (
-            <button key={x.id} onClick={() => { if (!x.disabled) { setSec(x.id); setSidebarOpen(false) } }} style={{
-              display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 11px',
-              borderRadius: 7, border: 'none', fontSize: 12.5,
-              cursor: x.disabled ? 'not-allowed' : 'pointer',
-              opacity: x.disabled ? 0.35 : 1,
-              background: sec === x.id ? 'rgba(230,126,34,0.08)' : 'none',
-              color: sec === x.id ? 'var(--accent)' : 'rgba(255,255,255,0.55)',
-              fontWeight: sec === x.id ? 600 : 400, fontFamily: 'Inter', textAlign: 'left', marginBottom: 1,
-            }}>
-              <span style={{ fontSize: 13, width: 18, textAlign: 'center' }}>{x.icon}</span>
-              <span style={{ flex: 1 }}>{x.label}</span>
-              {x.disabled && <span style={{ fontSize: 10, color: 'var(--text3)' }}>🔒</span>}
-            </button>
-          ))}
+
+        <nav style={{ flex: 1, padding: '0 8px', overflowY: 'auto' }}>
+          <ul className="nav-list" style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Deslizador />
+            {nav.map(x => (
+              <li key={x.id}>
+                <button
+                  onClick={() => { if (!x.disabled) { setSec(x.id); setSidebarOpen(false) } }}
+                  className={`nav-item ${sec === x.id ? 'is-active' : ''}`}
+                  aria-current={sec === x.id ? 'page' : undefined}
+                  aria-disabled={x.disabled || undefined}
+                  title={x.disabled ? 'Tu nivel de acceso no incluye esta sección' : undefined}
+                >
+                  <span className="nav-tile"><Icon name={NAV_ICON[x.id]} size={18} /></span>
+                  <span style={{ flex: 1 }}>{x.label}</span>
+                  {x.disabled && <Icon name="lock" size={14} style={{ color: 'var(--text3)' }} />}
+                </button>
+              </li>
+            ))}
+          </ul>
         </nav>
-        <div style={{ padding: 8, borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0 }}>
-          <button className="btn btn-ghost" style={{ width: '100%', fontSize: 10 }} onClick={() => router.push('/servicios')}>Cambiar servicio</button>
-          <button className="btn btn-ghost" style={{ width: '100%', fontSize: 10 }} onClick={() => { logout(); router.push('/') }}>Cerrar sesión</button>
+
+        <div style={{ padding: 8, borderTop: '1px solid var(--separator)', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 8px 12px' }}>
+            <Avatar nombre={user.nombre} size={36} />
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.nombre}</div>
+              <div style={{ fontSize: 11, color: 'var(--text3)' }}>Nivel {n}</div>
+            </div>
+          </div>
+          <button className="nav-item" onClick={() => router.push('/servicios')}>
+            <Icon name="swap" size={20} /><span>Cambiar servicio</span>
+          </button>
+          <button className="nav-item" onClick={() => { logout(); router.push('/') }}>
+            <Icon name="logout" size={20} /><span>Cerrar sesión</span>
+          </button>
         </div>
       </aside>
 
-      {/* ── Main ── */}
-      <main style={{ flex: 1, padding: '18px 22px', background: 'var(--bg)', overflowY: 'auto', height: '100vh', position: 'relative' }}>
-        {/* Botón hamburguesa - solo visible en móvil via CSS */}
-        <button onClick={() => setSidebarOpen(true)} className="hamburger-btn" style={{
-          position: 'fixed', top: 10, left: 10, zIndex: 39,
-          background: 'rgba(5,5,7,0.95)', border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 8, padding: '8px 11px', cursor: 'pointer', color: 'var(--text)',
-          fontSize: 16, lineHeight: 1, display: 'none',
-        }}>☰</button>
+      {/* ── Contenido ── */}
+      <main id="contenido" className="app-main" style={{ flex: 1, padding: '32px 40px 56px', background: 'var(--bg)', overflowY: 'auto', height: '100dvh', position: 'relative' }}>
+        {/* Barra superior: solo en móvil (vía CSS) */}
+        <div className="hamburger-btn mobile-bar nav-material">
+          <BarraScroll contenedor="#contenido" dep={sec} />
+          <button onClick={() => setSidebarOpen(true)} className="icon-btn" aria-label="Abrir menú" aria-expanded={sidebarOpen}>
+            <Icon name="menu" size={22} />
+          </button>
+          <div className="nav-title" style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.2 }}>{actual?.label}</div>
+            <div style={{ fontSize: 11, color: 'var(--text3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{svc.nombre_descriptivo}</div>
+          </div>
+        </div>
+        <div key={sec} className="section-enter" style={{ maxWidth: 1240, margin: '0 auto' }}>
         {sec === 'evaluar'   && <Evaluar    svc={svc} user={user} />}
         {sec === 'historial' && <Historial  svc={svc} user={user} />}
         {sec === 'dashboard' && <Dashboard  svc={svc} user={user} />}
@@ -164,6 +177,7 @@ export default function ServicioPage({ params }) {
         {sec === 'buscador'  && <Buscador svc={svc} user={user} />}
         {sec === 'predictor' && <Predictor svc={svc} user={user} />}
         {sec === 'bitacora'  && <Bitacora svc={svc} user={user} />}
+        </div>
       </main>
     </div>
   )
@@ -256,86 +270,87 @@ function Evaluar({ svc, user }) {
 
   return (
     <div>
-      <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 2 }}>Evaluar Personal</h2>
-      <p style={{ color: 'var(--text3)', fontSize: 12, marginBottom: 18 }}>{svc.nombre_descriptivo}</p>
-      {msg && <div className="alert alert-ok" style={{ marginBottom: 14 }}>{msg}</div>}
+      <h2 className="page-title">Evaluar personal</h2>
+      <p className="page-sub" style={{ marginBottom: 24 }}>{svc.nombre_descriptivo}</p>
+      {msg && <div className="alert alert-ok" role="status" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}><Icon name="check" size={18} />{msg}</div>}
       {!sel ? (
         list.length === 0 ? (
-          <div className="card-static" style={{ padding: '36px 20px', textAlign: 'center' }}>
-            <p style={{ fontWeight: 600, fontSize: 14 }}>Todo evaluado</p>
-            <p style={{ color: 'var(--text3)', fontSize: 12, marginTop: 3 }}>No hay personal pendiente de evaluación</p>
+          <div className="card-static empty-state">
+            <Icon name="check" size={28} style={{ color: 'var(--green)' }} />
+            <p style={{ fontWeight: 600, fontSize: 17, marginTop: 16 }}>Todo evaluado</p>
+            <p style={{ color: 'var(--text2)', fontSize: 15, marginTop: 4 }}>No hay personal pendiente de evaluación.</p>
           </div>
         ) : (
           <>
-            <input className="input" placeholder="Buscar por nombre..." value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth: 320, marginBottom: 12 }} />
-            <p style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 10 }}>Pendientes: {list.length}</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {list.filter(p => p.nombre.toLowerCase().includes(search.toLowerCase())).map(p => (
-                <div key={p.id_asignacion} onClick={() => pick(p)} className="card" style={{ padding: '11px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(230,126,34,0.06)', border: '2px solid rgba(230,126,34,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--accent)', flexShrink: 0, overflow: 'hidden' }}>
-                    {p.foto ? <img src={p.foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : getInitials(p.nombre)}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.nombre}</div>
-                    <div style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 500 }}>{p.cargo_nombre}</div>
-                  </div>
-                  <div style={{ textAlign: 'right', fontSize: 10, color: 'var(--text3)' }}>
-                    <div>G{p.id_grupo}</div><div>T{p.turno}</div>
-                  </div>
-                  <span style={{ color: 'var(--text3)', fontSize: 14 }}>›</span>
-                </div>
-              ))}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+              <div className="search-field" style={{ flex: '1 1 280px', maxWidth: 400 }}>
+                <Icon name="buscador" size={18} />
+                <input className="input" type="search" aria-label="Buscar por nombre" placeholder="Buscar por nombre" value={search} onChange={e => setSearch(e.target.value)} />
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--text3)' }}><span className="num" style={{ color: 'var(--text)', fontWeight: 600 }}>{list.length}</span> pendientes</p>
             </div>
+            <ul className="card-static grouped-list">
+              {list.filter(p => p.nombre.toLowerCase().includes(search.toLowerCase())).map(p => (
+                <li key={p.id_asignacion}>
+                  <button type="button" onClick={() => pick(p)} className="card list-row">
+                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--brand-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 600, color: 'var(--accent)', flexShrink: 0, overflow: 'hidden' }}>
+                      {p.foto ? <img src={p.foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : getInitials(p.nombre)}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 15, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.nombre}</div>
+                      <div className="num" style={{ fontSize: 13, color: 'var(--text2)', marginTop: 2 }}>{p.cargo_nombre} <span style={{ color: 'var(--text3)' }}>· Grupo {p.id_grupo} · Turno {p.turno}</span></div>
+                    </div>
+                    <Icon name="chevron" size={18} style={{ color: 'var(--text3)' }} />
+                  </button>
+                </li>
+              ))}
+            </ul>
           </>
         )
       ) : (
-        <div className="fade">
-          <button className="btn btn-ghost" onClick={() => { setSel(null); setPregs([]) }} style={{ marginBottom: 16 }}>← Volver a la lista</button>
-          <div className="card-static" style={{ padding: '16px 18px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 62, height: 62, borderRadius: '50%', background: 'rgba(230,126,34,0.06)', border: '2px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: 'var(--accent)', flexShrink: 0, overflow: 'hidden' }}>
+        <div className="fade" style={{ maxWidth: 760 }}>
+          <button className="btn btn-ghost" onClick={() => { setSel(null); setPregs([]) }} style={{ marginBottom: 24 }}><Icon name="back" size={18} />Volver a la lista</button>
+          <div style={{ marginBottom: 32, display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--brand-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 600, color: 'var(--accent)', flexShrink: 0, overflow: 'hidden' }}>
               {sel.foto
                 ? <img src={sel.foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display='none' }} />
                 : getInitials(sel.nombre)
               }
             </div>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 700 }}>{sel.nombre}</div>
-              <div style={{ color: 'var(--accent)', fontWeight: 600, fontSize: 12 }}>{sel.cargo_nombre}</div>
-              <div style={{ fontSize: 10, color: 'var(--text3)' }}>Grupo {sel.id_grupo} · Turno {sel.turno}</div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{sel.nombre}</div>
+              <div style={{ color: 'var(--text2)', fontSize: 15, marginTop: 4 }}>{sel.cargo_nombre} · Grupo {sel.id_grupo} · Turno {sel.turno}</div>
             </div>
           </div>
           {pregs.length === 0 ? (
             <div className="alert alert-err">No hay kit de preguntas para {sel.cargo_nombre} en {svc.tipo}</div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
               {pregs.map((p, i) => (
-                <div key={p.id_preg} className="card-static" style={{ padding: '16px 18px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{i + 1}. {p.dimension}</span>
-                    <span className="badge b-pdp">{(parseFloat(p.peso) * 100).toFixed(0)}%</span>
+                <fieldset key={p.id_preg} style={{ border: 0 }}>
+                  <legend style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+                    <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text)' }}>{i + 1}. {p.dimension}</span>
+                    <span className="num" style={{ fontSize: 13, color: 'var(--text3)' }}>Peso {(parseFloat(p.peso) * 100).toFixed(0)} %</span>
+                  </legend>
+                  <div className="card-static grouped-list">
+                    {[p.nivel_1, p.nivel_2, p.nivel_3, p.nivel_4].map((niv, ni) => (
+                      <label key={ni} className={`choice-row ${resp[i] === ni + 1 ? 'is-selected' : ''}`}>
+                        <input type="radio" name={`q${i}`} checked={resp[i] === ni + 1} onChange={() => setResp({ ...resp, [i]: ni + 1 })} className="choice-radio" />
+                        <div style={{ minWidth: 0 }}>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: resp[i] === ni + 1 ? 'var(--accent)' : 'var(--text3)' }}>Nivel {ni + 1}</span>
+                          <div style={{ fontSize: 15, color: 'var(--text)', lineHeight: 1.45, marginTop: 2 }}>{niv}</div>
+                        </div>
+                      </label>
+                    ))}
                   </div>
-                  {[p.nivel_1, p.nivel_2, p.nivel_3, p.nivel_4].map((niv, ni) => (
-                    <label key={ni} style={{
-                      display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 12px', borderRadius: 7,
-                      cursor: 'pointer', marginBottom: 3,
-                      border: resp[i] === ni + 1 ? '1px solid var(--accent)' : '1px solid var(--border)',
-                      background: resp[i] === ni + 1 ? 'rgba(230,126,34,0.04)' : 'transparent',
-                    }}>
-                      <input type="radio" name={`q${i}`} checked={resp[i] === ni + 1} onChange={() => setResp({ ...resp, [i]: ni + 1 })} style={{ marginTop: 3, accentColor: 'var(--accent)' }} />
-                      <div>
-                        <span style={{ fontSize: 10, fontWeight: 600, color: resp[i] === ni + 1 ? 'var(--accent)' : 'var(--text3)' }}>Nivel {ni + 1}</span>
-                        <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.5, marginTop: 1 }}>{niv}</div>
-                      </div>
-                    </label>
-                  ))}
-                </div>
+                </fieldset>
               ))}
-              <div className="card-static" style={{ padding: '16px 18px' }}>
-                <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 8 }}>Observaciones</label>
-                <textarea className="input" placeholder="Mínimo 20 caracteres. Describe el desempeño del trabajador..." value={comment} onChange={e => setComment(e.target.value)} rows={4} style={{ resize: 'vertical' }} />
-                <div style={{ fontSize: 10, marginTop: 3, color: comment.length >= 20 ? 'var(--green)' : 'var(--text3)' }}>{comment.length}/20 mínimo</div>
+              <div>
+                <label htmlFor="eval-obs" style={{ fontSize: 17, fontWeight: 600, display: 'block', marginBottom: 12 }}>Observaciones</label>
+                <textarea id="eval-obs" className="input" placeholder="Describe el desempeño del trabajador (mínimo 20 caracteres)" value={comment} onChange={e => setComment(e.target.value)} rows={4} style={{ resize: 'vertical', background: 'var(--surface)' }} />
+                <div className="num" style={{ fontSize: 13, marginTop: 8, color: comment.length >= 20 ? 'var(--green)' : 'var(--text3)' }}>{comment.length}/20 caracteres mínimos</div>
               </div>
-              <button className="btn btn-primary" onClick={save} disabled={saving} style={{ maxWidth: 260, fontSize: 13 }}>{saving ? 'Guardando...' : 'Guardar evaluación'}</button>
+              <button className="btn btn-primary" onClick={save} disabled={saving} style={{ maxWidth: 280 }}>{saving ? 'Guardando…' : 'Guardar evaluación'}</button>
             </div>
           )}
         </div>
@@ -385,51 +400,53 @@ function Historial({ svc, user }) {
 
   return (
     <div>
-      <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 2 }}>Historial de Evaluaciones</h2>
-      <p style={{ color: 'var(--text3)', fontSize: 12, marginBottom: 14 }}>{svc.nombre_descriptivo} · {data.length} evaluaciones</p>
+      <h2 className="page-title">Historial de evaluaciones</h2>
+      <p className="page-sub" style={{ marginBottom: 24 }}>{svc.nombre_descriptivo} · {data.length} evaluaciones</p>
 
       {data.length > 0 && (
-        <input className="input" placeholder="Buscar por nombre de trabajador, evaluador o cargo..." value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth: 450, marginBottom: 14 }} />
+        <div className="search-field" style={{ maxWidth: 480, marginBottom: 24 }}>
+          <Icon name="buscador" size={18} />
+          <input className="input" type="search" aria-label="Buscar evaluaciones" placeholder="Buscar por trabajador, evaluador o cargo" value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
       )}
 
       {data.length === 0 ? (
-        <div className="card-static" style={{ padding: '36px 20px', textAlign: 'center' }}>
-          <p style={{ color: 'var(--text3)' }}>No hay evaluaciones registradas</p>
+        <div className="card-static empty-state">
+          <Icon name="historial" size={28} style={{ color: 'var(--text3)' }} />
+          <p style={{ fontWeight: 600, fontSize: 17, marginTop: 16 }}>Aún no hay evaluaciones</p>
+          <p style={{ color: 'var(--text2)', fontSize: 15, marginTop: 4 }}>Las evaluaciones guardadas en este servicio aparecerán aquí.</p>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="card-static" style={{ padding: '24px 20px', textAlign: 'center' }}>
-          <p style={{ color: 'var(--text3)', fontSize: 13 }}>Sin resultados para "{search}"</p>
+        <div className="card-static empty-state" style={{ padding: '40px 24px' }}>
+          <p style={{ color: 'var(--text2)', fontSize: 15 }}>Sin resultados para “{search}”</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {filtered.map(h => (
-            <div key={h.id_eval} className="card-static" style={{ padding: '14px 18px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700 }}>{h.nombre_trabajador}</div>
-                  <div style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 500 }}>{h.cargo_momento} · G{h.grupo_momento} · T{h.turno_momento}</div>
+            <article key={h.id_eval} className="card-static" style={{ padding: '20px 24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: '-0.015em' }}>{h.nombre_trabajador}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 2 }}>{h.cargo_momento} · Grupo {h.grupo_momento} · Turno {h.turno_momento}</div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: h.promedio >= 3.5 ? 'var(--green)' : h.promedio >= 2.0 ? 'var(--yellow)' : 'var(--red)' }}>{h.promedio}</div>
-                  <div style={{ fontSize: 9, color: 'var(--text3)' }}>{new Date(h.fecha_hora).toLocaleDateString('es-PE')}</div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div className="num" style={{ fontSize: 28, lineHeight: 1, fontWeight: 700, letterSpacing: '-0.02em', color: h.promedio >= 3.5 ? 'var(--green)' : h.promedio >= 2.0 ? 'var(--yellow)' : 'var(--red)' }}>{h.promedio}</div>
+                  <div className="num" style={{ fontSize: 13, color: 'var(--text3)', marginTop: 6 }}>{new Date(h.fecha_hora).toLocaleDateString('es-PE')}</div>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, padding: '5px 10px', background: 'rgba(91,164,207,0.04)', borderRadius: 5 }}>
-                <div style={{ fontSize: 10, color: 'var(--text2)' }}>Evaluado por: <span style={{ fontWeight: 600, color: 'var(--accent2)' }}>{h.nombre_evaluador}</span></div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, marginBottom: 8 }}>
+              <dl style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8, margin: '16px 0', padding: '12px 0', boxShadow: 'inset 0 0.5px 0 var(--separator), inset 0 -0.5px 0 var(--separator)' }}>
                 {[{ l: 'Seguridad', v: h.nota_1 }, { l: 'Calidad', v: h.nota_2 }, { l: 'Actitud', v: h.nota_3 }, { l: 'Precisión', v: h.nota_4 }].map((d, i) => (
-                  <div key={i} style={{ textAlign: 'center', padding: '6px 4px', background: 'rgba(255,255,255,0.02)', borderRadius: 5, border: '1px solid var(--border)' }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: d.v >= 3.5 ? 'var(--green)' : d.v >= 2.0 ? 'var(--yellow)' : 'var(--red)' }}>{d.v}</div>
-                    <div style={{ fontSize: 8, color: 'var(--text3)', marginTop: 1 }}>{d.l}</div>
+                  <div key={i}>
+                    <dt style={{ fontSize: 13, color: 'var(--text3)' }}>{d.l}</dt>
+                    <dd className="num" style={{ fontSize: 17, fontWeight: 600, marginTop: 2, color: d.v >= 3.5 ? 'var(--green)' : d.v >= 2.0 ? 'var(--yellow)' : 'var(--red)' }}>{d.v}</dd>
                   </div>
                 ))}
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.5, padding: '8px 12px', background: 'rgba(255,255,255,0.01)', borderRadius: 6, borderLeft: '2px solid rgba(91,164,207,0.2)' }}>
-                <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, marginBottom: 2 }}>COMENTARIO DEL EVALUADOR</div>
+              </dl>
+              <blockquote style={{ fontSize: 15, color: 'var(--text)', lineHeight: 1.5, maxWidth: '68ch' }}>
                 {h.comentarios}
-              </div>
-            </div>
+              </blockquote>
+              <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 8 }}>Evaluado por <span style={{ color: 'var(--text2)', fontWeight: 500 }}>{h.nombre_evaluador}</span></div>
+            </article>
           ))}
         </div>
       )}
@@ -623,28 +640,23 @@ function Dashboard({ svc, user }) {
 
   return (
     <div className="fade">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 24 }}>
         <div>
-          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 2 }}>Dashboard</h2>
-          <p style={{ color: 'var(--text3)', fontSize: 12 }}>{svc.nombre_descriptivo}</p>
+          <h2 className="page-title">Dashboard</h2>
+          <p className="page-sub">{svc.nombre_descriptivo}</p>
         </div>
-        <button className="btn btn-ghost" onClick={loadAll} style={{ fontSize: 11 }}>↻ Actualizar</button>
+        <button className="btn btn-ghost" onClick={loadAll}><Icon name="refresh" size={18} />Actualizar</button>
       </div>
 
-      {/* Tabs dashboard */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 18, borderBottom: '1px solid var(--border)' }}>
+      {/* Pestañas: control segmentado */}
+      <div className="segmented" role="tablist" aria-label="Vista del dashboard" style={{ marginBottom: 24 }}>
+          <Deslizador />
         {[
           { id: 'resumen', label: 'Resumen' },
           { id: 'alertas', label: `Alertas ${alertas.length > 0 ? `(${alertas.length})` : ''}`, badge: alertas.length > 0 },
         ].map(t => (
-          <button key={t.id} onClick={() => setDashTab(t.id)} style={{
-            padding: '7px 16px', background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 13, fontFamily: 'Inter', fontWeight: dashTab === t.id ? 600 : 400,
-            color: dashTab === t.id ? (t.badge ? 'var(--red)' : 'var(--accent)') : 'var(--text3)',
-            borderBottom: dashTab === t.id ? `2px solid ${t.badge ? 'var(--red)' : 'var(--accent)'}` : '2px solid transparent',
-            marginBottom: -1, transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: 5,
-          }}>
-            {t.id === 'alertas' && alertas.length > 0 && <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--red)', flexShrink: 0 }} />}
+          <button key={t.id} role="tab" aria-selected={dashTab === t.id} onClick={() => setDashTab(t.id)} className={`segmented-item ${dashTab === t.id ? 'is-active' : ''}`}>
+            {t.id === 'alertas' && alertas.length > 0 && <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--red)', flexShrink: 0 }} />}
             {t.label}
           </button>
         ))}
@@ -654,91 +666,88 @@ function Dashboard({ svc, user }) {
       {dashTab === 'alertas' && (
         <div className="fade">
           {alertas.length === 0 ? (
-            <div className="card-static" style={{ padding: '36px 20px', textAlign: 'center' }}>
-              <div style={{ fontSize: 22, marginBottom: 8 }}>✓</div>
-              <p style={{ color: 'var(--green)', fontSize: 13, fontWeight: 600 }}>Sin alertas activas</p>
-              <p style={{ color: 'var(--text3)', fontSize: 11, marginTop: 4 }}>Todos los indicadores están dentro de los rangos normales</p>
+            <div className="card-static empty-state">
+              <Icon name="check" size={28} style={{ color: 'var(--green)' }} />
+              <p style={{ fontSize: 17, fontWeight: 600, marginTop: 16 }}>Sin alertas activas</p>
+              <p style={{ color: 'var(--text2)', fontSize: 15, marginTop: 4 }}>Todos los indicadores están dentro de los rangos normales.</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <ul className="card-static grouped-list">
               {alertas.map((a, i) => (
-                <div key={i} style={{
-                  padding: '12px 16px', borderRadius: 9, fontSize: 12, display: 'flex', alignItems: 'center', gap: 10,
-                  background: a.tipo === 'baja' ? 'rgba(192,57,43,0.07)' : 'rgba(212,160,23,0.07)',
-                  border: `1px solid ${a.tipo === 'baja' ? 'rgba(192,57,43,0.2)' : 'rgba(212,160,23,0.2)'}`,
-                  color: a.tipo === 'baja' ? '#E8A09A' : '#D4A017',
-                }}>
-                  <span style={{ fontSize: 16 }}>{a.tipo === 'baja' ? '⚠' : '◎'}</span>
-                  <div style={{ flex: 1 }}>
+                <li key={i} style={{ padding: '14px 16px', fontSize: 15, display: 'flex', alignItems: 'flex-start', gap: 12, color: 'var(--text)' }}>
+                  <Icon name={a.tipo === 'baja' ? 'alert' : 'info'} size={20} style={{ color: a.tipo === 'baja' ? 'var(--red)' : 'var(--yellow)', marginTop: 1 }} />
+                  <div style={{ flex: 1, lineHeight: 1.45 }}>
                     {a.tipo === 'baja'
-                      ? <><strong style={{ color: 'var(--text)' }}>{a.nombre}</strong> <span style={{ color: 'var(--text3)' }}>·</span> {a.cargo} <span style={{ color: 'var(--red)', fontWeight: 600 }}>· {a.msg}</span></>
+                      ? <><strong style={{ fontWeight: 600 }}>{a.nombre}</strong> <span style={{ color: 'var(--text2)' }}>· {a.cargo}</span> <span style={{ color: 'var(--red)', fontWeight: 500 }}>· {a.msg}</span></>
                       : a.msg
                     }
                   </div>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </div>
       )}
 
       {dashTab === 'resumen' && <>
 
-      <div className="kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 18 }}>
-        <KpiCard label="Personal Total" value={kpi.total} sub="asignados al servicio" color="var(--accent2)" />
+      <div className="card-static" style={{ padding: '4px 0 20px', marginBottom: 16 }}>
+      <div className="kpi-grid kpi-strip" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+        <KpiCard label="Personal total" value={kpi.total} sub="asignados al servicio" color="var(--accent2)" />
         <KpiCard label="Evaluados" value={`${kpi.evaluados}/${kpi.total}`} sub={`${kpi.pctEval}% completado`} color={kpi.pctEval >= 80 ? 'var(--green)' : kpi.pctEval >= 50 ? 'var(--yellow)' : 'var(--red)'} />
-        <KpiCard label="Nota Promedio" value={kpi.avgGeneral ?? '—'} sub="de 1 a 4" color={scoreColor(kpi.avgGeneral)} />
-        <KpiCard label="Sin Evaluar" value={kpi.sinEval} sub="pendientes" color={kpi.sinEval === 0 ? 'var(--green)' : 'var(--yellow)'} />
+        <KpiCard label="Nota promedio" value={kpi.avgGeneral ?? '—'} sub="de 1 a 4" color={scoreColor(kpi.avgGeneral)} />
+        <KpiCard label="Sin evaluar" value={kpi.sinEval} sub="pendientes" color={kpi.sinEval === 0 ? 'var(--green)' : 'var(--yellow)'} />
       </div>
 
-      <div className="card-static" style={{ padding: '14px 18px', marginBottom: 14 }}>
+      <div style={{ padding: '0 20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-          <span style={{ fontSize: 12, fontWeight: 600 }}>Progreso de evaluación</span>
-          <span style={{ fontSize: 12, fontWeight: 700, color: kpi.pctEval >= 80 ? 'var(--green)' : kpi.pctEval >= 50 ? 'var(--yellow)' : 'var(--red)' }}>{kpi.pctEval}%</span>
+          <span style={{ fontSize: 13, color: 'var(--text2)' }}>Progreso de evaluación</span>
+          <span className="num" style={{ fontSize: 13, fontWeight: 600, color: kpi.pctEval >= 80 ? 'var(--green)' : kpi.pctEval >= 50 ? 'var(--yellow)' : 'var(--red)' }}>{kpi.pctEval} %</span>
         </div>
-        <div style={{ height: 8, background: 'rgba(255,255,255,0.05)', borderRadius: 4, overflow: 'hidden' }}>
+        <div style={{ height: 8, background: 'var(--fill)', borderRadius: 6, overflow: 'hidden' }}>
           <div style={{
-            height: '100%', width: `${kpi.pctEval}%`, borderRadius: 4, transition: 'width 0.8s ease',
-            background: kpi.pctEval >= 80 ? 'var(--green)' : kpi.pctEval >= 50 ? 'var(--yellow)' : 'var(--red)',
+            height: '100%', width: `${kpi.pctEval}%`, borderRadius: 6, transition: 'width var(--dur-spring) var(--spring)',
+            background: 'var(--brand)',
           }} />
         </div>
       </div>
+      </div>
 
       {/* ── GRID PRINCIPAL: dimensiones + cargo + grupos ── */}
-      <div className="dash-main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 14 }}>
+      <div className="dash-main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 16 }}>
 
         {/* Columna 1: Promedio por dimensión */}
         {byDim.length > 0 && (
-          <div className="card-static" style={{ padding: '16px 18px' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.5, marginBottom: 14, textTransform: 'uppercase' }}>Por Dimensión</div>
+          <div className="card-static" style={{ padding: '20px' }}>
+            <div className="group-title" style={{ marginBottom: 16 }}>Por dimensión</div>
             {byDim.map(d => (
               <div key={d.dim} style={{ marginBottom: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                  <span style={{ fontSize: 11, color: 'var(--text2)' }}>{d.dim}</span>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: scoreColor(d.avg), fontFamily: 'monospace' }}>{d.avg ?? '—'}</span>
+                  <span style={{ fontSize: 13, color: 'var(--text2)' }}>{d.dim}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: scoreColor(d.avg), fontVariantNumeric: 'tabular-nums' }}>{d.avg ?? '—'}</span>
                 </div>
-                <div style={{ height: 5, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: 3, width: `${d.avg ? (parseFloat(d.avg) / 4) * 100 : 0}%`, background: scoreColor(d.avg), transition: 'width 0.8s ease' }} />
+                <div style={{ height: 5, background: 'var(--fill)', borderRadius: 3, overflow: 'hidden' }}>
+                  <div className="meter-fill" style={{ height: '100%', borderRadius: 3, width: `${d.avg ? (parseFloat(d.avg) / 4) * 100 : 0}%`, background: scoreColor(d.avg), transition: 'width var(--dur-spring) var(--spring)' }} />
                 </div>
               </div>
             ))}
             {/* Nota promedio por cargo — debajo de dimensiones */}
             {byCargo.length > 0 && (
               <>
-                <div style={{ height: 1, background: 'var(--border)', margin: '14px 0 12px' }} />
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.5, marginBottom: 10, textTransform: 'uppercase' }}>Por Cargo</div>
+                <div style={{ height: 1, background: 'var(--separator)', margin: '20px 0' }} />
+                <div className="group-title" style={{ marginBottom: 16 }}>Por cargo</div>
                 {byCargo.slice(0, 8).map((cargo, i) => (
                   <div key={cargo.cargo} style={{ marginBottom: 8 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3, alignItems: 'center' }}>
-                      <span style={{ fontSize: 10, color: 'var(--text2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%' }}>{cargo.cargo}</span>
-                      <span style={{ fontSize: 12, fontWeight: 800, color: cargo.promedio ? scoreColor(cargo.promedio) : 'var(--text3)', fontFamily: 'monospace', flexShrink: 0 }}>
+                      <span style={{ fontSize: 11, color: 'var(--text2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%' }}>{cargo.cargo}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: cargo.promedio ? scoreColor(cargo.promedio) : 'var(--text3)', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
                         {cargo.promedio ?? '—'}
                       </span>
                     </div>
-                    <div style={{ height: 4, background: 'rgba(255,255,255,0.04)', borderRadius: 2, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', borderRadius: 2, width: cargo.promedio ? `${(parseFloat(cargo.promedio) / 4) * 100}%` : '0%', background: cargo.promedio ? scoreColor(cargo.promedio) : 'transparent', transition: 'width 0.8s ease' }} />
+                    <div style={{ height: 4, background: 'var(--fill)', borderRadius: 2, overflow: 'hidden' }}>
+                      <div className="meter-fill" style={{ height: '100%', borderRadius: 2, width: cargo.promedio ? `${(parseFloat(cargo.promedio) / 4) * 100}%` : '0%', background: cargo.promedio ? scoreColor(cargo.promedio) : 'transparent', transition: 'width var(--dur-spring) var(--spring)' }} />
                     </div>
-                    <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 1 }}>{cargo.evaluados} eval.</div>
+                    <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 1 }}>{cargo.evaluados} eval.</div>
                   </div>
                 ))}
               </>
@@ -748,20 +757,20 @@ function Dashboard({ svc, user }) {
 
         {/* Columna 2 & 3: Estado por grupo — expandido */}
         {byGrupo.length > 0 && (
-          <div className="card-static dash-col-span2" style={{ padding: '16px 18px', gridColumn: 'span 2' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.5, marginBottom: 14, textTransform: 'uppercase' }}>Estado por Grupo</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px 20px' }}>
+          <div className="card-static dash-col-span2" style={{ padding: '20px', gridColumn: 'span 2', alignSelf: 'start' }}>
+            <div className="group-title" style={{ marginBottom: 16 }}>Estado por grupo</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px 24px' }}>
               {byGrupo.map(g => (
                 <div key={g.grupo}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                    <span style={{ fontSize: 11, color: 'var(--text2)', fontWeight: g.promedio ? 600 : 400 }}>Grupo {g.grupo}</span>
+                    <span style={{ fontSize: 13, color: 'var(--text2)', fontWeight: g.promedio ? 600 : 400 }}>Grupo {g.grupo}</span>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <span style={{ fontSize: 9, color: 'var(--text3)' }}>{g.evaluados}/{g.total}</span>
-                      {g.promedio && <span style={{ fontSize: 13, fontWeight: 800, color: scoreColor(g.promedio), fontFamily: 'monospace' }}>{g.promedio}</span>}
+                      <span className="num" style={{ fontSize: 13, color: 'var(--text3)' }}>{g.evaluados}/{g.total}</span>
+                      {g.promedio && <span style={{ fontSize: 13, fontWeight: 700, color: scoreColor(g.promedio), fontVariantNumeric: 'tabular-nums' }}>{g.promedio}</span>}
                     </div>
                   </div>
-                  <div style={{ height: 5, background: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', borderRadius: 3, width: `${g.pct}%`, background: g.pct >= 80 ? 'var(--green)' : g.pct >= 50 ? 'var(--accent)' : 'var(--text3)', transition: 'width 0.8s ease' }} />
+                  <div style={{ height: 5, background: 'var(--fill)', borderRadius: 3, overflow: 'hidden' }}>
+                    <div className="meter-fill" style={{ height: '100%', borderRadius: 3, width: `${g.pct}%`, background: 'var(--brand)', opacity: g.pct >= 50 ? 1 : 0.55, transition: 'width var(--dur-spring) var(--spring)' }} />
                   </div>
                 </div>
               ))}
@@ -771,23 +780,23 @@ function Dashboard({ svc, user }) {
       </div>
 
       {actividades.length > 0 && (
-        <div className="card-static" style={{ padding: '16px 18px', marginBottom: 14 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <span style={{ fontSize: 12, fontWeight: 600 }}>Trabajos y Actividades Recientes</span>
-            <span style={{ fontSize: 10, color: 'var(--text3)' }}>Vinculados a cuadrillas</span>
+        <div className="card-static" style={{ padding: '20px', marginBottom: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, marginBottom: 16 }}>
+            <span className="group-title">Trabajos y actividades recientes</span>
+            <span style={{ fontSize: 13, color: 'var(--text3)' }}>Vinculados a cuadrillas</span>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px 24px' }}>
             {actividades.map(a => (
-              <div key={a.id_actividad} style={{ display: 'flex', gap: 12, background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: 8, border: '1px solid var(--border)' }}>
+              <div key={a.id_actividad} style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                 {a.meta?.url_foto ? (
-                  <img src={a.meta.url_foto} alt="Actividad" style={{ width: 60, height: 60, borderRadius: 6, objectFit: 'cover' }} />
+                  <img src={a.meta.url_foto} alt="" style={{ width: 56, height: 56, borderRadius: 8, objectFit: 'cover' }} />
                 ) : (
-                  <div style={{ width: 60, height: 60, borderRadius: 6, background: 'rgba(230,126,34,0.1)', border: '1px solid rgba(230,126,34,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🔧</div>
+                  <div style={{ width: 56, height: 56, borderRadius: 8, background: 'var(--fill)', color: 'var(--text3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="wrench" size={24} /></div>
                 )}
                 <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.nombre_actividad}</div>
-                  <div style={{ fontSize: 9, color: 'var(--accent)', fontWeight: 600, marginTop: 2 }}>{a.catalogo_competencias?.nombre}</div>
-                  <div style={{ display: 'flex', gap: 10, fontSize: 9, color: 'var(--text3)', marginTop: 4, fontFamily: 'monospace' }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.nombre_actividad}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 2 }}>{a.catalogo_competencias?.nombre}</div>
+                  <div style={{ display: 'flex', gap: 12, fontSize: 13, color: 'var(--text3)', marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>
                     <span>Grupo {a.meta?.id_grupo || 'Gral'}</span>
                     <span>Prog: {a.duracion_programada || '-'}h</span>
                     <span>Real: {a.duracion_horas || '-'}h</span>
@@ -800,21 +809,21 @@ function Dashboard({ svc, user }) {
       )}
 
       {/* ── ÚLTIMAS EVALUACIONES + TOP SCORER ── */}
-      <div className="dash-bottom-grid" style={{ display: 'grid', gridTemplateColumns: kpi.topScorer ? '1fr 240px' : '1fr', gap: 14, marginBottom: 14 }}>
+      <div className="dash-bottom-grid" style={{ display: 'grid', gridTemplateColumns: kpi.topScorer ? '1fr 280px' : '1fr', gap: 16, marginBottom: 16 }}>
         {recent.length > 0 && (
-          <div className="card-static" style={{ padding: '14px 16px' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.5, marginBottom: 10, textTransform: 'uppercase' }}>Últimas evaluaciones</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 6 }}>
+          <div className="card-static" style={{ padding: '20px' }}>
+            <div className="group-title" style={{ marginBottom: 16 }}>Últimas evaluaciones</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '12px 24px' }}>
               {recent.slice(0, 8).map((r, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 10px', background: 'rgba(255,255,255,0.02)', borderRadius: 6 }}>
-                  <Avatar nombre={r.nombre} foto={r.foto} size={30} />
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <Avatar nombre={r.nombre} foto={r.foto} size={36} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.nombre}</div>
-                    <div style={{ fontSize: 9, color: 'var(--text3)' }}>{r.cargo}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.nombre}</div>
+                    <div style={{ fontSize: 13, color: 'var(--text3)' }}>{r.cargo}</div>
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: scoreColor(r.nota), fontFamily: 'monospace', lineHeight: 1 }}>{r.nota}</div>
-                    <div style={{ fontSize: 8, color: 'var(--text3)', marginTop: 1 }}>{new Date(r.fecha).toLocaleDateString('es-PE', {day: '2-digit', month: 'short'})}</div>
+                    <div style={{ fontSize: 17, fontWeight: 600, color: scoreColor(r.nota), fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{r.nota}</div>
+                    <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 4 }}>{new Date(r.fecha).toLocaleDateString('es-PE', {day: '2-digit', month: 'short'})}</div>
                   </div>
                 </div>
               ))}
@@ -823,14 +832,19 @@ function Dashboard({ svc, user }) {
         )}
 
         {kpi.topScorer && (
-          <div className="card-static" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 8, background: 'linear-gradient(160deg, rgba(255,215,0,0.06) 0%, rgba(255,180,0,0.02) 100%)', border: '1px solid rgba(255,215,0,0.2)' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: '#FFD700', letterSpacing: 0.8 }}>🥇 TOP SCORER</div>
-            <Avatar nombre={kpi.topScorer.nombre} foto={kpi.topScorer.foto} size={58} />
-            <div>
-              <div style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.25 }}>{kpi.topScorer.nombre}</div>
-              <div style={{ fontSize: 10, color: 'var(--accent)', marginTop: 2, fontWeight: 600 }}>{kpi.topScorer.cargo}</div>
+          <div className="card-static" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 16, alignSelf: 'start' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Medalla pos={1} size={24} />
+              <span className="group-title">Mejor nota</span>
             </div>
-            <div style={{ fontSize: 30, fontWeight: 900, color: 'var(--green)', lineHeight: 1, fontFamily: 'monospace', textShadow: '0 0 20px rgba(39,174,96,0.4)' }}>{kpi.topScorer.nota}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <Avatar nombre={kpi.topScorer.nombre} foto={kpi.topScorer.foto} size={48} />
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.3 }}>{kpi.topScorer.nombre}</div>
+                <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 2 }}>{kpi.topScorer.cargo}</div>
+              </div>
+            </div>
+            <div className="num" style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--green)', lineHeight: 1 }}><Contador valor={kpi.topScorer.nota} /></div>
           </div>
         )}
       </div>
@@ -844,10 +858,10 @@ function Dashboard({ svc, user }) {
 
 function KpiCard({ label, value, sub, color }) {
   return (
-    <div className="card-static" style={{ padding: '14px 16px' }}>
-      <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 6, fontWeight: 500 }}>{label}</div>
-      <div style={{ fontSize: 26, fontWeight: 800, color, lineHeight: 1, marginBottom: 4 }}>{value}</div>
-      <div style={{ fontSize: 10, color: 'var(--text3)' }}>{sub}</div>
+    <div className="kpi-cell">
+      <div style={{ fontSize: 13, color: 'var(--text2)' }}>{label}</div>
+      <div className="num" style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.025em', color: color === 'var(--accent2)' ? 'var(--text)' : color, lineHeight: 1.1, marginTop: 8 }}><Contador valor={value} /></div>
+      <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 4 }}>{sub}</div>
     </div>
   )
 }
@@ -857,9 +871,9 @@ function Avatar({ nombre, foto, size = 36 }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
-      background: 'rgba(230,126,34,0.08)', border: '1.5px solid rgba(230,126,34,0.15)',
+      background: 'var(--brand-soft)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: size * 0.3, fontWeight: 700, color: 'var(--accent)',
+      fontSize: Math.round(size * 0.36), fontWeight: 600, color: 'var(--accent)', letterSpacing: 0,
     }}>
       {foto ? <img src={foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials}
     </div>
@@ -874,11 +888,11 @@ function AdminPanel({ svc, user }) {
 
   const tabs = [
     { id: 'resumen',      label: 'Resumen' },
-    { id: 'personal',     label: 'Editar Personal' },
-    { id: 'carga',        label: 'Carga Masiva' },
+    { id: 'personal',     label: 'Editar personal' },
+    { id: 'carga',        label: 'Carga masiva' },
     { id: 'competencias', label: 'Competencias' },
     { id: 'bitacora',     label: 'Bitácora' },
-    { id: 'evaluadores',  label: 'Análisis Evaluadores' },
+    { id: 'evaluadores',  label: 'Análisis de evaluadores' },
     { id: 'usuarios',     label: 'Usuarios' },
     { id: 'gestion',      label: 'Asignaciones' },
     { id: 'servicios',    label: 'Servicios' },
@@ -886,21 +900,15 @@ function AdminPanel({ svc, user }) {
 
   return (
     <div>
-      <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 2 }}>Panel de Administración</h2>
-      <p style={{ color: 'var(--text3)', fontSize: 12, marginBottom: 18 }}>Control central para {svc.nombre_descriptivo}</p>
+      <h2 className="page-title">Panel de administración</h2>
+      <p className="page-sub" style={{ marginBottom: 24 }}>Control central para {svc.nombre_descriptivo}</p>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid var(--border)', paddingBottom: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <div className="segmented" role="tablist" aria-label="Secciones de administración" style={{ marginBottom: 32, WebkitOverflowScrolling: 'touch' }}>
+          <Deslizador />
         {tabs.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{
-            padding: '8px 14px', background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 12, fontFamily: 'Inter', fontWeight: tab === t.id ? 600 : 400,
-            color: tab === t.id ? 'var(--accent)' : 'var(--text3)',
-            borderBottom: tab === t.id ? '2px solid var(--accent)' : '2px solid transparent',
-            marginBottom: -1, transition: 'color 0.2s', whiteSpace: 'nowrap', flexShrink: 0,
-          }}>{t.label}</button>
+          <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => setTab(t.id)} className={`segmented-item ${tab === t.id ? 'is-active' : ''}`} style={{ flexShrink: 0 }}>{t.label}</button>
         ))}
       </div>
-
       {tab === 'resumen'      && <AdminResumen svc={svc} />}
       {tab === 'personal'     && <AdminPersonal svc={svc} />}
       {tab === 'carga'        && <AdminCarga svc={svc} user={user} />}
@@ -949,30 +957,30 @@ function AdminResumen({ svc }) {
 
   return (
     <div className="fade">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 16 }}>
-        <div className="card-static" style={{ padding: '24px', textAlign: 'center' }}>
-          <div style={{ fontSize: 40, fontWeight: 900, color: 'var(--accent)', lineHeight: 1 }}>{stats.total}</div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text3)', marginTop: 8 }}>TÉCNICOS EN EL SERVICIO</div>
+      <div className="card-static kpi-strip num" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: 16 }}>
+        <div className="kpi-cell">
+          <div style={{ fontSize: 13, color: 'var(--text2)' }}>Técnicos en el servicio</div>
+          <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1, marginTop: 8 }}><Contador valor={stats.total} /></div>
         </div>
-        <div className="card-static" style={{ padding: '24px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text2)', marginBottom: 8 }}>DISTRIBUCIÓN POR TURNO</div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
-             <div><div style={{ fontSize: 24, fontWeight: 800 }}>{stats.turnos.A}</div><div style={{ fontSize: 10, color: 'var(--text3)' }}>Turno A</div></div>
-             <div><div style={{ fontSize: 24, fontWeight: 800 }}>{stats.turnos.B}</div><div style={{ fontSize: 10, color: 'var(--text3)' }}>Turno B</div></div>
-          </div>
+        <div className="kpi-cell">
+          <div style={{ fontSize: 13, color: 'var(--text2)' }}>Turno A</div>
+          <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1, marginTop: 8 }}><Contador valor={stats.turnos.A} /></div>
+        </div>
+        <div className="kpi-cell">
+          <div style={{ fontSize: 13, color: 'var(--text2)' }}>Turno B</div>
+          <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1, marginTop: 8 }}><Contador valor={stats.turnos.B} /></div>
         </div>
       </div>
-
       <div className="card-static" style={{ padding: '20px' }}>
-         <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text2)', marginBottom: 16 }}>DESGLOSE POR ESPECIALIDAD (CARGOS)</div>
-         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
+         <h3 className="card-title">Personal por especialidad</h3>
+         <ul style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', columnGap: 32 }}>
             {stats.cargos.map(([nombre, cant]) => (
-               <div key={nombre} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: 'rgba(255,255,255,0.02)', borderRadius: 6, border: '1px solid var(--border)' }}>
-                 <span style={{ fontSize: 11, fontWeight: 600 }}>{nombre}</span>
-                 <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--accent2)' }}>{cant}</span>
-               </div>
+               <li key={nombre} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '10px 0', boxShadow: 'inset 0 -0.5px 0 var(--separator)' }}>
+                 <span style={{ fontSize: 15 }}>{nombre}</span>
+                 <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--text2)' }}>{cant}</span>
+               </li>
             ))}
-         </div>
+         </ul>
       </div>
     </div>
   )
@@ -1174,9 +1182,9 @@ function AdminCarga({ svc, user }) {
       {step === 1 && (
         <>
           <div className="card-static" style={{ padding: '16px 18px', marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 10, display: 'flex', justifyContent: 'space-between' }}>
-              <span>Formato de Columnas Requerido</span>
-              <button className="btn btn-ghost" onClick={downloadTemplate} style={{ fontSize: 11, padding: '2px 8px', margin: 0, width: 'auto' }}>↓ Descargar plantilla Excel/CSV</button>
+            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, display: 'flex', justifyContent: 'space-between' }}>
+              <span className="card-title" style={{ marginBottom: 0 }}>Formato de columnas requerido</span>
+              <button className="btn btn-ghost" onClick={downloadTemplate} style={{ margin: 0, width: 'auto' }}><Icon name="download" size={16} />Descargar plantilla Excel/CSV</button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
               {[
@@ -1186,19 +1194,19 @@ function AdminCarga({ svc, user }) {
                 { col: 'TURNO', req: true, desc: 'Letra A o B' },
                 { col: 'ID_GRUPO', req: true, desc: 'Número o MASTER' },
               ].map(c => (
-                <div key={c.col} style={{ padding: '10px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: 7, border: '1px solid var(--border)' }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', marginBottom: 3 }}>{c.col}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text3)', lineHeight: 1.4 }}>{c.desc}</div>
+                <div key={c.col} style={{ padding: '10px 12px', background: 'var(--fill)', borderRadius: 8 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-mono)', color: 'var(--text)', marginBottom: 4 }}>{c.col}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text3)', lineHeight: 1.4 }}>{c.desc}</div>
                 </div>
               ))}
             </div>
             
             {cargos.length > 0 && (
-              <div style={{ marginTop: 16, padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text2)', marginBottom: 10 }}>CATÁLOGO ESTRICTO DE CARGOS PERMITIDOS (Copia y pega exacto):</div>
+              <div style={{ marginTop: 16, padding: '12px', background: 'var(--fill)', borderRadius: 8 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text2)', marginBottom: 10 }}>Cargos permitidos (copia y pega el nombre exacto):</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {cargos.map(c => (
-                    <span key={c.id_cargo} style={{ padding: '4px 8px', background: 'rgba(91,164,207,0.08)', borderRadius: 4, fontSize: 10, color: 'var(--accent2)', border: '1px solid rgba(91,164,207,0.2)', fontFamily: 'monospace' }}>
+                    <span key={c.id_cargo} style={{ padding: '4px 10px', background: 'var(--surface)', borderRadius: 6, fontSize: 13, color: 'var(--text)', userSelect: 'all' }}>
                       {c.nombre_oficial}
                     </span>
                   ))}
@@ -1211,23 +1219,23 @@ function AdminCarga({ svc, user }) {
 
           <div style={{ display: 'flex', gap: 20, alignItems: 'stretch' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: 'var(--green)' }}>Opción A: Pegar desde Excel (Recomendado)</div>
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>Opción A · Pegar desde Excel <span style={{ fontWeight: 400, color: 'var(--text3)' }}>(recomendado)</span></div>
               <textarea 
                 className="input" 
                 value={textoPegado} 
                 onChange={e => setTextoPegado(e.target.value)} 
                 placeholder="Selecciona tus 5 columnas en Excel (incluyendo los encabezados), cópialas y presiona aquí Ctrl + V..."
-                style={{ flex: 1, minHeight: 160, resize: 'none', fontFamily: 'monospace', fontSize: 11, whiteSpace: 'pre', border: '2px dashed var(--green)', background: 'rgba(39,174,96,0.03)' }}
+                style={{ flex: 1, minHeight: 160, resize: 'none', fontVariantNumeric: 'tabular-nums', fontSize: 13, whiteSpace: 'pre', border: '1.5px dashed var(--border-h)', background: 'var(--surface)' }}
               />
-              <button className="btn" onClick={procesarPegadoExcel} disabled={!textoPegado} style={{ marginTop: 10, background: 'var(--green)', color: '#000', fontWeight: 800 }}>Procesar datos pegados</button>
+              <button className="btn btn-primary" onClick={procesarPegadoExcel} disabled={!textoPegado} style={{ marginTop: 12 }}>Procesar datos pegados</button>
             </div>
             <div style={{ width: 1, background: 'var(--border)', margin: '10px 0' }} />
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: 'var(--text2)' }}>Opción B: Subir archivo CSV</div>
-              <div onClick={() => fileRef.current?.click()} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border)', borderRadius: 12, padding: '20px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.2s', background: 'rgba(255,255,255,0.01)', minHeight: 160 }} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) { const dt = new DataTransfer(); dt.items.add(f); fileRef.current.files = dt.files; handleFile({ target: fileRef.current }) } }}>
-                <div style={{ fontSize: 32, marginBottom: 10 }}>📁</div>
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>Opción B · Subir archivo CSV</div>
+              <div onClick={() => fileRef.current?.click()} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border)', borderRadius: 12, padding: '20px', textAlign: 'center', cursor: 'pointer', transition: 'border-color var(--dur-quick) ease-out', background: 'var(--fill)', minHeight: 160 }} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) { const dt = new DataTransfer(); dt.items.add(f); fileRef.current.files = dt.files; handleFile({ target: fileRef.current }) } }}>
+                <Icon name="upload" size={32} style={{ margin: '0 auto 12px', color: 'var(--text3)' }} />
                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Arrastra tu CSV aquí</div>
-                <div style={{ fontSize: 11, color: 'var(--text3)' }}>o haz click para buscar</div>
+                <div style={{ fontSize: 13, color: 'var(--text3)' }}>o haz click para buscar</div>
               </div>
               <input ref={fileRef} type="file" accept=".csv" onChange={handleFile} style={{ display: 'none' }} />
             </div>
@@ -1239,37 +1247,37 @@ function AdminCarga({ svc, user }) {
         <div className="fade">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 18 }}>
             <div className="card-static" style={{ padding: '14px 16px', textAlign: 'center' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--accent2)' }}>{stats.total}</div>
-              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 3 }}>Filas leídas</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--accent2)' }}>{stats.total}</div>
+              <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 3 }}>Filas leídas</div>
             </div>
             <div className="card-static" style={{ padding: '14px 16px', textAlign: 'center' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--green)' }}>{stats.validos}</div>
-              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 3 }}>Válidos</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--green)' }}>{stats.validos}</div>
+              <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 3 }}>Válidos</div>
             </div>
             <div className="card-static" style={{ padding: '14px 16px', textAlign: 'center' }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: stats.errores > 0 ? 'var(--red)' : 'var(--green)' }}>{stats.errores}</div>
-              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 3 }}>Con errores</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: stats.errores > 0 ? 'var(--red)' : 'var(--green)' }}>{stats.errores}</div>
+              <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 3 }}>Con errores</div>
             </div>
           </div>
 
           {errors.length > 0 ? (
-            <div className="card-static" style={{ padding: '16px 20px', marginBottom: 14, border: '1px solid var(--red)', background: 'rgba(231,76,60,0.05)' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--red)', marginBottom: 8 }}>⚠️ Carga Bloqueada por Errores</div>
-              <div style={{ fontSize: 11, color: 'var(--text2)', marginBottom: 12 }}>El archivo contiene datos inválidos o cargos que no existen en el catálogo. <strong>Debes corregir tu archivo Excel y volver a pegarlo.</strong> No se permite la subida parcial.</div>
+            <div className="card-static" style={{ padding: '16px 20px', marginBottom: 14, border: '1px solid var(--red)', background: 'color-mix(in srgb, var(--red) 5%, transparent)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, fontWeight: 600, color: 'var(--red)', marginBottom: 8 }}><Icon name="alert" size={18} />Carga bloqueada por errores</div>
+              <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 12 }}>El archivo contiene datos inválidos o cargos que no existen en el catálogo. <strong>Debes corregir tu archivo Excel y volver a pegarlo.</strong> No se permite la subida parcial.</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 200, overflowY: 'auto' }}>
                 {errors.map((e, i) => (
-                  <div key={i} style={{ fontSize: 11, padding: '7px 10px', background: 'rgba(192,57,43,0.05)', borderRadius: 6, borderLeft: '2px solid rgba(192,57,43,0.3)' }}>
+                  <div key={i} style={{ fontSize: 13, padding: '7px 10px', background: 'color-mix(in srgb, var(--red) 5%, transparent)', borderRadius: 6 }}>
                     <span style={{ fontWeight: 600 }}>Fila {e.fila}</span> — {e.dni} {e.nombre && `· ${e.nombre}`}
-                    <div style={{ color: '#E8A09A', marginTop: 2 }}>{e.errores.join(' · ')}</div>
+                    <div style={{ color: 'var(--red)', marginTop: 2 }}>{e.errores.join(' · ')}</div>
                   </div>
                 ))}
               </div>
             </div>
           ) : rows.length > 0 && (
             <div className="card-static" style={{ padding: '14px 18px', marginBottom: 18 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 10, color: 'var(--green)' }}>✓ Datos listos para importar (Previsualización de 5 filas)</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, fontWeight: 600, marginBottom: 12, color: 'var(--green)' }}><Icon name="check" size={18} />Datos listos para importar <span style={{ fontWeight: 400, color: 'var(--text3)' }}>· vista previa de 5 filas</span></div>
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--border)' }}>
                       {['DNI', 'Nombres', 'Cargo', 'Turno', 'Grupo'].map(h => (
@@ -1279,8 +1287,8 @@ function AdminCarga({ svc, user }) {
                   </thead>
                   <tbody>
                     {rows.slice(0, 5).map((r, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                        <td style={{ padding: '5px 8px', fontFamily: 'monospace' }}>{r.dni}</td>
+                      <tr key={i} style={{ borderBottom: '1px solid var(--fill)' }}>
+                        <td style={{ padding: '5px 8px', fontFamily: 'var(--font-mono)' }}>{r.dni}</td>
                         <td style={{ padding: '5px 8px', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.nombre}</td>
                         <td style={{ padding: '5px 8px', color: 'var(--accent)' }}>{r.cargoNombre}</td>
                         <td style={{ padding: '5px 8px' }}>{r.turno}</td>
@@ -1289,13 +1297,13 @@ function AdminCarga({ svc, user }) {
                     ))}
                   </tbody>
                 </table>
-                {rows.length > 5 && <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 6 }}>...y {rows.length - 5} más</div>}
+                {rows.length > 5 && <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 6 }}>...y {rows.length - 5} más</div>}
               </div>
             </div>
           )}
 
           <div style={{ display: 'flex', gap: 10 }}>
-            <button className="btn btn-ghost" onClick={reset} style={{ flex: 1 }}>← {errors.length > 0 ? 'Volver y Corregir' : 'Cancelar'}</button>
+            <button className="btn btn-ghost" onClick={reset} style={{ flex: 1, minHeight: 44 }}><Icon name="back" size={16} />{errors.length > 0 ? 'Volver y corregir' : 'Cancelar'}</button>
             {errors.length === 0 && rows.length > 0 && (
               <button className="btn btn-primary" onClick={ejecutarCarga} disabled={loading} style={{ flex: 2 }}>
                 {loading ? 'Importando...' : `Confirmar e importar ${rows.length} trabajadores`}
@@ -1307,8 +1315,8 @@ function AdminCarga({ svc, user }) {
 
       {step === 3 && stats && (
         <div className="fade" style={{ textAlign: 'center', padding: '40px 20px' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>{stats.erroresCarga?.length === 0 ? '✅' : '⚠️'}</div>
-          <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Carga completada</div>
+          <Icon name={stats.erroresCarga?.length === 0 ? 'check' : 'alert'} size={36} style={{ margin: '0 auto 16px', color: stats.erroresCarga?.length === 0 ? 'var(--green)' : 'var(--yellow)' }} />
+          <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>Carga completada</div>
           <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 24 }}>
             <strong style={{ color: 'var(--green)' }}>{stats.exitosos}</strong> trabajadores importados exitosamente
             {stats.erroresCarga?.length > 0 && <> · <strong style={{ color: 'var(--red)' }}>{stats.erroresCarga.length}</strong> errores</>}
@@ -1316,7 +1324,7 @@ function AdminCarga({ svc, user }) {
           {stats.erroresCarga?.length > 0 && (
             <div style={{ marginBottom: 20, textAlign: 'left', maxWidth: 500, margin: '0 auto 20px' }}>
               {stats.erroresCarga.map((e, i) => (
-                <div key={i} style={{ fontSize: 11, padding: '6px 10px', marginBottom: 4, background: 'rgba(192,57,43,0.07)', borderRadius: 6, color: '#E8A09A' }}>
+                <div key={i} style={{ fontSize: 13, padding: '6px 10px', marginBottom: 4, background: 'color-mix(in srgb, var(--red) 7%, transparent)', borderRadius: 6, color: 'var(--red)' }}>
                   {e.dni} — {e.nombre}: {e.error}
                 </div>
               ))}
@@ -1352,15 +1360,15 @@ function HistorialCargas({ svc }) {
       {data.map(c => (
         <div key={c.id} className="card-static" style={{ padding: '13px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 12, fontWeight: 600 }}>{c.archivo_nombre}</div>
-            <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2 }}>
+            <div style={{ fontSize: 13, fontWeight: 600 }}>{c.archivo_nombre}</div>
+            <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>
               {c.username} · {new Date(c.fecha_hora).toLocaleString('es-PE')}
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <span className="badge b-ok">{c.registros_exitosos} ok</span>
             {c.registros_error > 0 && <span className="badge b-err">{c.registros_error} err</span>}
-            <span style={{ fontSize: 10, color: 'var(--text3)' }}>{c.registros_total} total</span>
+            <span style={{ fontSize: 11, color: 'var(--text3)' }}>{c.registros_total} total</span>
           </div>
         </div>
       ))}
@@ -1393,7 +1401,7 @@ function Ranking({ svc, user }) {
   const avg    = arr => arr.reduce((a, b) => a + b, 0) / arr.length
   const round2 = n   => Math.round(n * 100) / 100
   const scoreColor = v => { if (!v && v !== 0) return 'var(--text3)'; return v >= 3.5 ? 'var(--green)' : v >= 2.0 ? 'var(--yellow)' : 'var(--red)' }
-  const medalColor = p => p === 1 ? '#FFD700' : p === 2 ? '#C0C0C0' : '#CD7F32'
+  const medalColor = p => p === 1 ? 'var(--gold)' : p === 2 ? 'var(--silver)' : 'var(--bronze)'
 
   const [podioCargo, setPodioCargo] = useState([])
 
@@ -1506,22 +1514,26 @@ function Ranking({ svc, user }) {
     <div className="fade">
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 2 }}>Ranking por Cargo</h2>
-          <p style={{ color: 'var(--text3)', fontSize: 12 }}>{svc.nombre_descriptivo}</p>
+          <h2 className="page-title">Ranking por cargo</h2>
+          <p className="page-sub">{svc.nombre_descriptivo}</p>
         </div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {/* Modo: Solo este servicio */}
-          <button onClick={() => { setModoRanking('actual'); setUsar7030(false) }}
-            style={{ padding: '8px 14px', borderRadius: 8, border: `1px solid ${modoRanking === 'actual' ? 'var(--accent2)' : 'var(--border)'}`, background: modoRanking === 'actual' ? 'rgba(91,164,207,0.1)' : 'rgba(255,255,255,0.03)', color: modoRanking === 'actual' ? 'var(--accent2)' : 'var(--text3)', fontSize: 12, fontWeight: modoRanking === 'actual' ? 700 : 400, cursor: 'pointer', fontFamily: 'Inter', transition: 'all 0.15s' }}>
-            Solo este servicio
-            {modoRanking === 'actual' && <div style={{ fontSize: 9, opacity: 0.7, marginTop: 1 }}>Sin historial previo</div>}
-          </button>
-          {/* Modo: Fórmula 70/30 */}
-          <button onClick={() => { setModoRanking('formula'); setUsar7030(true) }}
-            style={{ padding: '8px 14px', borderRadius: 8, border: `1px solid ${modoRanking === 'formula' ? 'var(--accent)' : 'var(--border)'}`, background: modoRanking === 'formula' ? 'rgba(230,126,34,0.08)' : 'rgba(255,255,255,0.03)', color: modoRanking === 'formula' ? 'var(--accent)' : 'var(--text3)', fontSize: 12, fontWeight: modoRanking === 'formula' ? 700 : 400, cursor: 'pointer', fontFamily: 'Inter', transition: 'all 0.15s' }}>
-            Fórmula 70/30
-            {modoRanking === 'formula' && <div style={{ fontSize: 9, opacity: 0.7, marginTop: 1 }}>{(pesos.actual*100).toFixed(0)}% actual + {(pesos.historico*100).toFixed(0)}% hist.</div>}
-          </button>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+          <div>
+            <div className="segmented" role="radiogroup" aria-label="Modo de ranking">
+          <Deslizador />
+              {/* Modo: Solo este servicio */}
+              <button role="radio" aria-checked={modoRanking === 'actual'} onClick={() => { setModoRanking('actual'); setUsar7030(false) }} className={`segmented-item ${modoRanking === 'actual' ? 'is-active' : ''}`}>
+                Solo este servicio
+              </button>
+              {/* Modo: Fórmula 70/30 */}
+              <button role="radio" aria-checked={modoRanking === 'formula'} onClick={() => { setModoRanking('formula'); setUsar7030(true) }} className={`segmented-item ${modoRanking === 'formula' ? 'is-active' : ''}`}>
+                Fórmula 70/30
+              </button>
+            </div>
+            <div className="num" style={{ fontSize: 13, color: 'var(--text3)', marginTop: 6, paddingLeft: 4 }}>
+              {modoRanking === 'actual' ? 'Sin historial previo' : `${(pesos.actual*100).toFixed(0)} % actual + ${(pesos.historico*100).toFixed(0)} % histórico`}
+            </div>
+          </div>
           {/* Podio del servicio */}
           <ToggleSwitch on={verPodioServicio} onChange={setVerPodioServicio} color="var(--accent2)"
             label="Podio del servicio" sub="Top 3 general" />
@@ -1530,34 +1542,34 @@ function Ranking({ svc, user }) {
 
       {verPodioServicio && rowsServicio.slice(0,3).length >= 2 && (
         <div style={{ marginBottom: 24 }} className="fade">
-          <SectionLabel text={`PODIO GENERAL — ${svc.nombre_descriptivo.toUpperCase()}`} color="var(--accent2)" />
+          <SectionLabel text={`Podio general · ${svc.nombre_descriptivo}`} />
           <Podio items={rowsServicio.slice(0,3)} medalColor={medalColor} scoreColor={scoreColor} svcId={svc.id_servicio} />
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 32, flexWrap: 'wrap', alignItems: 'flex-end' }}>
         <div style={{ flex: 2, minWidth: 200 }}>
-          <div style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 600, marginBottom: 5 }}>FILTRAR POR CARGO</div>
-          <select className="input" value={cargoSelPodio} onChange={e => setCargoSelPodio(e.target.value === 'TODOS' ? 'TODOS' : parseInt(e.target.value))}
-            style={{ fontSize: 12, background: 'var(--bg2)', color: 'var(--text)' }}>
-            <option value="TODOS" style={{ background: '#0c0c10', color: '#E8E8E8' }}>Mostrar todos los cargos</option>
-            {cargos.map(c => <option key={c.id} value={c.id} style={{ background: '#0c0c10', color: '#E8E8E8' }}>{c.nombre}{!c.tieneEvals ? ' (sin eval.)' : ''}</option>)}
+          <label htmlFor="rk-cargo" className="field-label">Cargo</label>
+          <select id="rk-cargo" className="input" value={cargoSelPodio} onChange={e => setCargoSelPodio(e.target.value === 'TODOS' ? 'TODOS' : parseInt(e.target.value))}
+            >
+            <option value="TODOS">Mostrar todos los cargos</option>
+            {cargos.map(c => <option key={c.id} value={c.id}>{c.nombre}{!c.tieneEvals ? ' (sin eval.)' : ''}</option>)}
           </select>
         </div>
-        <div style={{ minWidth: 110 }}>
-          <div style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 600, marginBottom: 5 }}>TURNO</div>
-          <select className="input" value={turnoFiltro} onChange={e => setTurnoFiltro(e.target.value)} style={{ fontSize: 12, background: 'var(--bg2)', color: 'var(--text)' }}>
-            <option style={{ background: '#0c0c10' }} value="TODOS">Todos</option>
-            <option style={{ background: '#0c0c10' }} value="A">Turno A</option>
-            <option style={{ background: '#0c0c10' }} value="B">Turno B</option>
+        <div style={{ minWidth: 140 }}>
+          <label htmlFor="rk-turno" className="field-label">Turno</label>
+          <select id="rk-turno" className="input" value={turnoFiltro} onChange={e => setTurnoFiltro(e.target.value)}>
+            <option value="TODOS">Todos</option>
+            <option value="A">Turno A</option>
+            <option value="B">Turno B</option>
           </select>
         </div>
         {grupos.length > 0 && (
-          <div style={{ minWidth: 110 }}>
-            <div style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 600, marginBottom: 5 }}>GRUPO</div>
-            <select className="input" value={grupoFiltro} onChange={e => setGrupoFiltro(e.target.value)} style={{ fontSize: 12, background: 'var(--bg2)', color: 'var(--text)' }}>
-              <option style={{ background: '#0c0c10' }} value="TODOS">Todos</option>
-              {grupos.map(g => <option key={g} value={g} style={{ background: '#0c0c10' }}>Grupo {g}</option>)}
+          <div style={{ minWidth: 140 }}>
+            <label htmlFor="rk-grupo" className="field-label">Grupo</label>
+            <select id="rk-grupo" className="input" value={grupoFiltro} onChange={e => setGrupoFiltro(e.target.value)}>
+              <option value="TODOS">Todos</option>
+              {grupos.map(g => <option key={g} value={g}>Grupo {g}</option>)}
             </select>
           </div>
         )}
@@ -1565,71 +1577,68 @@ function Ranking({ svc, user }) {
 
       {podioCargo.length >= 2 && (
         <div style={{ marginBottom: 24 }}>
-          <SectionLabel text={`PODIO — ${cargos.find(c => c.id === cargoSelPodio)?.nombre.toUpperCase() || ''}`} color="var(--text3)" />
+          <SectionLabel text={`Podio · ${cargos.find(c => c.id === cargoSelPodio)?.nombre || ''}`} />
           <Podio items={podioCargo} medalColor={medalColor} scoreColor={scoreColor} svcId={svc.id_servicio} />
         </div>
       )}
 
       {rowsByGrupo.length === 0 ? (
-        <div className="card-static" style={{ padding: '36px 20px', textAlign: 'center' }}><p style={{ color: 'var(--text3)', fontSize: 13 }}>No hay evaluaciones con los filtros aplicados.</p></div>
+        <div className="card-static empty-state"><p style={{ color: 'var(--text2)', fontSize: 15 }}>No hay evaluaciones con los filtros aplicados.</p></div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
           {rowsByGrupo.map(grupo => (
-            <div key={grupo.cargoId}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', letterSpacing: 0.6 }}>{grupo.cargoNombre.toUpperCase()}</div>
-                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-                <div style={{ fontSize: 10, color: 'var(--text3)' }}>{grupo.rows.length} evaluados</div>
+            <section key={grupo.cargoId}>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 8, padding: '0 4px' }}>
+                <h3 className="group-title">{grupo.cargoNombre}</h3>
+                <div className="num" style={{ fontSize: 13, color: 'var(--text3)' }}>{grupo.rows.length} evaluados</div>
               </div>
               <div className="card-static" style={{ overflow: 'hidden', overflowX: 'auto' }}>
-                <div className="rank-header-desktop" style={{ display: 'grid', gridTemplateColumns: '28px 1fr 64px 64px 90px', gap: 4, padding: '7px 12px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.3 }}>
-                  <div>#</div><div>TRABAJADOR</div>
-                  <div style={{ textAlign: 'right' }}><span style={{ color: 'var(--accent)' }}>{modoRanking === 'actual' ? '' : `${(pesos.actual*100).toFixed(0)}%`}</span>{modoRanking === 'actual' ? 'NOTA' : 'ACT.'}</div>
-                  <div style={{ textAlign: 'right', opacity: modoRanking === 'formula' ? 1 : 0.15 }}><span style={{ color: 'var(--accent2)' }}>{(pesos.historico*100).toFixed(0)}%</span></div>
-                  <div style={{ textAlign: 'right' }}>FINAL</div>
+                <div className="rank-header-desktop" style={{ display: 'grid', gridTemplateColumns: '32px 1fr 88px 80px 96px', gap: 8, padding: '10px 16px', boxShadow: 'inset 0 -0.5px 0 var(--separator)', fontSize: 13, color: 'var(--text3)', fontWeight: 500 }}>
+                  <div style={{ textAlign: 'center' }}>#</div><div>Trabajador</div>
+                  <div className="num" style={{ textAlign: 'right' }}>{modoRanking === 'actual' ? 'Nota' : `Actual ${(pesos.actual*100).toFixed(0)} %`}</div>
+                  <div className="num" style={{ textAlign: 'right', visibility: modoRanking === 'formula' ? 'visible' : 'hidden' }}>Hist. {(pesos.historico*100).toFixed(0)} %</div>
+                  <div style={{ textAlign: 'right' }}>Final</div>
                 </div>
                 {grupo.rows.map((r, i) => (
-                  <div key={r.id_asignacion} style={{ borderBottom: i < grupo.rows.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', background: r.posicion <= 3 ? 'rgba(255,255,255,0.012)' : 'transparent' }}>
-                    <div className="rank-row-content" style={{ display: 'grid', gridTemplateColumns: '28px 1fr 64px 64px 90px', gap: 4, padding: '9px 12px', alignItems: 'center' }}>
-                      <div style={{ fontSize: 12, fontWeight: 800, textAlign: 'center', color: r.posicion <= 3 ? medalColor(r.posicion) : 'var(--text3)' }}>
-                        {r.posicion <= 3 ? ['🥇','🥈','🥉'][r.posicion-1] : r.posicion}
+                  <div key={r.id_asignacion} style={{ boxShadow: i > 0 ? 'inset 0 0.5px 0 var(--separator)' : 'none' }}>
+                    <div className="rank-row-content" style={{ display: 'grid', gridTemplateColumns: '32px 1fr 88px 80px 96px', gap: 8, padding: '12px 16px', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', justifyContent: 'center', fontSize: 13, fontWeight: 600, color: 'var(--text3)', fontVariantNumeric: 'tabular-nums' }}>
+                        {r.posicion <= 3 ? <Medalla pos={r.posicion} size={26} /> : r.posicion}
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                        <Avatar nombre={r.nombre} foto={r.foto} size={32} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                        <Avatar nombre={r.nombre} foto={r.foto} size={36} />
                         <div style={{ minWidth: 0, flex: 1 }}>
-                          <div style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.3, wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{r.nombre}</div>
-                          <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 1 }}>G{r.id_grupo} · T{r.turno}</div>
+                          <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.3, wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{r.nombre}</div>
+                          <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 2 }}>Grupo {r.id_grupo} · Turno {r.turno}</div>
                         </div>
                       </div>
-                      <div style={{ textAlign: 'right', fontSize: 13, fontWeight: 700, color: scoreColor(r.notaActual) }}>{r.notaActual}</div>
-                      <div style={{ textAlign: 'right', fontSize: 12, color: usar7030 ? 'var(--accent2)' : 'var(--text3)', opacity: usar7030 ? 1 : 0.2 }}>{usar7030 ? (r.notaHist ?? '—') : '—'}</div>
-                      <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
-                        <span style={{ fontSize: 15, fontWeight: 900, color: scoreColor(r.notaFinal), fontFamily: 'monospace' }}>{r.notaFinal}</span>
-                        <div style={{ width: 60, height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', borderRadius: 2, width: `${(r.notaFinal / 4) * 100}%`, background: scoreColor(r.notaFinal), transition: 'width 0.6s ease' }} />
+                      <div className="num" style={{ textAlign: 'right', fontSize: 15, fontWeight: 500, color: scoreColor(r.notaActual) }}>{r.notaActual}</div>
+                      <div className="num" style={{ textAlign: 'right', fontSize: 15, color: usar7030 ? 'var(--text2)' : 'var(--text3)', visibility: usar7030 ? 'visible' : 'hidden' }}>{usar7030 ? (r.notaHist ?? '—') : '—'}</div>
+                      <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                        <span style={{ fontSize: 17, fontWeight: 700, color: scoreColor(r.notaFinal), fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{r.notaFinal}</span>
+                        <div style={{ width: 64, height: 4, background: 'var(--fill-2)', borderRadius: 2, overflow: 'hidden' }}>
+                          <div className="meter-fill" style={{ height: '100%', borderRadius: 2, width: `${(r.notaFinal / 4) * 100}%`, background: scoreColor(r.notaFinal), transition: 'width var(--dur-spring) var(--spring)' }} />
                         </div>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
           ))}
         </div>
       )}
 
-      <div style={{ marginTop: 16, padding: '10px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 10, color: 'var(--text3)', marginRight: 4 }}>Total evaluados: {totalEval} ·</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: 'var(--green)' }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--green)' }} />≥ 3.5 Óptimo
+      <div className="num" style={{ marginTop: 24, padding: '0 4px', display: 'flex', alignItems: 'center', gap: '8px 20px', flexWrap: 'wrap', fontSize: 13, color: 'var(--text2)' }}>
+        <span style={{ color: 'var(--text3)' }}>{totalEval} evaluados</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--green)' }} />≥ 3.5 óptimo
         </span>
-        <span style={{ color: 'var(--text3)', fontSize: 10 }}>·</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: 'var(--yellow)' }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--yellow)' }} />≥ 2.0 Aceptable
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--yellow)' }} />≥ 2.0 aceptable
         </span>
-        <span style={{ color: 'var(--text3)', fontSize: 10 }}>·</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: 'var(--red)' }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--red)' }} />{'< 2.0 Riesgo'}
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--red)' }} />{'< 2.0 riesgo'}
         </span>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -1639,20 +1648,18 @@ function Ranking({ svc, user }) {
 
 function ToggleSwitch({ on, onChange, color, label, sub }) {
   return (
-    <div onClick={() => onChange(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', cursor: 'pointer', background: on ? `${color}14` : 'rgba(255,255,255,0.03)', border: `1px solid ${on ? `${color}44` : 'var(--border)'}`, borderRadius: 8, transition: 'all 0.2s', userSelect: 'none' }}>
-      <div style={{ width: 32, height: 18, borderRadius: 9, position: 'relative', transition: 'background 0.2s', background: on ? color : 'rgba(255,255,255,0.1)' }}>
-        <div style={{ position: 'absolute', top: 3, left: on ? 16 : 3, width: 12, height: 12, borderRadius: '50%', background: 'white', transition: 'left 0.2s' }} />
-      </div>
-      <div style={{ fontSize: 11 }}>
-        <div style={{ fontWeight: 600, color: on ? color : 'var(--text3)' }}>{label}</div>
-        <div style={{ fontSize: 9, color: 'var(--text3)' }}>{sub}</div>
-      </div>
-    </div>
+    <button type="button" role="switch" aria-checked={on} onClick={() => onChange(v => !v)} className="switch-row">
+      <span className={`switch ${on ? 'is-on' : ''}`} aria-hidden="true"><span className="switch-knob" /></span>
+      <span style={{ textAlign: 'left' }}>
+        <span style={{ display: 'block', fontSize: 15, fontWeight: 500, color: 'var(--text)' }}>{label}</span>
+        <span style={{ display: 'block', fontSize: 13, color: 'var(--text3)' }}>{sub}</span>
+      </span>
+    </button>
   )
 }
 
 function SectionLabel({ text, color }) {
-  return <div style={{ fontSize: 11, color: color || 'var(--text3)', fontWeight: 600, letterSpacing: 0.8, marginBottom: 14 }}>{text}</div>
+  return <h3 className="group-title" style={{ marginBottom: 16, padding: '0 4px' }}>{text}</h3>
 }
 
 function Podio({ items, medalColor, scoreColor, svcId }) {
@@ -1682,76 +1689,70 @@ function Podio({ items, medalColor, scoreColor, svcId }) {
 
   const orden = [items[1], items[0], items[2]].filter(Boolean)
   
-  const trofeo = pos => pos === 1 ? '🥇' : pos === 2 ? '🥈' : '🥉'
   const podioH = pos => pos === 1 ? 'auto' : 'auto'
   const podioFlex = pos => pos === 1 ? 1.25 : 1
 
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, justifyContent: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, justifyContent: 'center' }}>
       {orden.map((p, vi) => {
         const pos = vi === 0 ? 2 : vi === 1 ? 1 : 3
         const isFirst = pos === 1
         const dni = p.dni_trabajador || p.dni
         const v = victorias[dni] || 0
-        const leyenda = v >= 4 ? '⭐ Leyenda PRODISE' : v >= 3 ? '🔥 Tricampeón' : v === 2 ? '🔁 2× Campeón' : v === 1 ? '🏆 Campeón prev.' : (isFirst && p.notaFinal >= 3.5) ? '✨ Debut' : null
+        const leyenda = v >= 4 ? 'Leyenda PRODISE' : v >= 3 ? 'Tricampeón' : v === 2 ? '2× campeón' : v === 1 ? 'Campeón previo' : (isFirst && p.notaFinal >= 3.5) ? 'Debut' : null
+        const leyendaIcon = v >= 4 ? 'star' : v >= 3 ? 'flame' : v === 2 ? 'repeat' : v === 1 ? 'trophy' : 'spark'
         const cercanoPrimero = pos === 2 && items[0] && Math.abs((p.notaFinal||0)-(items[0].notaFinal||0)) <= 0.1
 
         return (
-          <div key={p.id_asignacion} style={{
+          <div key={p.id_asignacion} className="card-static" style={{
             flex: podioFlex(pos), minWidth: 0, position: 'relative', textAlign: 'center',
-            background: isFirst
-              ? 'linear-gradient(160deg, rgba(255,215,0,0.09) 0%, rgba(255,180,0,0.04) 100%)'
-              : pos===2 ? 'rgba(192,192,192,0.04)' : 'rgba(205,127,50,0.04)',
-            border: `1px solid ${isFirst ? 'rgba(255,215,0,0.32)' : pos===2 ? 'rgba(192,192,192,0.16)' : 'rgba(205,127,50,0.16)'}`,
-            borderRadius: 14, padding: isFirst ? '18px 12px 14px' : '14px 10px 12px',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
-            boxShadow: isFirst ? '0 0 28px rgba(255,215,0,0.1), 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,215,0,0.12)' : '0 2px 12px rgba(0,0,0,0.2)',
+            padding: isFirst ? '24px 16px 20px' : '20px 12px 16px',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+            boxShadow: isFirst ? 'inset 0 0 0 1.5px color-mix(in srgb, var(--gold) 45%, transparent)' : 'none',
           }}>
 
-            {/* Badge victorias históricas */}
+            {/* Victorias históricas */}
             {v > 0 && (
-              <div style={{ position: 'absolute', top: -8, right: -8, background: 'rgba(255,215,0,0.18)', border: '1px solid rgba(255,215,0,0.35)', borderRadius: 10, padding: '2px 6px', fontSize: 9, fontWeight: 800, color: '#FFD700', zIndex: 2 }}>
-                🏆×{v}
+              <div className="num" style={{ position: 'absolute', top: 12, right: 12, display: 'flex', alignItems: 'center', gap: 2, fontSize: 13, fontWeight: 600, color: 'var(--gold)' }} title={`${v} podios previos`}>
+                <Icon name="trophy" size={16} />×{v}
               </div>
             )}
 
-            {/* Trofeo grande */}
-            <div style={{ fontSize: isFirst ? 36 : 28, lineHeight: 1, marginBottom: 2 }}>{trofeo(pos)}</div>
+            <Medalla pos={pos} size={isFirst ? 32 : 26} />
 
             {/* Avatar */}
-            <Avatar nombre={p.nombre} foto={p.foto} size={isFirst ? 72 : 54} />
+            <div style={{ marginTop: 6 }}><Avatar nombre={p.nombre} foto={p.foto} size={isFirst ? 72 : 56} /></div>
 
             {/* Nombre completo (2 líneas max) */}
-            <div style={{ fontSize: isFirst ? 12 : 10, fontWeight: 800, lineHeight: 1.25, maxWidth: '100%', wordBreak: 'break-word', letterSpacing: -0.2 }}>
+            <div style={{ fontSize: isFirst ? 15 : 13, fontWeight: 600, lineHeight: 1.3, maxWidth: '100%', wordBreak: 'break-word', marginTop: 4 }}>
               {p.nombre}
             </div>
 
             {/* Cargo */}
             {p.cargoNombre && (
-              <div style={{ fontSize: 9, color: 'var(--accent)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
+              <div style={{ fontSize: 13, color: 'var(--text2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
                 {p.cargoNombre}
               </div>
             )}
 
             {/* Grupo y turno */}
-            <div style={{ fontSize: 9, color: 'var(--text3)' }}>G{p.id_grupo} · T{p.turno}</div>
+            <div style={{ fontSize: 13, color: 'var(--text3)' }}>Grupo {p.id_grupo} · Turno {p.turno}</div>
 
             {/* Nota */}
             <div style={{
-              fontSize: isFirst ? 32 : 24, fontWeight: 900, color: scoreColor(p.notaFinal),
-              lineHeight: 1, fontFamily: 'monospace',
-              textShadow: isFirst ? `0 0 20px ${scoreColor(p.notaFinal)}66` : 'none',
-              marginTop: 2,
-            }}>{p.notaFinal}</div>
+              fontSize: isFirst ? 34 : 28, fontWeight: 700, letterSpacing: '-0.03em', color: scoreColor(p.notaFinal),
+              lineHeight: 1, fontVariantNumeric: 'tabular-nums',
+              marginTop: 8,
+            }}><Contador valor={p.notaFinal} /></div>
 
             {/* Leyenda dinámica */}
             {leyenda && (
-              <div style={{ fontSize: 9, color: isFirst ? '#FFD700' : 'rgba(255,255,255,0.45)', fontWeight: 700, marginTop: 2 }}>
-                {leyenda}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: isFirst ? 'var(--gold)' : 'var(--text2)', fontWeight: 600, marginTop: 4 }}>
+                <Icon name={leyendaIcon} size={16} />{leyenda}
               </div>
             )}
             {cercanoPrimero && (
-              <div style={{ fontSize: 9, color: 'rgba(192,192,192,0.55)' }}>🎯 -{Math.abs((p.notaFinal||0)-(items[0].notaFinal||0)).toFixed(2)} del 1°</div>
+              <div className="num" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--text3)' }}><Icon name="target" size={14} />−{Math.abs((p.notaFinal||0)-(items[0].notaFinal||0)).toFixed(2)} del 1.º</div>
             )}
           </div>
         )
@@ -2005,22 +2006,25 @@ function Perfiles({ svc, user }) {
     const filtrados = todos.filter(t => t.nombre.toLowerCase().includes(search.toLowerCase()) || t.cargoNombre.toLowerCase().includes(search.toLowerCase()))
     return (
       <div className="fade">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
-          <div><h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 2 }}>Perfiles Analíticos 360°</h2><p style={{ color: 'var(--text3)', fontSize: 12 }}>{svc.nombre_descriptivo}</p></div>
-          <input className="input" placeholder="Buscar por nombre o cargo..." value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth: 280, marginLeft: 'auto' }} />
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
+          <div><h2 className="page-title">Perfiles analíticos 360°</h2><p className="page-sub">{svc.nombre_descriptivo}</p></div>
+          <div className="search-field" style={{ flex: '0 1 320px' }}>
+            <Icon name="buscador" size={18} />
+            <input className="input" type="search" aria-label="Buscar por nombre o cargo" placeholder="Buscar por nombre o cargo" value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
         </div>
-        {loadingLista ? <p style={{ color: 'var(--text3)', fontSize: 13 }}>Cargando directorio...</p> : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
+        {loadingLista ? <div role="status" style={{ display: 'flex', alignItems: 'center', gap: 12, color: 'var(--text2)', fontSize: 15, padding: '24px 0' }}><span className="spinner" />Cargando directorio…</div> : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
             {filtrados.map(t => (
-              <div key={t.id_asignacion} onClick={() => seleccionar(t)} className="card" style={{ padding: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, border: '1px solid rgba(255,255,255,0.03)' }}>
-                <Avatar nombre={t.nombre} foto={t.foto} size={42} />
+              <button type="button" key={t.id_asignacion} onClick={() => seleccionar(t)} className="card" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', color: 'var(--text)' }}>
+                <Avatar nombre={t.nombre} foto={t.foto} size={44} />
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.nombre}</div>
-                  <div style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 600, marginTop: 2 }}>{t.cargoNombre}</div>
-                  <div style={{ fontSize: 9, color: 'var(--text3)', fontFamily: 'monospace', marginTop: 2 }}>G{t.id_grupo} | T{t.turno}</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.nombre}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.cargoNombre}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text3)', fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>Grupo {t.id_grupo} · Turno {t.turno}</div>
                 </div>
-                {t.evaluado ? <div style={{ fontSize: 18, fontWeight: 800, color: sc(t.promedio), flexShrink: 0, fontFamily: 'monospace' }}>{t.promedio}</div> : <div style={{ fontSize: 10, color: 'var(--text3)' }}>S/E</div>}
-              </div>
+                {t.evaluado ? <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', color: sc(t.promedio), flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{t.promedio}</div> : <div style={{ fontSize: 13, color: 'var(--text3)' }} title="Sin evaluar">S/E</div>}
+              </button>
             ))}
           </div>
         )}
@@ -2030,71 +2034,71 @@ function Perfiles({ svc, user }) {
 
   return (
     <div className="fade">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <button className="btn btn-ghost" onClick={() => { setSel(null); setPerfil(null); setAiResumen('') }} style={{ fontSize: 11 }}>← Volver al directorio</button>
-        <div style={{ fontSize: 10, color: 'var(--text3)', letterSpacing: 1 }}>INFORME ANALÍTICO DE RENDIMIENTO</div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+        <button className="btn btn-ghost" onClick={() => { setSel(null); setPerfil(null); setAiResumen('') }}><Icon name="back" size={18} />Directorio</button>
+        <div style={{ fontSize: 13, color: 'var(--text3)' }}>Informe analítico de rendimiento</div>
       </div>
 
       {loadingPerfil ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '60px 0' }}>
-          <div style={{ width: 18, height: 18, border: '2px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-          <span style={{ color: 'var(--text3)', fontSize: 13, fontWeight: 600 }}>Extrayendo telemetría del trabajador...</span>
+        <div role="status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '64px 0' }}>
+          <span className="spinner" />
+          <span style={{ color: 'var(--text2)', fontSize: 15 }}>Extrayendo telemetría del trabajador…</span>
         </div>
       ) : perfil && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-          <div className="card-static" style={{ padding: '16px 18px', borderLeft: `4px solid ${sc(perfil.notaActual)}` }}>
-            {/* Fila superior: avatar + nombre + cargo */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
-              <Avatar nombre={sel.nombre} foto={sel.foto} size={56} />
+          <div>
+            {/* Encabezado: avatar + nombre + cargo */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+              <Avatar nombre={sel.nombre} foto={sel.foto} size={72} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: -0.3, lineHeight: 1.2 }}>{sel.nombre.toUpperCase()}</div>
-                <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginTop: 4 }}>{sel.cargoNombre}</div>
-                <div style={{ display: 'flex', gap: 12, marginTop: 5, fontSize: 10, color: 'var(--text3)', flexWrap: 'wrap' }}>
-                  <span>DNI: {sel.dni}</span>
-                  <span>G{sel.id_grupo} · T{sel.turno}</span>
+                <h2 className="page-title" style={{ wordBreak: 'break-word' }}>{sel.nombre}</h2>
+                <div style={{ fontSize: 15, color: 'var(--text2)', marginTop: 4 }}>{sel.cargoNombre}</div>
+                <div className="num" style={{ display: 'flex', gap: 16, marginTop: 4, fontSize: 13, color: 'var(--text3)', flexWrap: 'wrap' }}>
+                  <span>DNI <span style={{ fontFamily: 'var(--font-mono)' }}>{sel.dni}</span></span>
+                  <span>Grupo {sel.id_grupo} · Turno {sel.turno}</span>
                 </div>
               </div>
             </div>
-            {/* Fila inferior: KPIs en grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+            {/* Indicadores */}
+            <div className="card-static kpi-grid kpi-strip" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
               {[
-                { label: 'NOTA ACTUAL', val: perfil.notaActual, sub: `${perfil.evalsActual.length} evaluaciones`, color: sc(perfil.notaActual) },
-                { label: 'PROM. CARGO (AQUÍ)', val: perfil.promedioCargoServicio, sub: 'Mismo cargo, este servicio', color: 'var(--accent2)' },
-                { label: 'PROM. CARGO (GLOBAL)', val: perfil.promedioCargoGlobal, sub: 'Todo PRODISE', color: 'var(--text2)' },
-                { label: 'TENDENCIA', val: perfil.tendencia !== null ? `${perfil.tendencia > 0 ? '+' : ''}${perfil.tendencia}` : '—', sub: 'Última vs anterior', color: perfil.tendencia > 0 ? 'var(--green)' : perfil.tendencia < 0 ? 'var(--red)' : 'var(--text3)' },
+                { label: 'Nota actual', val: perfil.notaActual, sub: `${perfil.evalsActual.length} evaluaciones`, color: sc(perfil.notaActual) },
+                { label: 'Promedio del cargo aquí', val: perfil.promedioCargoServicio, sub: 'Mismo cargo, este servicio', color: 'var(--text)' },
+                { label: 'Promedio del cargo global', val: perfil.promedioCargoGlobal, sub: 'Todo PRODISE', color: 'var(--text)' },
+                { label: 'Tendencia', val: perfil.tendencia !== null ? `${perfil.tendencia > 0 ? '+' : ''}${perfil.tendencia}` : '—', sub: 'Última vs anterior', color: perfil.tendencia > 0 ? 'var(--green)' : perfil.tendencia < 0 ? 'var(--red)' : 'var(--text3)' },
               ].map(k => (
-                <div key={k.label} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: 8, padding: '10px 12px' }}>
-                  <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.4, marginBottom: 4 }}>{k.label}</div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: k.color, lineHeight: 1, fontFamily: 'monospace' }}>{k.val ?? '—'}</div>
-                  <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 3 }}>{k.sub}</div>
+                <div key={k.label} className="kpi-cell">
+                  <div style={{ fontSize: 13, color: 'var(--text2)' }}>{k.label}</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.025em', color: k.color, lineHeight: 1.1, marginTop: 8, fontVariantNumeric: 'tabular-nums' }}><Contador valor={k.val ?? '—'} /></div>
+                  <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 4 }}>{k.sub}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.4fr 1fr', gap: 10 }} className="perfil-grid">
+          <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.4fr 1fr', gap: 16 }} className="perfil-grid">
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               
-              <div className="card-static" style={{ padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8, marginBottom: 10, width: '100%', textAlign: 'left' }}>ANÁLISIS DIMENSIONAL VS CARGO</div>
+              <div className="card-static" style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <h3 className="card-title" style={{ width: '100%' }}>Análisis dimensional vs cargo</h3>
                 {perfil.dims ? (
                   <>
                     <RadarSVG dims={perfil.dims} grupoDims={perfil.cargoServicioDims} size={180} color={sc(perfil.notaActual)} />
-                    <div style={{ display: 'flex', gap: 16, marginTop: 16, fontSize: 9, color: 'var(--text3)', fontWeight: 600 }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, background: sc(perfil.notaActual), opacity: 0.6, borderRadius: 2 }} /> Trabajador</span>
-                      {perfil.cargoServicioDims && <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, background: 'rgba(150,160,170,0.3)', border: '1px solid rgba(180,190,200,0.6)', borderRadius: 2 }} /> Promedio Cargo</span>}
+                    <div style={{ display: 'flex', gap: 16, marginTop: 16, fontSize: 13, color: 'var(--text2)' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 10, height: 10, background: sc(perfil.notaActual), opacity: 0.6, borderRadius: 3 }} /> Trabajador</span>
+                      {perfil.cargoServicioDims && <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 10, height: 10, background: 'color-mix(in srgb, var(--accent2) 30%, transparent)', border: '1px dashed var(--accent2)', borderRadius: 3 }} /> Promedio del cargo</span>}
                     </div>
                   </>
-                ) : <div style={{ padding: '40px 0', fontSize: 11, color: 'var(--text3)' }}>Requiere evaluación para generar radar</div>}
+                ) : <div style={{ padding: '40px 0', fontSize: 13, color: 'var(--text3)' }}>Requiere evaluación para generar radar</div>}
               </div>
 
-              <div className="card-static" style={{ padding: '14px' }}>
-                 <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8, marginBottom: 10 }}>DESGLOSE DE VARIANZA (Δ)</div>
+              <div className="card-static" style={{ padding: '20px' }}>
+                 <h3 className="card-title">Desglose de varianza (Δ)</h3>
                  {perfil.dims ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    {Object.entries({ 'Seguridad': 'd1', 'Calidad Técnica': 'd2', 'Actitud': 'd3', 'Precisión': 'd4' }).map(([label, key]) => {
+                    {Object.entries({ 'Seguridad': 'd1', 'Calidad técnica': 'd2', 'Actitud': 'd3', 'Precisión': 'd4' }).map(([label, key]) => {
                       const miNota = perfil.dims[key]
                       const notaCargo = perfil.cargoServicioDims ? perfil.cargoServicioDims[key] : miNota
                       const deltaCargo = perfil.cargoServicioDims ? r2(miNota - notaCargo) : null
@@ -2108,98 +2112,104 @@ function Perfiles({ svc, user }) {
                       return (
                         <div key={key}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 4 }}>
-                            <span style={{ fontSize: 11, fontWeight: 600 }}>{label}</span>
+                            <span style={{ fontSize: 13, fontWeight: 600 }}>{label}</span>
                             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                              {deltaCargo !== null && <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'monospace', color: deltaCargo >= 0 ? 'var(--green)' : 'var(--red)' }}>{deltaCargo >= 0 ? `+${deltaCargo}` : deltaCargo} vs Cargo</span>}
-                              <span style={{ fontSize: 14, fontWeight: 800, color: sc(miNota), fontFamily: 'monospace' }}>{miNota.toFixed(2)}</span>
+                              {deltaCargo !== null && <span style={{ fontSize: 13, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: deltaCargo >= 0 ? 'var(--green)' : 'var(--red)' }}>{deltaCargo >= 0 ? `+${deltaCargo}` : deltaCargo} vs cargo</span>}
+                              <span style={{ fontSize: 15, fontWeight: 700, color: sc(miNota), fontVariantNumeric: 'tabular-nums' }}>{miNota.toFixed(2)}</span>
                             </div>
                           </div>
                           
-                          <div style={{ height: 16, position: 'relative', background: 'rgba(0,0,0,0.2)', borderRadius: 4, border: '1px solid rgba(255,255,255,0.05)', marginTop: 4 }}>
-                             <div style={{ position: 'absolute', left: '33.3%', top: 0, bottom: 0, borderLeft: '1px dashed rgba(255,255,255,0.06)' }} />
-                             <div style={{ position: 'absolute', left: '66.6%', top: 0, bottom: 0, borderLeft: '1px dashed rgba(255,255,255,0.06)' }} />
+                          <div style={{ height: 16, position: 'relative', background: 'var(--fill)', borderRadius: 8, marginTop: 6 }}>
+                             <div style={{ position: 'absolute', left: '33.3%', top: 0, bottom: 0, borderLeft: '1px dashed var(--fill)' }} />
+                             <div style={{ position: 'absolute', left: '66.6%', top: 0, bottom: 0, borderLeft: '1px dashed var(--fill)' }} />
                              
                              {widthPct > 0 && (
-                               <div style={{ position: 'absolute', left: `${minPct}%`, width: `${widthPct}%`, top: 5, bottom: 5, background: isPositive ? 'rgba(39,174,96,0.35)' : 'rgba(231,76,60,0.35)', borderRadius: 2 }} />
+                               <div style={{ position: 'absolute', left: `${minPct}%`, width: `${widthPct}%`, top: 5, bottom: 5, background: isPositive ? 'color-mix(in srgb, var(--green) 35%, transparent)' : 'color-mix(in srgb, var(--red) 35%, transparent)', borderRadius: 2 }} />
                              )}
                              
                              <div style={{ position: 'absolute', left: `${pctCargo}%`, top: -3, bottom: -3, width: 2, background: 'var(--text3)', transform: 'translateX(-50%)', zIndex: 2 }} title="Promedio Cargo" />
-                             <div style={{ position: 'absolute', left: `${pctMe}%`, top: 2, bottom: 2, width: 8, background: sc(miNota), borderRadius: 4, transform: 'translateX(-50%)', zIndex: 3, boxShadow: '0 0 5px rgba(0,0,0,0.8)' }} title="Nota Trabajador" />
+                             <div style={{ position: 'absolute', left: `${pctMe}%`, top: 2, bottom: 2, width: 8, background: sc(miNota), borderRadius: 6, transform: 'translateX(-50%)', zIndex: 3, boxShadow: '0 0 0 2px var(--surface)' }} title="Nota Trabajador" />
                           </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 8, color: 'var(--text3)', fontFamily: 'monospace' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 11, color: 'var(--text3)', fontVariantNumeric: 'tabular-nums' }}>
                             <span>Nivel 1</span><span>Nivel 4</span>
                           </div>
                         </div>
                       )
                     })}
                   </div>
-                 ) : <div style={{ fontSize: 11, color: 'var(--text3)' }}>Sin datos.</div>}
+                 ) : <div style={{ fontSize: 13, color: 'var(--text3)' }}>Sin datos.</div>}
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div className="card-static" style={{ padding: '14px' }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8, marginBottom: 10 }}>LÍNEA DE TIEMPO DE RENDIMIENTO</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div className="card-static" style={{ padding: '20px' }}>
+                <h3 className="card-title">Línea de tiempo de rendimiento</h3>
                 {perfil.trayectoria.length > 0
                   ? <TrayectoriaSVG data={perfil.trayectoria} scoreColor={sc} />
-                  : <div style={{ padding: '30px 0', fontSize: 11, color: 'var(--text3)', textAlign: 'center' }}>No hay data histórica suficiente para trazar curva de rendimiento.</div>}
+                  : <div style={{ padding: '32px 0', fontSize: 15, color: 'var(--text2)', textAlign: 'center' }}>Aún no hay historial suficiente para trazar la curva de rendimiento.</div>}
               </div>
 
-              <div className="card-static" style={{ padding: '14px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8 }}>MATRIZ COMPETENCIAS ({perfil.competencias.length})</div>
-                </div>
+              <div className="card-static" style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <h3 className="card-title">Competencias <span className="num" style={{ color: 'var(--text3)', fontWeight: 400 }}>{perfil.competencias.length}</span></h3>
                 
                 {perfil.competencias.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', flex: 1 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px 80px', gap: 10, fontSize: 9, color: 'var(--text3)', fontWeight: 600, paddingBottom: 6, borderBottom: '1px solid var(--border)' }}>
-                      <div>COMPETENCIA</div><div style={{ textAlign: 'center' }}>DOMINIO</div><div style={{ textAlign: 'right' }}>EXPERIENCIA</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 64px 88px', gap: 12, fontSize: 13, color: 'var(--text3)', paddingBottom: 8, boxShadow: 'inset 0 -0.5px 0 var(--separator)' }}>
+                      <div>Competencia</div><div style={{ textAlign: 'center' }}>Dominio</div><div style={{ textAlign: 'right' }}>Experiencia</div>
                     </div>
                     {perfil.competencias.map((c, i) => (
-                      <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 60px 80px', gap: 10, alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                        <div style={{ fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={c.nombre}>{c.nombre || `Cód: ${c.id_competencia}`}</div>
+                      <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 64px 88px', gap: 12, alignItems: 'center', padding: '8px 0', boxShadow: 'inset 0 -0.5px 0 var(--separator)' }}>
+                        <div style={{ fontSize: 15, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={c.nombre}>{c.nombre || `Cód: ${c.id_competencia}`}</div>
                         <div style={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-                          {[1,2,3,4,5].map(s => <div key={s} style={{ width: 8, height: 8, borderRadius: 2, background: s <= (c.nivel_dominio || 0) ? 'var(--accent)' : 'rgba(255,255,255,0.05)' }} />)}
+                          {[1,2,3,4,5].map(s => <div key={s} style={{ width: 8, height: 8, borderRadius: '50%', background: s <= (c.nivel_dominio || 0) ? 'var(--accent)' : 'var(--fill-2)' }} />)}
                         </div>
-                        <div style={{ textAlign: 'right', fontSize: 10, fontFamily: 'monospace', color: c.veces_ejecutado > 5 ? 'var(--green)' : 'var(--text2)' }}>
+                        <div style={{ textAlign: 'right', fontSize: 13, fontVariantNumeric: 'tabular-nums', color: c.veces_ejecutado > 5 ? 'var(--green)' : 'var(--text2)' }}>
                           {c.veces_ejecutado || 0} ejec.
                         </div>
                       </div>
                     ))}
                   </div>
-                ) : <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: 'var(--text3)' }}>No tiene competencias específicas registradas en matriz.</div>}
+                ) : <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--text2)', textAlign: 'center', padding: '24px 0' }}>No tiene competencias registradas en la matriz.</div>}
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               
-              <div className="card-static" style={{ padding: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8 }}>DIAGNÓSTICO IA</div>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: loadingAi ? 'var(--accent)' : 'var(--green)', display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: 4 }}>
-                    {loadingAi ? '⏳ SINTETIZANDO...' : '✓ ANÁLISIS COMPLETADO'}
+              <section className="card-static" aria-live="polite" aria-busy={loadingAi} style={{ padding: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+                  <h3 className="card-title" style={{ marginBottom: 0 }}>Diagnóstico IA</h3>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: loadingAi ? 'var(--text2)' : 'var(--green)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {loadingAi ? <><span className="spinner" style={{ width: 14, height: 14 }} />Sintetizando…</> : <><Icon name="check" size={16} />Listo</>}
                   </div>
                 </div>
                 {loadingAi ? (
-                  <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 10, color: 'var(--text3)' }}>El sistema está cruzando variables de rendimiento...</div>
-                ) : aiResumen ? (
-                  <div style={{ fontSize: 11, color: 'var(--text2)', lineHeight: 1.5, padding: '10px 12px', background: 'rgba(230,126,34,0.05)', borderLeft: '3px solid var(--accent)', borderRadius: 4 }}>
-                    {aiResumen}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '4px 0' }}>
+                    <div className="skeleton" style={{ height: 12, borderRadius: 6 }} />
+                    <div className="skeleton" style={{ height: 12, borderRadius: 6, width: '92%' }} />
+                    <div className="skeleton" style={{ height: 12, borderRadius: 6, width: '78%' }} />
+                    <p style={{ fontSize: 13, color: 'var(--text3)', marginTop: 8 }}>El sistema está cruzando variables de rendimiento…</p>
                   </div>
+                ) : aiResumen ? (
+                  <>
+                    <p style={{ fontSize: 15, color: 'var(--text)', lineHeight: 1.55 }}>
+                      {aiResumen}
+                    </p>
+                    <p style={{ fontSize: 13, color: 'var(--text3)', marginTop: 12 }}>Síntesis automática a partir de las evaluaciones registradas.</p>
+                  </>
                 ) : null}
-              </div>
+              </section>
 
               {perfil.habilidades.length > 0 && (
-                <div className="card-static" style={{ padding: '14px' }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8, marginBottom: 8 }}>POLIVALENCIA</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div className="card-static" style={{ padding: '20px' }}>
+                  <h3 className="card-title">Polivalencia</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
                     {perfil.habilidades.map((h, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(91,164,207,0.06)', border: '1px solid rgba(91,164,207,0.1)', borderRadius: 6 }}>
-                        <div>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent2)' }}>{h.cargoNombre}</div>
-                          {h.fecha_certificacion && <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 2 }}>Cert: {new Date(h.fecha_certificacion).toLocaleDateString('es-PE')}</div>}
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '10px 0', boxShadow: i > 0 ? 'inset 0 0.5px 0 var(--separator)' : 'none' }}>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: 15, fontWeight: 500 }}>{h.cargoNombre}</div>
+                          {h.fecha_certificacion && <div className="num" style={{ fontSize: 13, color: 'var(--text3)', marginTop: 2 }}>Certificado el {new Date(h.fecha_certificacion).toLocaleDateString('es-PE')}</div>}
                         </div>
-                        <div style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: h.estado === 'VIGENTE' ? 'rgba(39,174,96,0.15)' : 'rgba(241,196,15,0.15)', color: h.estado === 'VIGENTE' ? 'var(--green)' : 'var(--yellow)' }}>
+                        <div style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap', background: h.estado === 'VIGENTE' ? 'color-mix(in srgb, var(--green) 15%, transparent)' : 'color-mix(in srgb, var(--yellow) 15%, transparent)', color: h.estado === 'VIGENTE' ? 'var(--green)' : 'var(--yellow)' }}>
                           {h.estado}
                         </div>
                       </div>
@@ -2208,14 +2218,14 @@ function Perfiles({ svc, user }) {
                 </div>
               )}
 
-              <div className="card-static" style={{ padding: '14px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: 0.8, marginBottom: 10 }}>OBSERVACIONES</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', flex: 1 }}>
+              <div className="card-static" style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <h3 className="card-title">Observaciones</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto', flex: 1 }}>
                   {perfil.comentarios?.length > 0 ? perfil.comentarios.map((c, i) => (
-                    <div key={i} style={{ fontSize: 10, color: 'var(--text2)', lineHeight: 1.5, padding: '8px 10px', background: 'rgba(255,255,255,0.02)', borderRadius: 6, borderLeft: '2px solid var(--border)' }}>
-                      "{c}"
-                    </div>
-                  )) : <div style={{ fontSize: 10, color: 'var(--text3)' }}>No hay comentarios cualitativos en las evaluaciones de este servicio.</div>}
+                    <blockquote key={i} style={{ fontSize: 15, color: 'var(--text)', lineHeight: 1.5, padding: '10px 0', boxShadow: i > 0 ? 'inset 0 0.5px 0 var(--separator)' : 'none' }}>
+                      “{c}”
+                    </blockquote>
+                  )) : <div style={{ fontSize: 15, color: 'var(--text2)' }}>No hay comentarios en las evaluaciones de este servicio.</div>}
                 </div>
               </div>
 
@@ -2232,7 +2242,7 @@ function Perfiles({ svc, user }) {
 function RadarSVG({ dims, grupoDims, size = 200, color }) {
   if (!dims) return null
   const center = size / 2
-  const maxRadius = (size / 2) - 30
+  const maxRadius = (size / 2) - 44
   
   const getPoint = (val, angleDeg) => {
     const r = (val / 4) * maxRadius
@@ -2241,10 +2251,10 @@ function RadarSVG({ dims, grupoDims, size = 200, color }) {
   }
 
   const axes = [
-    { key: 'd1', label: 'SEGURIDAD', angle: 0 },
-    { key: 'd2', label: 'CALIDAD', angle: 90 },
-    { key: 'd3', label: 'ACTITUD', angle: 180 },
-    { key: 'd4', label: 'PRECISIÓN', angle: 270 }
+    { key: 'd1', label: 'Seguridad', angle: 0 },
+    { key: 'd2', label: 'Calidad', angle: 90 },
+    { key: 'd3', label: 'Actitud', angle: 180 },
+    { key: 'd4', label: 'Precisión', angle: 270 }
   ]
 
   const rings = [1, 2, 3, 4].map(val => axes.map(a => getPoint(val, a.angle)))
@@ -2260,24 +2270,24 @@ function RadarSVG({ dims, grupoDims, size = 200, color }) {
   return (
     <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', maxWidth: size, height: 'auto', display: 'block', overflow: 'visible' }}>
       {rings.map((ring, i) => (
-        <polygon key={i} points={ring.map(p => `${p.x},${p.y}`).join(' ')} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+        <polygon key={i} points={ring.map(p => `${p.x},${p.y}`).join(' ')} fill="none" stroke="var(--fill)" strokeWidth="1" />
       ))}
       {axes.map((a, i) => {
         const p = getPoint(4, a.angle)
-        return <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+        return <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="var(--fill-2)" strokeWidth="1" />
       })}
 
       {grupoPoly && (
-        <polygon points={grupoPoly} fill="rgba(150, 160, 170, 0.2)" stroke="rgba(180, 190, 200, 0.6)" strokeWidth="1.5" strokeDasharray="4,4" />
+        <polygon points={grupoPoly} fill="color-mix(in srgb, var(--accent2) 20%, transparent)" stroke="color-mix(in srgb, var(--accent2) 60%, transparent)" strokeWidth="1.5" strokeDasharray="4,4" />
       )}
 
-      <polygon points={userPoly} fill={`${color}44`} stroke={color} strokeWidth="2.5" strokeLinejoin="round" />
+      <polygon points={userPoly} fill={`color-mix(in srgb, ${color} 27%, transparent)`} stroke={color} strokeWidth="2.5" strokeLinejoin="round" />
       {userPts.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="3.5" fill={color} />)}
 
       {axes.map((a, i) => {
-        const p = getPoint(4.8, a.angle)
+        const p = getPoint(a.angle === 0 || a.angle === 180 ? 4.7 : 4.25, a.angle)
         return (
-          <text key={i} x={p.x} y={p.y + (a.angle === 180 ? 8 : 0)} textAnchor="middle" alignmentBaseline="middle" fontSize="9" fontWeight="700" fill="var(--text2)" letterSpacing="0.5">
+          <text key={i} x={p.x + (a.angle === 90 ? 6 : a.angle === 270 ? -6 : 0)} y={p.y + (a.angle === 180 ? 6 : 0)} textAnchor={a.angle === 90 ? 'start' : a.angle === 270 ? 'end' : 'middle'} alignmentBaseline="middle" fontSize="11" fontWeight="500" fill="var(--text2)">
             {a.label}
           </text>
         )
@@ -2302,15 +2312,15 @@ function TrayectoriaSVG({ data, scoreColor }) {
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
         <defs>
           <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={col} stopOpacity="0.3" />
+            <stop offset="0%" stopColor={col} stopOpacity="0.18" />
             <stop offset="100%" stopColor={col} stopOpacity="0.0" />
           </linearGradient>
         </defs>
 
         {[1, 2, 3, 4].map(v => (
           <g key={v}>
-            <line x1={P.l} y1={toY(v)} x2={W - P.r} y2={toY(v)} stroke={v === 3 ? 'rgba(39,174,96,0.2)' : 'rgba(255,255,255,0.05)'} strokeWidth="1" strokeDasharray={v === 3 ? '4,4' : undefined} />
-            <text x={P.l - 6} y={toY(v)} textAnchor="end" alignmentBaseline="middle" fontSize="8" fill="var(--text3)" fontFamily="monospace">{v}.0</text>
+            <line x1={P.l} y1={toY(v)} x2={W - P.r} y2={toY(v)} stroke={v === 3 ? 'color-mix(in srgb, var(--green) 20%, transparent)' : 'var(--fill)'} strokeWidth="1" strokeDasharray={v === 3 ? '4,4' : undefined} />
+            <text x={P.l - 6} y={toY(v)} textAnchor="end" alignmentBaseline="middle" fontSize="10" fill="var(--text3)" style={{ fontVariantNumeric: 'tabular-nums' }}>{v}.0</text>
           </g>
         ))}
 
@@ -2326,13 +2336,13 @@ function TrayectoriaSVG({ data, scoreColor }) {
             <g key={i} 
                onMouseEnter={() => setHoverIdx(i)} 
                onMouseLeave={() => setHoverIdx(null)}
-               style={{ cursor: 'crosshair', transition: 'all 0.2s ease' }}>
+               style={{ cursor: 'crosshair', transition: 'r var(--dur-quick) ease-out, fill var(--dur-quick) ease-out' }}>
               
-              {isHovered && <line x1={cx} y1={P.t} x2={cx} y2={H - P.b} stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="3,3" />}
+              {isHovered && <line x1={cx} y1={P.t} x2={cx} y2={H - P.b} stroke="color-mix(in srgb, var(--ink) 20%, transparent)" strokeWidth="1" strokeDasharray="3,3" />}
               <circle cx={cx} cy={cy} r="15" fill="transparent" />
-              <circle cx={cx} cy={cy} r={isHovered ? 6 : (d.esActual ? 5 : 3.5)} fill={isHovered ? '#fff' : (d.esActual ? col : 'var(--bg)')} stroke={col} strokeWidth={d.esActual && !isHovered ? 0 : 2} style={{ transition: 'all 0.2s ease' }} />
+              <circle cx={cx} cy={cy} r={isHovered ? 6 : (d.esActual ? 5 : 3.5)} fill={isHovered ? 'var(--surface)' : (d.esActual ? col : 'var(--bg)')} stroke={col} strokeWidth={d.esActual && !isHovered ? 0 : 2} style={{ transition: 'r var(--dur-quick) ease-out, fill var(--dur-quick) ease-out' }} />
               
-              <text x={cx} y={H - 6} textAnchor="middle" fontSize="8" fill={isHovered || d.esActual ? 'var(--text)' : 'var(--text3)'} fontWeight={d.esActual ? '700' : '500'}>
+              <text x={cx} y={H - 6} textAnchor="middle" fontSize="10" fill={isHovered || d.esActual ? 'var(--text)' : 'var(--text3)'} fontWeight={d.esActual ? '700' : '500'}>
                 Svc {d.svId}
               </text>
             </g>
@@ -2346,26 +2356,24 @@ function TrayectoriaSVG({ data, scoreColor }) {
           left: (toX(hoverIdx) / W) * 100 > 70 ? `calc(${(toX(hoverIdx) / W) * 100}% - 180px)` : (toX(hoverIdx) / W) * 100 < 30 ? `calc(${(toX(hoverIdx) / W) * 100}% + 15px)` : `calc(${(toX(hoverIdx) / W) * 100}% - 85px)`,
           top: `calc(${(toY(data[hoverIdx].promedio) / H) * 100}% - 85px)`,
           width: 170,
-          background: 'rgba(15, 15, 20, 0.98)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255,255,255,0.15)',
-          borderRadius: 8,
+          background: 'var(--surface)',
+          borderRadius: 10,
           padding: '10px 12px',
-          boxShadow: '0 8px 30px rgba(0,0,0,0.6)',
+          boxShadow: 'var(--shadow-float)',
           pointerEvents: 'none',
           zIndex: 10,
           display: 'flex', flexDirection: 'column', gap: 6
         }}>
-          <div style={{ fontSize: 9, color: 'var(--accent2)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>{data[hoverIdx].tipo}</div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', lineHeight: 1.4, wordWrap: 'break-word' }}>{data[hoverIdx].nombre}</div>
+          <div style={{ fontSize: 13, color: 'var(--text2)', fontWeight: 500 }}>{data[hoverIdx].tipo}</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', lineHeight: 1.4, wordWrap: 'break-word' }}>{data[hoverIdx].nombre}</div>
           
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 4, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-            <div style={{ fontSize: 22, fontWeight: 900, color: scoreColor(data[hoverIdx].promedio), lineHeight: 1, fontFamily: 'monospace' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 4, paddingTop: 8, boxShadow: 'inset 0 0.5px 0 var(--separator)' }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: scoreColor(data[hoverIdx].promedio), lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
               {data[hoverIdx].promedio.toFixed(2)}
             </div>
             {hoverIdx > 0 && (
-              <div style={{ fontSize: 11, fontWeight: 800, color: data[hoverIdx].promedio >= data[hoverIdx-1].promedio ? 'var(--green)' : 'var(--red)' }}>
-                {data[hoverIdx].promedio >= data[hoverIdx-1].promedio ? '▲' : '▼'} 
+              <div className="num" style={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: 13, fontWeight: 600, color: data[hoverIdx].promedio >= data[hoverIdx-1].promedio ? 'var(--green)' : 'var(--red)' }}>
+                <Icon name={data[hoverIdx].promedio >= data[hoverIdx-1].promedio ? 'up' : 'down'} size={14} strokeWidth={2.25} />
                 {Math.abs(data[hoverIdx].promedio - data[hoverIdx-1].promedio).toFixed(2)}
               </div>
             )}
@@ -2427,76 +2435,80 @@ function Buscador({ svc, user }) {
 
   const renderEstrellas = (nivel) => (
     <div style={{ display: 'flex', gap: 2 }}>
-      {[1, 2, 3, 4, 5].map(s => <div key={s} style={{ width: 10, height: 10, borderRadius: '50%', background: s <= (nivel || 0) ? 'var(--accent)' : 'rgba(255,255,255,0.08)' }} />)}
+      {[1, 2, 3, 4, 5].map(s => <div key={s} style={{ width: 10, height: 10, borderRadius: '50%', background: s <= (nivel || 0) ? 'var(--accent)' : 'var(--fill-2)' }} />)}
     </div>
   )
 
   return (
     <div className="fade">
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 2 }}>Buscador de Talento</h2>
-        <p style={{ color: 'var(--text3)', fontSize: 12 }}>Filtra al personal histórico por sus habilidades técnicas</p>
+      <div style={{ marginBottom: 24 }}>
+        <h2 className="page-title">Buscador de talento</h2>
+        <p className="page-sub">Filtra al personal histórico por sus habilidades técnicas.</p>
       </div>
 
-      <div className="card-static" style={{ padding: '16px 20px', marginBottom: 18, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+      <div style={{ marginBottom: 32, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: 250 }}>
-          <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text3)', marginBottom: 6, display: 'block' }}>BUSCAR POR NOMBRE O DNI</label>
-          <input className="input" placeholder="Ej. Juan Perez..." value={filtroTexto} onChange={e => setFiltroTexto(e.target.value)} />
+          <label htmlFor="bt-texto" className="field-label">Nombre o DNI</label>
+          <div className="search-field">
+            <Icon name="buscador" size={18} />
+            <input id="bt-texto" className="input" type="search" placeholder="Nombre, apellido o DNI" value={filtroTexto} onChange={e => setFiltroTexto(e.target.value)} style={{ background: 'var(--surface)' }} />
+          </div>
         </div>
         <div style={{ flex: 1, minWidth: 250 }}>
-          <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text3)', marginBottom: 6, display: 'block' }}>COMPETENCIA TÉCNICA</label>
-          <select className="input" value={filtroComp} onChange={e => setFiltroComp(e.target.value)} style={{ background: 'var(--bg2)' }}>
-            <option value="TODAS">-- Todas las competencias --</option>
+          <label htmlFor="bt-comp" className="field-label">Competencia técnica</label>
+          <select id="bt-comp" className="input" style={{ background: 'var(--surface)' }} value={filtroComp} onChange={e => setFiltroComp(e.target.value)}>
+            <option value="TODAS">Todas las competencias</option>
             {catComps.map(c => <option key={c.id_competencia} value={c.id_competencia}>{c.nombre}</option>)}
           </select>
         </div>
       </div>
 
       {loading ? (
-        <p style={{ color: 'var(--text3)', fontSize: 13 }}>Buscando talento...</p>
+        <div role="status" style={{ display: 'flex', alignItems: 'center', gap: 12, color: 'var(--text2)', fontSize: 15 }}><span className="spinner" />Buscando talento…</div>
       ) : resultados.length === 0 ? (
-        <div className="card-static" style={{ padding: '40px 20px', textAlign: 'center' }}>
-          <p style={{ color: 'var(--text3)', fontSize: 13 }}>No se encontraron técnicos con esos criterios.</p>
+        <div className="card-static empty-state">
+          <Icon name="buscador" size={28} style={{ color: 'var(--text3)' }} />
+          <p style={{ color: 'var(--text2)', fontSize: 15, marginTop: 16 }}>No se encontraron técnicos con esos criterios.</p>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 12 }}>
           {resultados.map(r => (
-            <div key={r.dni} className="card-static" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div key={r.dni} className="card-static" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Avatar nombre={r.nombres_completos} foto={r.url_foto} size={42} />
+                <Avatar nombre={r.nombres_completos} foto={r.url_foto} size={44} />
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.nombres_completos}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text3)', fontFamily: 'monospace' }}>DNI: {r.dni}</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.nombres_completos}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 2 }}>DNI <span style={{ fontFamily: 'var(--font-mono)' }}>{r.dni}</span></div>
                 </div>
               </div>
 
               {r.habilidades.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {r.habilidades.map((h, i) => (
-                    <span key={i} style={{ fontSize: 9, padding: '4px 8px', borderRadius: 4, background: 'rgba(91,164,207,0.1)', color: 'var(--accent2)', border: '1px solid rgba(91,164,207,0.2)' }}>
-                      ★ {h.catalogo_cargos?.nombre_oficial}
+                    <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, padding: '4px 10px', borderRadius: 8, background: 'var(--fill)', color: 'var(--text)' }}>
+                      <Icon name="star" size={14} style={{ color: 'var(--text3)' }} />{h.catalogo_cargos?.nombre_oficial}
                     </span>
                   ))}
                 </div>
               )}
 
               {r.competencias.length > 0 ? (
-                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '10px 12px', borderRadius: 8 }}>
-                  <div style={{ fontSize: 9, fontWeight: 600, color: 'var(--text3)', letterSpacing: 0.5, marginBottom: 8 }}>COMPETENCIAS TÉCNICAS ({r.competencias.length})</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ paddingTop: 12, boxShadow: 'inset 0 0.5px 0 var(--separator)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 8 }}>Competencias técnicas · <span className="num">{r.competencias.length}</span></div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {r.competencias.slice(0, 3).map(c => (
                       <div key={c.id_competencia} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ fontSize: 11, color: 'var(--text2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 160 }}>{c.catalogo_competencias?.nombre}</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ fontSize: 9, color: 'var(--text3)' }}>{c.veces_ejecutado}x</span>
+                        <div style={{ fontSize: 15, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180 }}>{c.catalogo_competencias?.nombre}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span className="num" style={{ fontSize: 13, color: 'var(--text3)' }}>{c.veces_ejecutado}×</span>
                           {renderEstrellas(c.nivel_dominio)}
                         </div>
                       </div>
                     ))}
-                    {r.competencias.length > 3 && <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 2, textAlign: 'center' }}>+{r.competencias.length - 3} competencias más...</div>}
+                    {r.competencias.length > 3 && <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 2 }}>+{r.competencias.length - 3} competencias más</div>}
                   </div>
                 </div>
-              ) : <div style={{ fontSize: 10, color: 'var(--text3)', padding: '10px 0', textAlign: 'center' }}>Sin competencias técnicas registradas</div>}
+              ) : <div style={{ fontSize: 13, color: 'var(--text3)', paddingTop: 12, boxShadow: 'inset 0 0.5px 0 var(--separator)' }}>Sin competencias técnicas registradas</div>}
             </div>
           ))}
         </div>
@@ -2624,72 +2636,71 @@ function Predictor({ svc, user }) {
   const sc = v => { if (!v) return 'var(--text3)'; return v >= 3.5 ? 'var(--green)' : v >= 2.0 ? 'var(--yellow)' : 'var(--red)' }
 
   return (
-    <div className="fade" style={{ display: 'flex', gap: 20, height: 'calc(100vh - 100px)' }}>
+    <div className="fade predictor-layout" style={{ display: 'flex', gap: 16, height: 'calc(100dvh - 88px)' }}>
       
-      <div className="card-static" style={{ width: 340, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-        <div style={{ padding: '16px 18px', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="card-static predictor-side" style={{ width: 340, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+        <div style={{ padding: '20px 20px 16px', boxShadow: 'inset 0 -0.5px 0 var(--separator)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
             <div>
-              <h2 style={{ fontSize: 16, fontWeight: 700 }}>Armar Cuadrilla</h2>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent)', marginTop: 4 }}>
-                {seleccionados.length} SELECCIONADOS
+              <h2 className="page-title">Armar cuadrilla</h2>
+              <div className="num" style={{ fontSize: 15, color: 'var(--text2)', marginTop: 4 }}>
+                {seleccionados.length} seleccionados
               </div>
             </div>
             {seleccionados.length > 0 && (
-              <button className="btn btn-ghost" onClick={() => setSeleccionados([])} style={{ fontSize: 10, padding: '4px 8px' }}>Limpiar</button>
+              <button className="btn btn-ghost" onClick={() => setSeleccionados([])}>Limpiar</button>
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: 6, marginTop: 14, background: 'rgba(255,255,255,0.03)', padding: 4, borderRadius: 8 }}>
-            <button onClick={() => setModoIzq('lista')} style={{ flex: 1, padding: '6px', fontSize: 11, borderRadius: 6, border: 'none', background: modoIzq === 'lista' ? 'var(--accent)' : 'transparent', color: modoIzq === 'lista' ? '#fff' : 'var(--text3)', fontWeight: 600, cursor: 'pointer' }}>Buscador</button>
-            <button onClick={() => setModoIzq('masiva')} style={{ flex: 1, padding: '6px', fontSize: 11, borderRadius: 6, border: 'none', background: modoIzq === 'masiva' ? 'var(--accent)' : 'transparent', color: modoIzq === 'masiva' ? '#fff' : 'var(--text3)', fontWeight: 600, cursor: 'pointer' }}>Pegar DNIs</button>
+          <div className="segmented" role="tablist" style={{ display: 'flex', marginTop: 16 }}>
+          <Deslizador />
+            <button role="tab" aria-selected={modoIzq === 'lista'} onClick={() => setModoIzq('lista')} className={`segmented-item ${modoIzq === 'lista' ? 'is-active' : ''}`} style={{ flex: 1 }}>Buscador</button>
+            <button role="tab" aria-selected={modoIzq === 'masiva'} onClick={() => setModoIzq('masiva')} className={`segmented-item ${modoIzq === 'masiva' ? 'is-active' : ''}`} style={{ flex: 1 }}>Pegar DNI</button>
           </div>
         </div>
         
         <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
-          {loading ? <p style={{ color: 'var(--text3)', fontSize: 12, textAlign: 'center' }}>Cargando personal...</p> : 
+          {loading ? <div role="status" style={{ display: 'flex', justifyContent: 'center', padding: 24 }}><span className="spinner" /></div> : 
            modoIzq === 'lista' ? (
              <>
-               <input className="input" placeholder="Buscar nombre, DNI o cargo..." value={filtroTexto} onChange={e => setFiltroTexto(e.target.value)} style={{ marginBottom: 12 }} />
-               {personalFiltrado.length === 0 && <div style={{ fontSize: 11, color: 'var(--text3)', textAlign: 'center', padding: '20px 0' }}>No hay coincidencias.</div>}
+               <div className="search-field" style={{ marginBottom: 8 }}>
+                 <Icon name="buscador" size={18} />
+                 <input className="input" type="search" aria-label="Buscar personal" placeholder="Nombre, DNI o cargo" value={filtroTexto} onChange={e => setFiltroTexto(e.target.value)} />
+               </div>
+               {personalFiltrado.length === 0 && <div style={{ fontSize: 15, color: 'var(--text2)', textAlign: 'center', padding: '24px 0' }}>No hay coincidencias.</div>}
                {personalFiltrado.map(p => {
                  const sel = seleccionados.includes(p.dni)
                  return (
-                   <div key={p.dni} onClick={() => toggleTrabajador(p.dni)} style={{
-                     display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', 
-                     borderRadius: 6, cursor: 'pointer', marginBottom: 4,
-                     background: sel ? 'rgba(230,126,34,0.08)' : 'transparent',
-                     border: `1px solid ${sel ? 'rgba(230,126,34,0.3)' : 'transparent'}`
-                   }}>
-                     <div style={{ width: 14, height: 14, borderRadius: 3, border: `1px solid ${sel ? 'var(--accent)' : 'var(--text3)'}`, background: sel ? 'var(--accent)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                       {sel && <span style={{ color: '#fff', fontSize: 10 }}>✓</span>}
+                   <button type="button" key={p.dni} onClick={() => toggleTrabajador(p.dni)} aria-pressed={sel} className="pick-row" style={{ background: sel ? 'var(--accent-soft)' : undefined }}>
+                     <span className={`check-box ${sel ? 'is-on' : ''}`} aria-hidden="true">
+                       {sel && <Icon name="check" size={14} strokeWidth={2.5} />}
+                     </span>
+                     <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+                       <div style={{ fontSize: 15, fontWeight: sel ? 600 : 500, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.nombre}</div>
+                       <div style={{ fontSize: 13, color: 'var(--text3)' }}>{p.cargo}</div>
                      </div>
-                     <div style={{ flex: 1, minWidth: 0 }}>
-                       <div style={{ fontSize: 11, fontWeight: sel ? 700 : 500, color: sel ? 'var(--accent)' : 'var(--text2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.nombre}</div>
-                       <div style={{ fontSize: 9, color: 'var(--text3)' }}>{p.cargo}</div>
-                     </div>
-                     <div style={{ fontSize: 11, fontWeight: 700, color: sc(p.promedio) }}>{p.promedio ? p.promedio.toFixed(2) : '—'}</div>
-                   </div>
+                     <div className="num" style={{ fontSize: 15, fontWeight: 600, color: sc(p.promedio) }}>{p.promedio ? p.promedio.toFixed(2) : '—'}</div>
+                   </button>
                  )
                })}
              </>
            ) : (
              <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 10 }}>
-               <div style={{ fontSize: 11, color: 'var(--text3)', lineHeight: 1.4 }}>Copia la columna desde tu Excel, haz clic en la caja punteada y presiona <strong>Ctrl + V</strong>.</div>
+               <div style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.45 }}>Copia la columna desde tu Excel, haz clic en el recuadro y presiona <kbd style={{ fontFamily: 'inherit', fontWeight: 600 }}>Ctrl + V</kbd>.</div>
                
                {!dnisPegados ? (
-                 <textarea className="input" value={dnisPegados} onChange={e => setDnisPegados(e.target.value)} placeholder="Haz clic aquí y presiona Ctrl + V 📋" style={{ flex: 1, resize: 'none', fontSize: 14, fontWeight: 600, textAlign: 'center', border: '2px dashed var(--accent)', background: 'rgba(230,126,34,0.04)', borderRadius: 8, paddingTop: '40%', cursor: 'pointer', color: 'var(--text)' }} />
+                 <textarea className="input" value={dnisPegados} onChange={e => setDnisPegados(e.target.value)} placeholder="Haz clic aquí y presiona Ctrl + V" aria-label="Lista de DNI" style={{ flex: 1, resize: 'none', fontSize: 15, fontWeight: 500, textAlign: 'center', border: '1.5px dashed var(--border-h)', background: 'var(--fill)', borderRadius: 12, paddingTop: '40%', cursor: 'text', color: 'var(--text)' }} />
                ) : (
                  <div className="fade" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, overflow: 'hidden' }}>
                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                     <span style={{ fontSize: 10, color: 'var(--accent)' }}>{dnisExtraidosUnicos.length} DNIs detectados</span>
-                     <button className="btn btn-ghost" onClick={() => setDnisPegados('')} style={{ fontSize: 10, padding: '2px 6px' }}>← Limpiar</button>
+                     <span className="num" style={{ fontSize: 13, color: 'var(--text2)' }}>{dnisExtraidosUnicos.length} DNI detectados</span>
+                     <button className="btn btn-ghost" onClick={() => setDnisPegados('')}>Limpiar</button>
                    </div>
-                   <div style={{ flex: 1, overflowY: 'auto', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--bg2)' }}>
-                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10, textAlign: 'left' }}>
-                       <thead style={{ background: 'rgba(255,255,255,0.05)', position: 'sticky', top: 0 }}><tr><th style={{ padding: '6px 8px', borderBottom: '1px solid var(--border)', color: 'var(--text3)' }}>DNI</th><th style={{ padding: '6px 8px', borderBottom: '1px solid var(--border)', color: 'var(--text3)' }}>Estado</th></tr></thead>
+                   <div style={{ flex: 1, overflowY: 'auto', borderRadius: 10, background: 'var(--fill)' }}>
+                     <table className="data-table" style={{ fontSize: 13 }}>
+                       <thead><tr><th>DNI</th><th>Estado</th></tr></thead>
                        <tbody>
-                         {previewDnis.map((item, i) => (<tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}><td style={{ padding: '6px 8px', fontFamily: 'monospace', color: item.existe ? 'var(--text)' : 'var(--text3)' }}>{item.dni}</td><td style={{ padding: '6px 8px', color: item.existe ? 'var(--green)' : 'var(--red)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 140 }}>{item.existe ? item.nombre : 'No asignado'}</td></tr>))}
+                         {previewDnis.map((item, i) => (<tr key={i}><td style={{ fontFamily: 'var(--font-mono)', color: item.existe ? 'var(--text)' : 'var(--text3)' }}>{item.dni}</td><td style={{ color: item.existe ? 'var(--green)' : 'var(--red)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 140 }}>{item.existe ? item.nombre : 'No asignado'}</td></tr>))}
                          {previewDnis.length === 0 && <tr><td colSpan="2" style={{ padding: '16px', textAlign: 'center', color: 'var(--text3)' }}>Sin números válidos.</td></tr>}
                        </tbody>
                      </table>
@@ -2705,79 +2716,77 @@ function Predictor({ svc, user }) {
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
         {seleccionados.length < 2 ? (
-           <div className="card-static" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-             <div>
-               <div style={{ fontSize: 40, marginBottom: 10 }}>🧑‍🔧↔️👨‍🔧</div>
-               <div style={{ fontSize: 14, fontWeight: 600 }}>Esperando selección</div>
-               <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 4 }}>Selecciona al menos 2 personas para predecir su rendimiento conjunto y ver su red de afinidad.</div>
-             </div>
+           <div className="card-static empty-state" style={{ flex: 1, justifyContent: 'center' }}>
+             <Icon name="users" size={32} style={{ color: 'var(--text3)' }} />
+             <div style={{ fontSize: 17, fontWeight: 600, marginTop: 16 }}>Elige a la cuadrilla</div>
+             <div style={{ fontSize: 15, color: 'var(--text2)', marginTop: 4, maxWidth: 380 }}>Selecciona al menos 2 personas para predecir su rendimiento conjunto y ver su red de afinidad.</div>
            </div>
         ) : (
           <>
-            <div className="card-static" style={{ padding: '24px 20px', textAlign: 'center' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1, marginBottom: 16 }}>PROYECCIÓN DE RENDIMIENTO GRUPAL</div>
+            <div className="card-static" style={{ padding: '20px 24px' }}>
+              <h3 className="card-title">Proyección de rendimiento grupal</h3>
               
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 40 }}>
+              <div className="num" style={{ display: 'flex', alignItems: 'flex-end', gap: '16px 32px', flexWrap: 'wrap' }}>
                 <div>
-                  <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 4 }}>Promedio Técnico Base</div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: sc(baseScore) }}>{baseScore.toFixed(2)}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 6 }}>Promedio técnico base</div>
+                  <div style={{ fontSize: 28, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1, color: sc(baseScore) }}>{baseScore.toFixed(2)}</div>
                 </div>
-                <div style={{ fontSize: 20, color: 'var(--text3)' }}>{multiplicadorQuimica >= 0 ? '+' : '-'}</div>
+                <div style={{ fontSize: 22, color: 'var(--text3)', lineHeight: 1 }}>{multiplicadorQuimica >= 0 ? '+' : '−'}</div>
                 
                 <div>
-                  <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 4 }}>Factor Química (Afinidad)</div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: multiplicadorQuimica > 0 ? 'var(--green)' : multiplicadorQuimica < 0 ? 'var(--red)' : 'var(--text3)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 6 }}>Factor química (afinidad)</div>
+                  <div style={{ fontSize: 28, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1, color: multiplicadorQuimica > 0 ? 'var(--green)' : multiplicadorQuimica < 0 ? 'var(--red)' : 'var(--text3)' }}>
                     {Math.abs(multiplicadorQuimica).toFixed(2)}
                   </div>
                 </div>
-                <div style={{ fontSize: 20, color: 'var(--text3)' }}>=</div>
+                <div style={{ fontSize: 22, color: 'var(--text3)', lineHeight: 1 }}>=</div>
                 
-                <div style={{ padding: '14px 24px', background: 'rgba(255,255,255,0.03)', borderRadius: 12, border: `2px solid ${sc(scoreFinal)}` }}>
-                  <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 4 }}>PROYECCIÓN FINAL</div>
-                  <div style={{ fontSize: 36, fontWeight: 900, color: sc(scoreFinal), lineHeight: 1 }}>{scoreFinal.toFixed(2)}</div>
+                <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 6 }}>Proyección final</div>
+                  <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', color: sc(scoreFinal), lineHeight: 1 }}><Contador valor={scoreFinal.toFixed(2)} duracion={600} /></div>
                 </div>
               </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 16, flex: 1 }}>
-              <div className="card-static" style={{ padding: '16px', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1, marginBottom: 10 }}>MAPA DE AFINIDAD (Visual)</div>
-                <div style={{ flex: 1, position: 'relative', background: 'rgba(5,5,7,0.3)', borderRadius: 8, border: '1px solid var(--border)' }}>
+              <div className="card-static" style={{ padding: '20px', display: 'flex', flexDirection: 'column' }}>
+                <h3 className="card-title">Mapa de afinidad</h3>
+                <div style={{ flex: 1, position: 'relative', background: 'var(--fill)', borderRadius: 10, minHeight: 220 }}>
                   <RedAfinidadSVG cuadrilla={cuadrilla} afinidades={afinidades} />
                 </div>
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 10, fontSize: 9, color: 'var(--text3)' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 10, height: 2, background: 'var(--green)' }}/> Sinergia Alta</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 10, height: 2, background: 'var(--red)' }}/> Conflicto</span>
+                <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 12, fontSize: 13, color: 'var(--text2)' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 16, height: 3, borderRadius: 2, background: 'var(--green)' }}/> Sinergia alta</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 16, height: 3, borderRadius: 2, background: 'var(--red)' }}/> Conflicto</span>
                 </div>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div className="card-static" style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1, marginBottom: 10 }}>ADVERTENCIAS DE CONFLICTO</div>
+                <div className="card-static" style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <h3 className="card-title">Advertencias de conflicto</h3>
                   <div style={{ flex: 1, overflowY: 'auto' }}>
                     {advertencias.length === 0 ? (
-                      <div style={{ fontSize: 11, color: 'var(--green)', padding: '10px', background: 'rgba(39,174,96,0.08)', borderRadius: 6 }}>✓ No se detectaron conflictos históricos.</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, color: 'var(--text2)' }}><Icon name="check" size={18} style={{ color: 'var(--green)' }} />No se detectaron conflictos históricos.</div>
                     ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <ul style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {advertencias.map((adv, i) => (
-                          <div key={i} style={{ fontSize: 11, color: '#E8A09A', padding: '8px', background: 'rgba(192,57,43,0.08)', borderRadius: 6, borderLeft: '3px solid var(--red)' }}>⚠️ {adv}</div>
+                          <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 15, color: 'var(--text)', lineHeight: 1.4 }}><Icon name="alert" size={18} style={{ color: 'var(--red)', marginTop: 1 }} />{adv}</li>
                         ))}
-                      </div>
+                      </ul>
                     )}
                   </div>
                 </div>
 
-                <div className="card-static" style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', letterSpacing: 1, marginBottom: 10 }}>SINERGIAS DETECTADAS</div>
+                <div className="card-static" style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <h3 className="card-title">Sinergias detectadas</h3>
                   <div style={{ flex: 1, overflowY: 'auto' }}>
                     {bonos.length === 0 ? (
-                      <div style={{ fontSize: 11, color: 'var(--text3)', padding: '10px' }}>No hay datos de sinergia excepcional registrados.</div>
+                      <div style={{ fontSize: 15, color: 'var(--text2)' }}>No hay sinergias excepcionales registradas.</div>
                     ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <ul style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {bonos.map((bono, i) => (
-                          <div key={i} style={{ fontSize: 11, color: 'var(--green)', padding: '8px', background: 'rgba(39,174,96,0.08)', borderRadius: 6, borderLeft: '3px solid var(--green)' }}>⭐ {bono}</div>
+                          <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 15, color: 'var(--text)', lineHeight: 1.4 }}><Icon name="star" size={18} style={{ color: 'var(--green)', marginTop: 1 }} />{bono}</li>
                         ))}
-                      </div>
+                      </ul>
                     )}
                   </div>
                 </div>
@@ -2822,12 +2831,12 @@ function RedAfinidadSVG({ cuadrilla, afinidades }) {
       ))}
       {nodes.map((n) => (
         <g key={n.dni}>
-           <circle cx={n.x} cy={n.y} r="18" fill="rgba(230,126,34,0.15)" stroke="var(--accent)" strokeWidth="2" />
-           <text x={n.x} y={n.y+4} textAnchor="middle" fontSize="11" fill="var(--accent)" fontWeight="800">
+           <circle cx={n.x} cy={n.y} r="18" fill="var(--surface)" stroke="var(--border-h)" strokeWidth="1.5" />
+           <text x={n.x} y={n.y+4} textAnchor="middle" fontSize="11" fill="var(--text2)" fontWeight="600">
              {n.nombre.substring(0,2).toUpperCase()}
            </text>
-           <text x={n.x} y={n.y+28} textAnchor="middle" fontSize="10" fill="#fff" fontWeight="600">{n.nombre.split(' ')[0]}</text>
-           <text x={n.x} y={n.y+40} textAnchor="middle" fontSize="8" fill="var(--text3)">{n.cargo.substring(0, 15)}</text>
+           <text x={n.x} y={n.y+28} textAnchor="middle" fontSize="10" fill="var(--text)" fontWeight="600">{n.nombre.split(' ')[0]}</text>
+           <text x={n.x} y={n.y+41} textAnchor="middle" fontSize="10" fill="var(--text3)">{n.cargo.substring(0, 15)}</text>
         </g>
       ))}
     </svg>
@@ -2982,7 +2991,7 @@ function AdminUsuarios({ user: currentUser }) {
   }
 
   const nivelColor = n => n === 1 ? 'var(--accent)' : n === 2 ? 'var(--accent2)' : 'var(--green)'
-  const nivelBg    = n => n === 1 ? 'rgba(230,126,34,0.08)' : n === 2 ? 'rgba(91,164,207,0.08)' : 'rgba(39,174,96,0.08)'
+  const nivelBg    = n => n === 1 ? 'color-mix(in srgb, var(--accent) 8%, transparent)' : n === 2 ? 'color-mix(in srgb, var(--accent2) 8%, transparent)' : 'color-mix(in srgb, var(--green) 8%, transparent)'
 
   if (loading) return <p style={{ color: 'var(--text3)', fontSize: 13 }}>Cargando usuarios...</p>
 
@@ -2992,36 +3001,36 @@ function AdminUsuarios({ user: currentUser }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
           <div style={{ fontSize: 13, fontWeight: 600 }}>Usuarios del sistema</div>
-          <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>{usuarios.length} usuarios registrados</div>
+          <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 2 }}>{usuarios.length} usuarios registrados</div>
         </div>
-        <button className="btn btn-primary" onClick={abrirNuevo} style={{ width: 'auto', padding: '8px 18px', fontSize: 12 }}>
-          + Nuevo usuario
+        <button className="btn btn-primary" onClick={abrirNuevo} style={{ width: 'auto' }}>
+          <Icon name="plus" size={18} />Nuevo usuario
         </button>
       </div>
 
       {/* Tabla de usuarios */}
       <div className="card-static" style={{ overflow: 'hidden', marginBottom: 16 }}>
         {/* Cabecera */}
-        <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr 140px 80px 120px 100px', gap: 8, padding: '9px 16px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.4 }}>
-          <div>USUARIO</div><div>TRABAJADOR VINCULADO</div><div>NIVEL</div><div>ESTADO</div><div>ÚLTIMO ACCESO</div><div style={{ textAlign: 'right' }}>ACCIONES</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr 140px 80px 120px 100px', gap: 8, padding: '9px 16px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text3)', fontWeight: 600 }}>
+          <div>Usuario</div><div>Trabajador vinculado</div><div>Nivel</div><div>Estado</div><div>Último acceso</div><div style={{ textAlign: 'right' }}>Acciones</div>
         </div>
 
         {usuarios.map((u, i) => (
-          <div key={u.username} style={{ display: 'grid', gridTemplateColumns: '140px 1fr 140px 80px 120px 100px', gap: 8, padding: '11px 16px', alignItems: 'center', borderBottom: i < usuarios.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', opacity: u.estado === 'INACTIVO' ? 0.45 : 1 }}>
+          <div key={u.username} style={{ display: 'grid', gridTemplateColumns: '140px 1fr 140px 80px 120px 100px', gap: 8, padding: '11px 16px', alignItems: 'center', borderBottom: i < usuarios.length - 1 ? '1px solid var(--fill)' : 'none', opacity: u.estado === 'INACTIVO' ? 0.45 : 1 }}>
             {/* Username */}
-            <div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'monospace', color: u.username === currentUser.username ? 'var(--accent)' : 'var(--text)' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)', color: u.username === currentUser.username ? 'var(--accent)' : 'var(--text)' }}>
               {u.username}
-              {u.username === currentUser.username && <span style={{ fontSize: 8, color: 'var(--accent)', marginLeft: 6, fontFamily: 'Inter' }}>tú</span>}
+              {u.username === currentUser.username && <span style={{ fontSize: 11, color: 'var(--accent)', marginLeft: 6, fontFamily: 'inherit' }}>tú</span>}
             </div>
 
             {/* Trabajador */}
-            <div style={{ fontSize: 11, color: 'var(--text2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ fontSize: 13, color: 'var(--text2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {nombreDeTrabajador(u.dni_asociado)}
             </div>
 
             {/* Nivel */}
             <div>
-              <span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 5, background: nivelBg(u.nivel_acceso), color: nivelColor(u.nivel_acceso), fontWeight: 600 }}>
+              <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 6, background: nivelBg(u.nivel_acceso), color: nivelColor(u.nivel_acceso), fontWeight: 600 }}>
                 N{u.nivel_acceso} · {u.nivel_acceso === 1 ? 'Admin' : u.nivel_acceso === 2 ? 'Planner' : 'Supervisor'}
               </span>
             </div>
@@ -3029,25 +3038,25 @@ function AdminUsuarios({ user: currentUser }) {
             {/* Estado */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <div style={{ width: 7, height: 7, borderRadius: '50%', background: u.estado === 'ACTIVO' ? 'var(--green)' : 'var(--text3)', flexShrink: 0 }} />
-              <span style={{ fontSize: 10, color: u.estado === 'ACTIVO' ? 'var(--green)' : 'var(--text3)' }}>{u.estado}</span>
+              <span style={{ fontSize: 11, color: u.estado === 'ACTIVO' ? 'var(--green)' : 'var(--text3)' }}>{u.estado}</span>
             </div>
 
             {/* Último acceso */}
-            <div style={{ fontSize: 10, color: 'var(--text3)' }}>
+            <div style={{ fontSize: 11, color: 'var(--text3)' }}>
               {u.ultimo_login ? new Date(u.ultimo_login).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: '2-digit' }) : 'Nunca'}
             </div>
 
             {/* Acciones */}
             <div style={{ display: 'flex', gap: 5, justifyContent: 'flex-end' }}>
-              <button onClick={() => abrirEditar(u)} style={{ padding: '4px 9px', fontSize: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: 5, color: 'var(--text2)', cursor: 'pointer', fontFamily: 'Inter' }}>
-                ✏ Editar
+              <button onClick={() => abrirEditar(u)} className="act">
+                <Icon name="edit" size={16} />Editar
               </button>
-              <button onClick={() => toggleEstado(u)} style={{ padding: '4px 9px', fontSize: 10, background: 'transparent', border: '1px solid var(--border)', borderRadius: 5, color: u.estado === 'ACTIVO' ? 'var(--yellow)' : 'var(--green)', cursor: 'pointer', fontFamily: 'Inter' }}>
-                {u.estado === 'ACTIVO' ? '⏸' : '▶'}
+              <button onClick={() => toggleEstado(u)} className="act act-icon" aria-label={u.estado === 'ACTIVO' ? 'Desactivar usuario' : 'Activar usuario'} title={u.estado === 'ACTIVO' ? 'Desactivar' : 'Activar'}>
+                <Icon name={u.estado === 'ACTIVO' ? 'pause' : 'play'} size={16} />
               </button>
               {u.username !== currentUser.username && (
-                <button onClick={() => setConfirmDelete(u.username)} style={{ padding: '4px 9px', fontSize: 10, background: 'transparent', border: '1px solid rgba(192,57,43,0.25)', borderRadius: 5, color: 'var(--red)', cursor: 'pointer', fontFamily: 'Inter' }}>
-                  ✕
+                <button onClick={() => setConfirmDelete(u.username)} className="act act-icon act-danger" aria-label="Eliminar usuario">
+                  <Icon name="trash" size={16} />
                 </button>
               )}
             </div>
@@ -3057,13 +3066,13 @@ function AdminUsuarios({ user: currentUser }) {
 
       {/* Confirm delete */}
       {confirmDelete && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 12, padding: '24px 28px', maxWidth: 320, textAlign: 'center' }}>
-            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>¿Eliminar usuario?</div>
-            <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 20 }}>Se eliminará <strong style={{ color: 'var(--text)' }}>{confirmDelete}</strong> permanentemente.</div>
+        <div role="presentation" className="modal-scrim" style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div role="dialog" aria-modal="true" className="modal-material modal-panel" style={{ borderRadius: 16, padding: '24px', maxWidth: 320, textAlign: 'center' }}>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>¿Eliminar usuario?</div>
+            <div style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 20 }}>Se eliminará <strong style={{ color: 'var(--text)' }}>{confirmDelete}</strong> permanentemente.</div>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn btn-ghost" onClick={() => setConfirmDelete(null)} style={{ flex: 1, fontSize: 12 }}>Cancelar</button>
-              <button onClick={() => eliminar(confirmDelete)} style={{ flex: 1, padding: '9px', background: 'var(--red)', border: 'none', borderRadius: 8, color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>Eliminar</button>
+              <button className="btn btn-ghost" onClick={() => setConfirmDelete(null)} style={{ flex: 1, fontSize: 13 }}>Cancelar</button>
+              <button onClick={() => eliminar(confirmDelete)} className="btn btn-danger" style={{ flex: 1 }}>Eliminar</button>
             </div>
           </div>
         </div>
@@ -3071,80 +3080,80 @@ function AdminUsuarios({ user: currentUser }) {
 
       {/* Modal formulario */}
       {showForm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '26px 28px', width: '100%', maxWidth: 440 }}>
+        <div role="presentation" className="modal-scrim" style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div role="dialog" aria-modal="true" className="modal-material modal-panel" style={{ borderRadius: 16, padding: '24px', width: '100%', maxWidth: 440 }}>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>{editando ? 'Editar usuario' : 'Nuevo usuario'}</div>
-              <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 18, cursor: 'pointer', lineHeight: 1 }}>×</button>
+              <div style={{ fontSize: 15, fontWeight: 700 }}>{editando ? 'Editar usuario' : 'Nuevo usuario'}</div>
+              <button onClick={() => setShowForm(false)} className="icon-btn" aria-label="Cerrar" style={{ margin: -10 }}><Icon name="close" size={20} /></button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
               {/* Username */}
               <div>
-                <label style={lbl}>NOMBRE DE USUARIO</label>
+                <label style={lbl}>Nombre de usuario</label>
                 <input className="input" value={form.username} placeholder="Ej: RCHANCAY"
                   onChange={e => setForm(f => ({ ...f, username: e.target.value.toUpperCase() }))}
                   disabled={!!editando}
-                  style={{ fontFamily: 'monospace', opacity: editando ? 0.6 : 1 }}
+                  style={{ fontVariantNumeric: 'tabular-nums', opacity: editando ? 0.6 : 1 }}
                 />
-                <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 3 }}>Solo letras y números, sin espacios. Se guardará en MAYÚSCULAS.</div>
+                <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 3 }}>Solo letras y números, sin espacios. Se guardará en MAYÚSCULAS.</div>
               </div>
 
               {/* Trabajador vinculado */}
               <div>
-                <label style={lbl}>TRABAJADOR VINCULADO</label>
+                <label style={lbl}>Trabajador vinculado</label>
                 <input className="input" placeholder="Buscar por nombre o DNI..."
                   value={busquedaDni}
                   onChange={e => setBusquedaDni(e.target.value)}
                   style={{ marginBottom: 6 }}
                 />
-                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 7, overflow: 'hidden' }}>
+                <div style={{ background: 'var(--fill)', borderRadius: 8, overflow: 'hidden' }}>
                   {/* Opción ninguno */}
                   <div onClick={() => { setForm(f => ({...f, dni_asociado: ''})); setBusquedaDni('') }}
-                    style={{ padding: '7px 12px', fontSize: 11, cursor: 'pointer', background: !form.dni_asociado ? 'rgba(230,126,34,0.07)' : 'transparent', color: !form.dni_asociado ? 'var(--accent)' : 'var(--text3)', borderBottom: '1px solid var(--border)' }}>
+                    style={{ padding: '7px 12px', fontSize: 13, cursor: 'pointer', background: !form.dni_asociado ? 'color-mix(in srgb, var(--accent) 7%, transparent)' : 'transparent', color: !form.dni_asociado ? 'var(--accent)' : 'var(--text3)', borderBottom: '1px solid var(--border)' }}>
                     — Sin vincular
                   </div>
                   {trabajadoresFiltrados().map(t => (
                     <div key={t.dni} onClick={() => { setForm(f => ({...f, dni_asociado: t.dni})); setBusquedaDni(t.nombres_completos) }}
-                      style={{ padding: '7px 12px', fontSize: 11, cursor: 'pointer', background: form.dni_asociado === t.dni ? 'rgba(230,126,34,0.07)' : 'transparent', color: form.dni_asociado === t.dni ? 'var(--accent)' : 'var(--text2)', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                      style={{ padding: '7px 12px', fontSize: 13, cursor: 'pointer', background: form.dni_asociado === t.dni ? 'color-mix(in srgb, var(--accent) 7%, transparent)' : 'transparent', color: form.dni_asociado === t.dni ? 'var(--accent)' : 'var(--text2)', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--fill)' }}>
                       <span style={{ fontWeight: form.dni_asociado === t.dni ? 600 : 400 }}>{t.nombres_completos}</span>
-                      <span style={{ color: 'var(--text3)', fontFamily: 'monospace' }}>{t.dni}</span>
+                      <span style={{ color: 'var(--text3)', fontFamily: 'var(--font-mono)' }}>{t.dni}</span>
                     </div>
                   ))}
                 </div>
-                {form.dni_asociado && <div style={{ fontSize: 10, color: 'var(--green)', marginTop: 4 }}>✓ Vinculado: {nombreDeTrabajador(form.dni_asociado)}</div>}
+                {form.dni_asociado && <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--green)', marginTop: 6 }}><Icon name="link" size={14} />Vinculado a {nombreDeTrabajador(form.dni_asociado)}</div>}
               </div>
 
               {/* Nivel de acceso */}
               <div>
-                <label style={lbl}>NIVEL DE ACCESO</label>
-                <select className="input" value={form.nivel_acceso} onChange={e => setForm(f => ({...f, nivel_acceso: parseInt(e.target.value)}))} style={{ background: 'var(--bg2)' }}>
-                  <option value={1} style={{ background: '#0c0c10' }}>Nivel 1 — Admin (acceso total)</option>
-                  <option value={2} style={{ background: '#0c0c10' }}>Nivel 2 — Planner / Coordinador</option>
-                  <option value={3} style={{ background: '#0c0c10' }}>Nivel 3 — Supervisor (solo evaluar)</option>
+                <label style={lbl}>Nivel de acceso</label>
+                <select className="input" value={form.nivel_acceso} onChange={e => setForm(f => ({...f, nivel_acceso: parseInt(e.target.value)}))}>
+                  <option value={1}>Nivel 1 — Admin (acceso total)</option>
+                  <option value={2}>Nivel 2 — Planner / Coordinador</option>
+                  <option value={3}>Nivel 3 — Supervisor (solo evaluar)</option>
                 </select>
               </div>
 
               {/* Contraseña */}
               <div>
-                <label style={lbl}>{editando ? 'NUEVA CONTRASEÑA (dejar vacío para no cambiar)' : 'CONTRASEÑA *'}</label>
+                <label style={lbl}>{editando ? 'Nueva contraseña (déjala vacía para no cambiarla)' : 'Contraseña *'}</label>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <input className="input" type="text" value={form.password} placeholder={editando ? 'Escribe para cambiar contraseña' : 'Escribe una contraseña...'}
                     onChange={e => { setForm(f => ({...f, password: e.target.value})); setGeneratedPwd('') }}
                     style={{ flex: 1 }}
                   />
                   <button type="button" onClick={generarPassword}
-                    style={{ padding: '0 14px', background: 'rgba(91,164,207,0.1)', border: '1px solid rgba(91,164,207,0.2)', borderRadius: 8, color: 'var(--accent2)', fontSize: 11, cursor: 'pointer', fontFamily: 'Inter', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                    🎲 Generar
+                    className="btn btn-ghost" style={{ minHeight: 44, whiteSpace: 'nowrap' }}>
+                    <Icon name="dice" size={16} />Generar
                   </button>
                 </div>
                 {form.password && (
-                  <div style={{ marginTop: 8, padding: '8px 12px', background: 'rgba(39,174,96,0.07)', border: '1px solid rgba(39,174,96,0.15)', borderRadius: 7 }}>
-                    <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 4 }}>CONTRASEÑA QUE VERÁ EL USUARIO:</div>
-                    <div style={{ fontSize: 14, fontWeight: 800, fontFamily: 'monospace', color: 'var(--green)', letterSpacing: 1 }}>{form.password}</div>
-                    <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 4 }}>Se guardará encriptada en la base de datos. Comparte esta contraseña con el usuario.</div>
+                  <div style={{ marginTop: 8, padding: '8px 12px', background: 'color-mix(in srgb, var(--green) 7%, transparent)', border: '1px solid color-mix(in srgb, var(--green) 15%, transparent)', borderRadius: 8 }}>
+                    <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 4 }}>Contraseña que verá el usuario:</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--green)' }}>{form.password}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>Se guardará encriptada en la base de datos. Comparte esta contraseña con el usuario.</div>
                   </div>
                 )}
               </div>
@@ -3152,10 +3161,10 @@ function AdminUsuarios({ user: currentUser }) {
               {/* Estado (solo en edición) */}
               {editando && (
                 <div>
-                  <label style={lbl}>ESTADO</label>
-                  <select className="input" value={form.estado} onChange={e => setForm(f => ({...f, estado: e.target.value}))} style={{ background: 'var(--bg2)' }}>
-                    <option value="ACTIVO" style={{ background: '#0c0c10' }}>ACTIVO</option>
-                    <option value="INACTIVO" style={{ background: '#0c0c10' }}>INACTIVO</option>
+                  <label style={lbl}>Estado</label>
+                  <select className="input" value={form.estado} onChange={e => setForm(f => ({...f, estado: e.target.value}))}>
+                    <option value="ACTIVO">ACTIVO</option>
+                    <option value="INACTIVO">INACTIVO</option>
                   </select>
                 </div>
               )}
@@ -3175,7 +3184,7 @@ function AdminUsuarios({ user: currentUser }) {
 
       {/* Leyenda de niveles */}
       <div className="card-static" style={{ padding: '12px 16px' }}>
-        <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text3)', marginBottom: 8, letterSpacing: 0.4 }}>REFERENCIA DE NIVELES</div>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', marginBottom: 8 }}>Referencia de niveles</div>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           {[
             { n: 1, label: 'Admin', desc: 'Acceso total a todos los módulos y servicios' },
@@ -3183,8 +3192,8 @@ function AdminUsuarios({ user: currentUser }) {
             { n: 3, label: 'Supervisor', desc: 'Solo puede Evaluar y ver Ranking' },
           ].map(({ n, label, desc }) => (
             <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: nivelBg(n), color: nivelColor(n), fontWeight: 600 }}>N{n} · {label}</span>
-              <span style={{ fontSize: 10, color: 'var(--text3)' }}>{desc}</span>
+              <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 6, background: nivelBg(n), color: nivelColor(n), fontWeight: 600 }}>N{n} · {label}</span>
+              <span style={{ fontSize: 11, color: 'var(--text3)' }}>{desc}</span>
             </div>
           ))}
         </div>
@@ -3193,7 +3202,7 @@ function AdminUsuarios({ user: currentUser }) {
   )
 }
 
-const lbl = { fontSize: 10, color: 'rgba(255,255,255,0.35)', fontWeight: 600, letterSpacing: 0.5, display: 'block', marginBottom: 5 }
+const lbl = { fontSize: 13, color: 'var(--text2)', fontWeight: 500, display: 'block', marginBottom: 6 }
 
 /* =========================================
    BITÁCORA DE ACTIVIDADES (Vinculación Tarea ↔ Personal)
@@ -3317,41 +3326,41 @@ function Bitacora({ svc, user }) {
     <div className="fade">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
-          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 2 }}>Trabajos Importantes</h2>
-          <p style={{ color: 'var(--text3)', fontSize: 12 }}>Registro global de trabajos críticos y cuadrillas asignadas</p>
+          <h2 className="page-title">Trabajos importantes</h2>
+          <p className="page-sub">Registro global de trabajos críticos y cuadrillas asignadas</p>
         </div>
-        {vista === 'lista' && <button className="btn btn-primary" onClick={() => setVista('nueva')} style={{ width: 'auto', fontSize: 11, padding: '6px 12px' }}>+ Registrar Trabajo</button>}
+        {vista === 'lista' && <button className="btn btn-primary" onClick={() => setVista('nueva')} style={{ width: 'auto' }}><Icon name="plus" size={18} />Registrar trabajo</button>}
       </div>
 
       {vista === 'lista' && (
-        <div className="fade" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: 14 }}>
+        <div className="fade" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 380px), 1fr))', gap: 16 }}>
           {actividades.length === 0 ? (
-             <div className="card-static" style={{ gridColumn: '1 / -1', padding: '40px 20px', textAlign: 'center' }}><p style={{ color: 'var(--text3)', fontSize: 13 }}>No hay trabajos importantes registrados aún.</p></div>
+             <div className="card-static empty-state" style={{ gridColumn: '1 / -1' }}><Icon name="bitacora" size={28} style={{ color: 'var(--text3)' }} /><p style={{ color: 'var(--text2)', fontSize: 15, marginTop: 16 }}>Aún no hay trabajos importantes registrados.</p></div>
           ) : actividades.map(a => (
-            <div key={a.id_actividad} className="card-static" onClick={() => abrirDetalle(a)} style={{ padding: '16px', display: 'flex', gap: 14, alignItems: 'center', cursor: 'pointer', transition: 'transform 0.2s', border: '1px solid var(--border)' }}>
+            <button type="button" key={a.id_actividad} className="card" onClick={() => abrirDetalle(a)} style={{ padding: '16px', display: 'flex', gap: 16, alignItems: 'center', textAlign: 'left', color: 'var(--text)' }}>
               {a.meta?.url_foto ? (
-                 <div style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <img src={a.meta.url_foto} alt="Trabajo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                 <div style={{ width: 80, height: 80, borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
+                    <img src={a.meta.url_foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                  </div>
               ) : (
-                 <div style={{ width: 80, height: 80, borderRadius: 6, background: 'rgba(230,126,34,0.05)', border: '1px solid rgba(230,126,34,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>👷</div>
+                 <div style={{ width: 80, height: 80, borderRadius: 10, background: 'var(--fill)', color: 'var(--text3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="wrench" size={30} /></div>
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 2 }}>{a.catalogo_competencias?.nombre}</div>
-                <div style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 600, marginBottom: 8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.servicioNombre}</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 2 }}>{a.catalogo_competencias?.nombre}</div>
+                <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 10, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.servicioNombre}</div>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 10, color: 'var(--text3)' }}>
+                <div className="num" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 13, color: 'var(--text3)' }}>
                   <div>
-                     <strong style={{display: 'block', color: 'var(--text2)', marginBottom: 2}}>EJECUCIÓN</strong>
+                     <strong style={{display: 'block', color: 'var(--text2)', fontWeight: 500, marginBottom: 2}}>Ejecución</strong>
                      {a.meta?.id_grupo ? `Grupo ${a.meta.id_grupo} (${a.personal_programado || 0} pax)` : 'Sin grupo'}
                   </div>
                   <div>
-                     <strong style={{display: 'block', color: 'var(--text2)', marginBottom: 2}}>TIEMPOS</strong>
-                     Prog: {a.duracion_programada||'0'}h | Real: <span style={{ color: a.estado === 'EN PLAZO' ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>{a.duracion_horas||'0'}h</span>
+                     <strong style={{display: 'block', color: 'var(--text2)', fontWeight: 500, marginBottom: 2}}>Tiempos</strong>
+                     Prog. {a.duracion_programada||'0'} h · Real <span style={{ color: a.estado === 'EN PLAZO' ? 'var(--green)' : 'var(--red)', fontWeight: 600 }}>{a.duracion_horas||'0'} h</span>
                   </div>
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}
@@ -3359,22 +3368,22 @@ function Bitacora({ svc, user }) {
       {vista === 'nueva' && (
         <div className="fade card-static" style={{ padding: '24px', maxWidth: 800 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700 }}>Vincular Trabajo a Grupo</h3>
-            <button className="btn btn-ghost" onClick={() => setVista('lista')} style={{ fontSize: 10, padding: '4px 8px' }}>✕ Cancelar</button>
+            <h3 style={{ fontSize: 15, fontWeight: 700 }}>Vincular trabajo a grupo</h3>
+            <button className="btn btn-ghost" onClick={() => setVista('lista')}>Cancelar</button>
           </div>
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
                 <div>
-                  <label style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 600, marginBottom: 4, display: 'block' }}>COMPETENCIA / TAREA PRINCIPAL *</label>
-                  <select className="input" value={formAct.id_competencia} onChange={e => setFormAct({...formAct, id_competencia: e.target.value})} style={{ background: 'var(--bg2)' }}>
+                  <label className="field-label">Competencia / tarea principal *</label>
+                  <select className="input" value={formAct.id_competencia} onChange={e => setFormAct({...formAct, id_competencia: e.target.value})}>
                     <option value="">-- Seleccionar --</option>
                     {comps.map(c => <option key={c.id_competencia} value={c.id_competencia}>{c.nombre}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 600, marginBottom: 4, display: 'block' }}>GRUPO ASIGNADO *</label>
-                  <select className="input" value={formAct.id_grupo} onChange={e => setFormAct({...formAct, id_grupo: e.target.value})} style={{ background: 'var(--bg2)' }}>
+                  <label className="field-label">Grupo asignado *</label>
+                  <select className="input" value={formAct.id_grupo} onChange={e => setFormAct({...formAct, id_grupo: e.target.value})}>
                     <option value="">-- Seleccionar --</option>
                     {gruposInfo.map(g => <option key={g.grupo} value={g.grupo}>Grupo {g.grupo} ({g.count} técnicos)</option>)}
                   </select>
@@ -3382,21 +3391,21 @@ function Bitacora({ svc, user }) {
             </div>
 
             <div style={{ gridColumn: '1 / -1' }}>
-              <label style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 600, marginBottom: 4, display: 'block' }}>DESCRIPCIÓN BREVE DEL TRABAJO *</label>
+              <label className="field-label">Descripción breve del trabajo *</label>
               <input className="input" placeholder="Ej: Cambio de manto en Molino SAG #2" value={formAct.nombre} onChange={e => setFormAct({...formAct, nombre: e.target.value})} />
             </div>
 
             <div style={{ gridColumn: '1 / -1' }}>
-              <label style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 600, marginBottom: 4, display: 'block' }}>FOTOGRAFÍA (URL Opcional)</label>
+              <label className="field-label">Fotografía (URL, opcional)</label>
               <input className="input" placeholder="Ej: https://miservidor.com/foto.jpg" value={formAct.url_foto} onChange={e => setFormAct({...formAct, url_foto: e.target.value})} />
             </div>
 
             <div>
-               <label style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 600, marginBottom: 4, display: 'block' }}>HORAS PROGRAMADAS</label>
+               <label className="field-label">Horas programadas</label>
                <input type="number" className="input" placeholder="Ej: 12" value={formAct.duracion_programada} onChange={e => setFormAct({...formAct, duracion_programada: e.target.value})} />
             </div>
             <div>
-               <label style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 600, marginBottom: 4, display: 'block' }}>HORAS REALES</label>
+               <label className="field-label">Horas reales</label>
                <input type="number" className="input" placeholder="Ej: 14.5" value={formAct.duracion_real} onChange={e => setFormAct({...formAct, duracion_real: e.target.value})} />
             </div>
           </div>
@@ -3409,52 +3418,52 @@ function Bitacora({ svc, user }) {
 
       {vista === 'detalle' && selAct && (
         <div className="fade" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <button className="btn btn-ghost" onClick={() => setVista('lista')} style={{ width: 'fit-content', fontSize: 11, padding: '4px 8px' }}>← Volver a trabajos</button>
+          <button className="btn btn-ghost" onClick={() => setVista('lista')} style={{ width: 'fit-content' }}><Icon name="back" size={16} />Volver a trabajos</button>
           
           <div className="card-static" style={{ padding: '24px', display: 'flex', gap: 24, alignItems: 'center' }}>
             {selAct.meta?.url_foto && (
-               <div style={{ width: 220, height: 140, borderRadius: 8, overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(255,255,255,0.1)' }}>
+               <div style={{ width: 220, height: 140, borderRadius: 8, overflow: 'hidden', flexShrink: 0, border: '1px solid var(--fill-2)' }}>
                   <img src={selAct.meta.url_foto} alt="Trabajo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                </div>
             )}
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 700, letterSpacing: 1, marginBottom: 6 }}>{selAct.servicioNombre.toUpperCase()}</div>
-              <h3 style={{ fontSize: 24, fontWeight: 900, color: 'var(--text)', marginBottom: 8, lineHeight: 1.2 }}>{selAct.catalogo_competencias?.nombre}</h3>
-              <div style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 16, borderLeft: '3px solid var(--border)', paddingLeft: 12 }}>"{selAct.nombre_actividad}"</div>
+              <div style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 700, marginBottom: 6 }}>{selAct.servicioNombre.toUpperCase()}</div>
+              <h3 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', marginBottom: 8, lineHeight: 1.2 }}>{selAct.catalogo_competencias?.nombre}</h3>
+              <div style={{ fontSize: 15, color: 'var(--text2)', marginBottom: 16, paddingLeft: 12 }}>"{selAct.nombre_actividad}"</div>
               
-              <div style={{ display: 'flex', gap: 30, fontSize: 11, color: 'var(--text3)' }}>
+              <div style={{ display: 'flex', gap: 30, fontSize: 13, color: 'var(--text3)' }}>
                  <div>
-                    <strong style={{display: 'block', color: 'var(--text)', marginBottom: 4}}>ESTADO</strong>
-                    <span style={{ color: selAct.estado === 'EN PLAZO' ? 'var(--green)' : 'var(--red)', fontWeight: 800 }}>{selAct.estado}</span>
+                    <strong style={{display: 'block', color: 'var(--text)', marginBottom: 4}}>Estado</strong>
+                    <span style={{ color: selAct.estado === 'EN PLAZO' ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>{selAct.estado}</span>
                  </div>
                  <div>
-                    <strong style={{display: 'block', color: 'var(--text)', marginBottom: 4}}>HORAS PLANIFICADAS</strong>
+                    <strong style={{display: 'block', color: 'var(--text)', marginBottom: 4}}>Horas planificadas</strong>
                     {selAct.duracion_programada || '—'} hrs
                  </div>
                  <div>
-                    <strong style={{display: 'block', color: 'var(--text)', marginBottom: 4}}>HORAS REALES</strong>
-                    <span style={{ color: selAct.estado === 'EN PLAZO' ? 'var(--green)' : 'var(--red)', fontWeight: 800 }}>{selAct.duracion_horas || '—'} hrs</span>
+                    <strong style={{display: 'block', color: 'var(--text)', marginBottom: 4}}>Horas reales</strong>
+                    <span style={{ color: selAct.estado === 'EN PLAZO' ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>{selAct.duracion_horas || '—'} hrs</span>
                  </div>
               </div>
             </div>
           </div>
 
           <div className="card-static" style={{ padding: '24px' }}>
-            <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 16, color: 'var(--text)', display: 'flex', justifyContent: 'space-between' }}>
-                <span>PERSONAL ASIGNADO AL TRABAJO</span>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 16, color: 'var(--text)', display: 'flex', justifyContent: 'space-between' }}>
+                <span>Personal asignado al trabajo</span>
                 <span style={{ color: 'var(--accent)' }}>Grupo {selAct.meta?.id_grupo} ({personalAsignado.length} técnicos)</span>
             </div>
             
             {personalAsignado.length === 0 ? (
-               <div style={{ padding: '30px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: 8, border: '1px dashed var(--border)', color: 'var(--text3)', fontSize: 12 }}>No hay técnicos registrados en el Grupo {selAct.meta?.id_grupo} para este servicio.</div>
+               <div style={{ padding: '30px', textAlign: 'center', background: 'var(--fill)', borderRadius: 8, border: '1px dashed var(--border)', color: 'var(--text3)', fontSize: 13 }}>No hay técnicos registrados en el Grupo {selAct.meta?.id_grupo} para este servicio.</div>
             ) : (
                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
                   {personalAsignado.map(p => (
-                     <div key={p.dni} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 8 }}>
+                     <div key={p.dni} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px', background: 'var(--fill)', borderRadius: 8 }}>
                         <Avatar nombre={p.nombres_completos} foto={p.url_foto} size={36} />
                         <div style={{ minWidth: 0 }}>
-                           <div style={{ fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.nombres_completos}</div>
-                           <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 2 }}>{p.cargo}</div>
+                           <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.nombres_completos}</div>
+                           <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>{p.cargo}</div>
                         </div>
                      </div>
                   ))}
@@ -3560,29 +3569,29 @@ function AdminGestion({ svc }) {
         </select>
       </div>
 
-      <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 12 }}>
+      <div style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 12 }}>
         {activos.length} activos · {inactivos.length} inactivos · {filtrados.length} total
       </div>
 
       {/* Lista activos */}
       {activos.length > 0 && (
         <div className="card-static" style={{ overflow: 'hidden', marginBottom: 16 }}>
-          <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', fontSize: 10, fontWeight: 600, color: 'var(--text3)', letterSpacing: 0.4 }}>ACTIVOS EN SERVICIO</div>
+          <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', fontSize: 11, fontWeight: 600, color: 'var(--text3)' }}>Activos en servicio</div>
           {activos.map((a, i) => (
-            <div key={a.id_asignacion} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderBottom: i < activos.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+            <div key={a.id_asignacion} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderBottom: i < activos.length - 1 ? '1px solid var(--fill)' : 'none' }}>
               <Avatar nombre={a.nombre} foto={a.foto} size={30} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.nombre}</div>
-                <div style={{ fontSize: 9, color: 'var(--text3)' }}>{a.cargoNombre} · G{a.id_grupo} · T{a.turno}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.nombre}</div>
+                <div style={{ fontSize: 11, color: 'var(--text3)' }}>{a.cargoNombre} · G{a.id_grupo} · T{a.turno}</div>
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
                 <button onClick={() => setConfirmDni({ id: a.id_asignacion, nombre: a.nombre, accion: 'desactivar' })}
-                  style={{ padding: '4px 10px', fontSize: 10, background: 'rgba(212,160,23,0.08)', border: '1px solid rgba(212,160,23,0.2)', borderRadius: 5, color: 'var(--yellow)', cursor: 'pointer', fontFamily: 'Inter' }}>
-                  ⏸ Desactivar
+                  className="act act-warn">
+                  <Icon name="pause" size={16} />Desactivar
                 </button>
                 <button onClick={() => setConfirmDni({ id: a.id_asignacion, nombre: a.nombre, accion: 'eliminar' })}
-                  style={{ padding: '4px 10px', fontSize: 10, background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', borderRadius: 5, color: 'var(--red)', cursor: 'pointer', fontFamily: 'Inter' }}>
-                  ✕ Quitar
+                  className="act act-danger">
+                  <Icon name="close" size={16} />Quitar
                 </button>
               </div>
             </div>
@@ -3593,17 +3602,17 @@ function AdminGestion({ svc }) {
       {/* Lista inactivos */}
       {inactivos.length > 0 && (
         <div className="card-static" style={{ overflow: 'hidden' }}>
-          <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', fontSize: 10, fontWeight: 600, color: 'var(--text3)', letterSpacing: 0.4 }}>INACTIVOS</div>
+          <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', fontSize: 11, fontWeight: 600, color: 'var(--text3)' }}>Inactivos</div>
           {inactivos.map((a, i) => (
-            <div key={a.id_asignacion} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderBottom: i < inactivos.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', opacity: 0.55 }}>
+            <div key={a.id_asignacion} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderBottom: i < inactivos.length - 1 ? '1px solid var(--fill)' : 'none', opacity: 0.55 }}>
               <Avatar nombre={a.nombre} foto={a.foto} size={30} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.nombre}</div>
-                <div style={{ fontSize: 9, color: 'var(--text3)' }}>{a.cargoNombre} · G{a.id_grupo} · T{a.turno}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.nombre}</div>
+                <div style={{ fontSize: 11, color: 'var(--text3)' }}>{a.cargoNombre} · G{a.id_grupo} · T{a.turno}</div>
               </div>
               <button onClick={() => reactivar(a.id_asignacion)}
-                style={{ padding: '4px 10px', fontSize: 10, background: 'rgba(39,174,96,0.08)', border: '1px solid rgba(39,174,96,0.2)', borderRadius: 5, color: 'var(--green)', cursor: 'pointer', fontFamily: 'Inter' }}>
-                ▶ Reactivar
+                className="act act-ok">
+                <Icon name="play" size={16} />Reactivar
               </button>
             </div>
           ))}
@@ -3618,26 +3627,26 @@ function AdminGestion({ svc }) {
 
       {/* Modal confirmación */}
       {confirmDni && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 12, padding: '24px 28px', maxWidth: 340, textAlign: 'center' }}>
-            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
+        <div role="presentation" className="modal-scrim" style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div role="dialog" aria-modal="true" className="modal-material modal-panel" style={{ borderRadius: 16, padding: '24px', maxWidth: 340, textAlign: 'center' }}>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
               {confirmDni.accion === 'desactivar' ? '¿Desactivar del servicio?' : '¿Eliminar del servicio?'}
             </div>
-            <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 6 }}>
+            <div style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 6 }}>
               <strong style={{ color: 'var(--text)' }}>{confirmDni.nombre}</strong>
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 20 }}>
+            <div style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 20 }}>
               {confirmDni.accion === 'desactivar'
                 ? 'El trabajador permanecerá en el sistema pero no participará en este servicio.'
                 : 'Se eliminará la asignación a este servicio. El trabajador permanece en el sistema.'
               }
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn btn-ghost" onClick={() => setConfirmDni(null)} style={{ flex: 1, fontSize: 12 }}>Cancelar</button>
+              <button className="btn btn-ghost" onClick={() => setConfirmDni(null)} style={{ flex: 1, fontSize: 13 }}>Cancelar</button>
               <button onClick={() => confirmDni.accion === 'desactivar'
                 ? desactivar(confirmDni.id, confirmDni.nombre)
                 : eliminarAsignacion(confirmDni.id, confirmDni.nombre)}
-                style={{ flex: 1, padding: '9px', background: confirmDni.accion === 'desactivar' ? 'var(--yellow)' : 'var(--red)', border: 'none', borderRadius: 8, color: confirmDni.accion === 'desactivar' ? '#000' : 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>
+                className="btn btn-danger" style={{ flex: 1, background: confirmDni.accion === 'desactivar' ? 'var(--yellow)' : undefined }}>
                 {confirmDni.accion === 'desactivar' ? 'Desactivar' : 'Eliminar'}
               </button>
             </div>
@@ -3726,35 +3735,34 @@ function AdminServicios({ user, currentSvcId }) {
   }
 
   const estadoColor = e => e === 'ACTIVO' ? 'var(--green)' : e === 'INACTIVO' ? 'var(--yellow)' : 'var(--text3)'
-  const estadoBg    = e => e === 'ACTIVO' ? 'rgba(39,174,96,0.08)' : e === 'INACTIVO' ? 'rgba(212,160,23,0.08)' : 'rgba(255,255,255,0.04)'
+  const estadoBg    = e => e === 'ACTIVO' ? 'color-mix(in srgb, var(--green) 8%, transparent)' : e === 'INACTIVO' ? 'color-mix(in srgb, var(--yellow) 8%, transparent)' : 'var(--fill)'
 
   if (loading) return <p style={{ color: 'var(--text3)', fontSize: 13 }}>Cargando servicios...</p>
 
   return (
     <div className="fade">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div style={{ fontSize: 11, color: 'var(--text3)' }}>{servicios.length} servicios registrados</div>
-        <button className="btn btn-primary" onClick={abrirNuevo} style={{ width: 'auto', padding: '8px 18px', fontSize: 12 }}>+ Nuevo servicio</button>
+        <div style={{ fontSize: 13, color: 'var(--text3)' }}>{servicios.length} servicios registrados</div>
+        <button className="btn btn-primary" onClick={abrirNuevo} style={{ width: 'auto' }}><Icon name="plus" size={18} />Nuevo servicio</button>
       </div>
 
       {/* Leyenda de estados */}
       <div style={{ display: 'flex', gap: 14, marginBottom: 16, flexWrap: 'wrap' }}>
         {estados.map(e => (
-          <div key={e.v} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
+          <div key={e.v} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: e.color }} />
-            <span style={{ color: e.color, fontWeight: 600 }}>{e.label}</span>
+            <span style={{ color: 'var(--text)', fontWeight: 500 }}>{e.label}</span>
             <span style={{ color: 'var(--text3)' }}>— {e.desc}</span>
           </div>
         ))}
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div className="card-static grouped-list">
         {servicios.map(s => (
           <div key={s.id_servicio} style={{
-            display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
-            background: s.id_servicio === currentSvcId ? 'rgba(230,126,34,0.04)' : 'rgba(255,255,255,0.02)',
-            border: `1px solid ${s.id_servicio === currentSvcId ? 'rgba(230,126,34,0.15)' : 'var(--border)'}`,
-            borderRadius: 10, opacity: s.estado === 'ARCHIVADO' ? 0.45 : 1,
+            display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', flexWrap: 'wrap',
+            background: s.id_servicio === currentSvcId ? 'var(--accent-soft)' : 'transparent',
+            opacity: s.estado === 'ARCHIVADO' ? 0.55 : 1,
           }}>
             {/* Estado dot */}
             <div style={{ width: 9, height: 9, borderRadius: '50%', background: estadoColor(s.estado), flexShrink: 0 }} />
@@ -3762,17 +3770,17 @@ function AdminServicios({ user, currentSvcId }) {
             {/* Info */}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.nombre_descriptivo}</div>
-                {s.id_servicio === currentSvcId && <span style={{ fontSize: 9, color: 'var(--accent)', fontWeight: 600, flexShrink: 0 }}>ACTIVO AHORA</span>}
+                <div style={{ fontSize: 15, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.nombre_descriptivo}</div>
+                {s.id_servicio === currentSvcId && <span style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 500, flexShrink: 0 }}>En uso</span>}
               </div>
-              <div style={{ fontSize: 10, color: 'var(--text3)' }}>
+              <div style={{ fontSize: 13, color: 'var(--text3)' }}>
                 {s.cliente} · {s.tipo} · {s.codigo_otp}
                 {s.fecha_inicio && ` · ${new Date(s.fecha_inicio).toLocaleDateString('es-PE', { month: 'short', year: 'numeric' })}`}
               </div>
             </div>
 
             {/* Estado badge */}
-            <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 4, background: estadoBg(s.estado), color: estadoColor(s.estado), fontWeight: 600, flexShrink: 0 }}>
+            <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: estadoBg(s.estado), color: estadoColor(s.estado), fontWeight: 600, flexShrink: 0 }}>
               {s.estado}
             </span>
 
@@ -3780,18 +3788,18 @@ function AdminServicios({ user, currentSvcId }) {
             <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
               {s.estado !== 'ACTIVO' && (
                 <button onClick={async () => { await supabase.from('servicios').update({ estado: 'ACTIVO' }).eq('id_servicio', s.id_servicio); loadServicios() }}
-                  style={{ padding: '3px 8px', fontSize: 9, background: 'rgba(39,174,96,0.1)', border: '1px solid rgba(39,174,96,0.2)', borderRadius: 4, color: 'var(--green)', cursor: 'pointer', fontFamily: 'Inter' }}>Activar</button>
+                  className="act act-ok">Activar</button>
               )}
               {s.estado !== 'INACTIVO' && (
                 <button onClick={async () => { await supabase.from('servicios').update({ estado: 'INACTIVO' }).eq('id_servicio', s.id_servicio); loadServicios() }}
-                  style={{ padding: '3px 8px', fontSize: 9, background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.2)', borderRadius: 4, color: 'var(--yellow)', cursor: 'pointer', fontFamily: 'Inter' }}>Desactivar</button>
+                  className="act act-warn">Desactivar</button>
               )}
               {s.estado !== 'ARCHIVADO' && (
                 <button onClick={async () => { await supabase.from('servicios').update({ estado: 'ARCHIVADO' }).eq('id_servicio', s.id_servicio); loadServicios() }}
-                  style={{ padding: '3px 8px', fontSize: 9, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: 4, color: 'var(--text3)', cursor: 'pointer', fontFamily: 'Inter' }}>Archivar</button>
+                  className="act" style={{ color: 'var(--text2)' }}>Archivar</button>
               )}
               <button onClick={() => abrirEditar(s)}
-                style={{ padding: '3px 8px', fontSize: 9, background: 'rgba(91,164,207,0.08)', border: '1px solid rgba(91,164,207,0.15)', borderRadius: 4, color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'Inter' }}>✏ Editar</button>
+                className="act"><Icon name="edit" size={16} />Editar</button>
             </div>
           </div>
         ))}
@@ -3799,23 +3807,23 @@ function AdminServicios({ user, currentSvcId }) {
 
       {/* Modal formulario */}
       {showForm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
-          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '24px 26px', width: '100%', maxWidth: 500, maxHeight: '90vh', overflowY: 'auto' }}>
+        <div role="presentation" className="modal-scrim" style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+          <div role="dialog" aria-modal="true" className="modal-material modal-panel" style={{ borderRadius: 16, padding: '24px', width: '100%', maxWidth: 500, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>{editando ? 'Editar servicio' : 'Nuevo servicio'}</div>
-              <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 20, cursor: 'pointer' }}>×</button>
+              <div style={{ fontSize: 15, fontWeight: 700 }}>{editando ? 'Editar servicio' : 'Nuevo servicio'}</div>
+              <button onClick={() => setShowForm(false)} className="icon-btn" aria-label="Cerrar" style={{ margin: -10 }}><Icon name="close" size={20} /></button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
-                  <label style={lbl2}>CÓDIGO OTP</label>
+                  <label style={lbl2}>Código OTP</label>
                   <input className="input" value={form.codigo_otp} placeholder="Ej: PDP-MCB-OXI-MAR-2026"
                     onChange={e => setForm(f => ({...f, codigo_otp: e.target.value.toUpperCase()}))} />
                 </div>
                 <div>
-                  <label style={lbl2}>TIPO</label>
-                  <select className="input" value={form.tipo} onChange={e => setForm(f => ({...f, tipo: e.target.value}))} style={{ background: 'var(--bg2)' }}>
+                  <label style={lbl2}>Tipo</label>
+                  <select className="input" value={form.tipo} onChange={e => setForm(f => ({...f, tipo: e.target.value}))}>
                     <option value="PDP">PDP</option>
                     <option value="PROYECTO">PROYECTO</option>
                     <option value="PLANTA">PLANTA</option>
@@ -3824,20 +3832,20 @@ function AdminServicios({ user, currentSvcId }) {
               </div>
 
               <div>
-                <label style={lbl2}>NOMBRE DESCRIPTIVO</label>
+                <label style={lbl2}>Nombre descriptivo</label>
                 <input className="input" value={form.nombre_descriptivo} placeholder="Ej: PARADA DE PLANTA MARCOBRE OXIDOS MARZO 2026"
                   onChange={e => setForm(f => ({...f, nombre_descriptivo: e.target.value}))} />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
-                  <label style={lbl2}>CLIENTE</label>
+                  <label style={lbl2}>Cliente</label>
                   <input className="input" value={form.cliente} placeholder="Ej: MARCOBRE"
                     onChange={e => setForm(f => ({...f, cliente: e.target.value.toUpperCase()}))} />
                 </div>
                 <div>
-                  <label style={lbl2}>ESTADO</label>
-                  <select className="input" value={form.estado} onChange={e => setForm(f => ({...f, estado: e.target.value}))} style={{ background: 'var(--bg2)' }}>
+                  <label style={lbl2}>Estado</label>
+                  <select className="input" value={form.estado} onChange={e => setForm(f => ({...f, estado: e.target.value}))}>
                     <option value="ACTIVO">ACTIVO — visible y operativo</option>
                     <option value="INACTIVO">INACTIVO — aparece en finalizados</option>
                     <option value="ARCHIVADO">ARCHIVADO — no aparece</option>
@@ -3847,17 +3855,17 @@ function AdminServicios({ user, currentSvcId }) {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
-                  <label style={lbl2}>FECHA INICIO</label>
+                  <label style={lbl2}>Fecha inicio</label>
                   <input className="input" type="date" value={form.fecha_inicio} onChange={e => setForm(f => ({...f, fecha_inicio: e.target.value}))} />
                 </div>
                 <div>
-                  <label style={lbl2}>FECHA FIN</label>
+                  <label style={lbl2}>Fecha fin</label>
                   <input className="input" type="date" value={form.fecha_fin} onChange={e => setForm(f => ({...f, fecha_fin: e.target.value}))} />
                 </div>
               </div>
 
               <div>
-                <label style={lbl2}>URL IMAGEN DE FONDO (opcional)</label>
+                <label style={lbl2}>URL de la imagen de fondo (opcional)</label>
                 <input className="input" value={form.fondo_url} placeholder="https://... (se mostrará de fondo en la tarjeta)"
                   onChange={e => setForm(f => ({...f, fondo_url: e.target.value}))} />
                 {form.fondo_url && (
@@ -3883,7 +3891,7 @@ function AdminServicios({ user, currentSvcId }) {
   )
 }
 
-const lbl2 = { fontSize: 10, color: 'rgba(255,255,255,0.35)', fontWeight: 600, letterSpacing: 0.5, display: 'block', marginBottom: 5 }
+const lbl2 = { fontSize: 13, color: 'var(--text2)', fontWeight: 500, display: 'block', marginBottom: 6 }
 
 
 /* =========================================
@@ -3977,7 +3985,7 @@ function AdminPersonal({ svc }) {
 
   return (
     <div className="fade">
-      <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 14 }}>
+      <div style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 14 }}>
         Busca un trabajador del servicio para editar sus datos, cargo o asignación.
       </div>
 
@@ -3986,7 +3994,7 @@ function AdminPersonal({ svc }) {
           onChange={e => setBusqueda(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && buscar()}
           style={{ flex: 1 }} />
-        <button className="btn btn-primary" onClick={buscar} disabled={buscando} style={{ width: 'auto', padding: '0 20px', fontSize: 12 }}>
+        <button className="btn btn-primary" onClick={buscar} disabled={buscando} style={{ width: 'auto', padding: '0 20px' }}>
           {buscando ? '...' : 'Buscar'}
         </button>
       </div>
@@ -3996,17 +4004,17 @@ function AdminPersonal({ svc }) {
       {resultados.length > 0 && (
         <div className="card-static" style={{ overflow: 'hidden' }}>
           {resultados.map((t, i) => (
-            <div key={t.dni} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 16px', borderBottom: i < resultados.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+            <div key={t.dni} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 16px', borderBottom: i < resultados.length - 1 ? '1px solid var(--fill)' : 'none' }}>
               <Avatar nombre={t.nombres_completos} foto={t.url_foto} size={34} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 600 }}>{t.nombres_completos}</div>
-                <div style={{ fontSize: 10, color: 'var(--text3)' }}>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>{t.nombres_completos}</div>
+                <div style={{ fontSize: 11, color: 'var(--text3)' }}>
                   DNI: {t.dni} · Cargo max: {t.cargoMaxNombre}
                   {t.asig && ` · Actual: ${t.cargoActualNombre} · G${t.asig.id_grupo} T${t.asig.turno}`}
                 </div>
               </div>
-              <button onClick={() => abrirEditar(t)} style={{ padding: '5px 12px', fontSize: 11, background: 'rgba(91,164,207,0.08)', border: '1px solid rgba(91,164,207,0.2)', borderRadius: 6, color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'Inter' }}>
-                ✏ Editar
+              <button onClick={() => abrirEditar(t)} className="act">
+                <Icon name="edit" size={16} />Editar
               </button>
             </div>
           ))}
@@ -4015,47 +4023,47 @@ function AdminPersonal({ svc }) {
 
       {/* Modal edición */}
       {editando && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
-          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '22px 24px', width: '100%', maxWidth: 460 }}>
+        <div role="presentation" className="modal-scrim" style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+          <div role="dialog" aria-modal="true" className="modal-material modal-panel" style={{ borderRadius: 16, padding: '24px', width: '100%', maxWidth: 460 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>Editar — {editando.nombres_completos}</div>
-              <button onClick={() => setEditando(null)} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 20, cursor: 'pointer' }}>×</button>
+              <div style={{ fontSize: 15, fontWeight: 700 }}>Editar — {editando.nombres_completos}</div>
+              <button onClick={() => setEditando(null)} className="icon-btn" aria-label="Cerrar" style={{ margin: -10 }}><Icon name="close" size={20} /></button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
               <div>
-                <label style={lbl3}>NOMBRE COMPLETO</label>
+                <label style={lbl3}>Nombre completo</label>
                 <input className="input" value={form.nombres_completos} onChange={e => setForm(f => ({...f, nombres_completos: e.target.value}))} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
-                  <label style={lbl3}>CARGO MÁXIMO (perfil)</label>
-                  <select className="input" value={form.cargo_max_id} onChange={e => setForm(f => ({...f, cargo_max_id: e.target.value}))} style={{ background: 'var(--bg2)' }}>
-                    {cargos.map(c => <option key={c.id_cargo} value={c.id_cargo} style={{ background: '#0c0c10' }}>{c.nombre_oficial}</option>)}
+                  <label style={lbl3}>Cargo máximo (perfil)</label>
+                  <select className="input" value={form.cargo_max_id} onChange={e => setForm(f => ({...f, cargo_max_id: e.target.value}))}>
+                    {cargos.map(c => <option key={c.id_cargo} value={c.id_cargo}>{c.nombre_oficial}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={lbl3}>CARGO EN ESTE SERVICIO</label>
-                  <select className="input" value={form.id_cargo_actual} onChange={e => setForm(f => ({...f, id_cargo_actual: e.target.value}))} style={{ background: 'var(--bg2)' }}>
-                    {cargos.map(c => <option key={c.id_cargo} value={c.id_cargo} style={{ background: '#0c0c10' }}>{c.nombre_oficial}</option>)}
+                  <label style={lbl3}>Cargo en este servicio</label>
+                  <select className="input" value={form.id_cargo_actual} onChange={e => setForm(f => ({...f, id_cargo_actual: e.target.value}))}>
+                    {cargos.map(c => <option key={c.id_cargo} value={c.id_cargo}>{c.nombre_oficial}</option>)}
                   </select>
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
-                  <label style={lbl3}>TURNO</label>
-                  <select className="input" value={form.turno} onChange={e => setForm(f => ({...f, turno: e.target.value}))} style={{ background: 'var(--bg2)' }}>
+                  <label style={lbl3}>Turno</label>
+                  <select className="input" value={form.turno} onChange={e => setForm(f => ({...f, turno: e.target.value}))}>
                     <option value="A">Turno A</option>
                     <option value="B">Turno B</option>
                   </select>
                 </div>
                 <div>
-                  <label style={lbl3}>GRUPO</label>
+                  <label style={lbl3}>Grupo</label>
                   <input className="input" value={form.id_grupo} onChange={e => setForm(f => ({...f, id_grupo: e.target.value}))} placeholder="Ej: 1, MASTER" />
                 </div>
               </div>
               <div>
-                <label style={lbl3}>URL FOTO (opcional)</label>
+                <label style={lbl3}>URL de la foto (opcional)</label>
                 <input className="input" value={form.url_foto} onChange={e => setForm(f => ({...f, url_foto: e.target.value}))} placeholder="https://..." />
               </div>
 
@@ -4140,31 +4148,31 @@ function AdminCompetencias() {
   return (
     <div className="fade">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <div style={{ fontSize: 11, color: 'var(--text3)' }}>{items.length} competencias en catálogo</div>
-        <button className="btn btn-primary" onClick={abrirNuevo} style={{ width: 'auto', padding: '8px 18px', fontSize: 12 }}>+ Nueva competencia</button>
+        <div style={{ fontSize: 13, color: 'var(--text3)' }}>{items.length} competencias en catálogo</div>
+        <button className="btn btn-primary" onClick={abrirNuevo} style={{ width: 'auto' }}><Icon name="plus" size={18} />Nueva competencia</button>
       </div>
 
       {Object.entries(grouped).map(([cat, comps]) => (
         <div key={cat} style={{ marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', letterSpacing: 0.8 }}>{cat}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)' }}>{cat}</div>
             <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-            <div style={{ fontSize: 9, color: 'var(--text3)' }}>{comps.length}</div>
+            <div style={{ fontSize: 11, color: 'var(--text3)' }}>{comps.length}</div>
           </div>
           <div className="card-static" style={{ overflow: 'hidden' }}>
             {comps.map((comp, i) => (
-              <div key={comp.id_competencia} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: i < comps.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none' }}>
+              <div key={comp.id_competencia} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: i < comps.length - 1 ? '1px solid var(--fill)' : 'none' }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: critColor(comp.nivel_criticidad), flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600 }}>{comp.nombre}</div>
-                  {comp.equipo_asociado && <div style={{ fontSize: 10, color: 'var(--text3)' }}>{comp.equipo_asociado}</div>}
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>{comp.nombre}</div>
+                  {comp.equipo_asociado && <div style={{ fontSize: 11, color: 'var(--text3)' }}>{comp.equipo_asociado}</div>}
                 </div>
-                <div style={{ fontSize: 9, color: critColor(comp.nivel_criticidad), fontWeight: 600 }}>
+                <div style={{ fontSize: 11, color: critColor(comp.nivel_criticidad), fontWeight: 600 }}>
                   {criticidades.find(c => c.v === comp.nivel_criticidad)?.l}
                 </div>
                 <div style={{ display: 'flex', gap: 5 }}>
-                  <button onClick={() => abrirEditar(comp)} style={{ padding: '3px 9px', fontSize: 10, background: 'rgba(91,164,207,0.08)', border: '1px solid rgba(91,164,207,0.2)', borderRadius: 5, color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'Inter' }}>✏</button>
-                  <button onClick={() => setConfirmDel(comp)} style={{ padding: '3px 9px', fontSize: 10, background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.15)', borderRadius: 5, color: 'var(--red)', cursor: 'pointer', fontFamily: 'Inter' }}>✕</button>
+                  <button onClick={() => abrirEditar(comp)} className="act act-icon" aria-label="Editar"><Icon name="edit" size={16} /></button>
+                  <button onClick={() => setConfirmDel(comp)} className="act act-icon act-danger" aria-label="Eliminar"><Icon name="trash" size={16} /></button>
                 </div>
               </div>
             ))}
@@ -4174,30 +4182,30 @@ function AdminCompetencias() {
 
       {/* Modal */}
       {editando && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
-          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '22px 24px', width: '100%', maxWidth: 440 }}>
+        <div role="presentation" className="modal-scrim" style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+          <div role="dialog" aria-modal="true" className="modal-material modal-panel" style={{ borderRadius: 16, padding: '24px', width: '100%', maxWidth: 440 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>{editando === 'nuevo' ? 'Nueva competencia' : 'Editar competencia'}</div>
-              <button onClick={() => setEditando(null)} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 20, cursor: 'pointer' }}>×</button>
+              <div style={{ fontSize: 15, fontWeight: 700 }}>{editando === 'nuevo' ? 'Nueva competencia' : 'Editar competencia'}</div>
+              <button onClick={() => setEditando(null)} className="icon-btn" aria-label="Cerrar" style={{ margin: -10 }}><Icon name="close" size={20} /></button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-              <div><label style={lbl3}>NOMBRE *</label><input className="input" value={form.nombre} onChange={e => setForm(f => ({...f, nombre: e.target.value}))} placeholder="Ej: CAMBIO DE CONCAVOS EN CHANCADORA PRIMARIA" /></div>
+              <div><label style={lbl3}>Nombre *</label><input className="input" value={form.nombre} onChange={e => setForm(f => ({...f, nombre: e.target.value}))} placeholder="Ej: CAMBIO DE CONCAVOS EN CHANCADORA PRIMARIA" /></div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
-                  <label style={lbl3}>CATEGORÍA</label>
-                  <select className="input" value={form.categoria} onChange={e => setForm(f => ({...f, categoria: e.target.value}))} style={{ background: 'var(--bg2)' }}>
-                    {categorias.map(cat => <option key={cat} value={cat} style={{ background: '#0c0c10' }}>{cat}</option>)}
+                  <label style={lbl3}>Categoría</label>
+                  <select className="input" value={form.categoria} onChange={e => setForm(f => ({...f, categoria: e.target.value}))}>
+                    {categorias.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={lbl3}>CRITICIDAD</label>
-                  <select className="input" value={form.nivel_criticidad} onChange={e => setForm(f => ({...f, nivel_criticidad: e.target.value}))} style={{ background: 'var(--bg2)' }}>
-                    {criticidades.map(c => <option key={c.v} value={c.v} style={{ background: '#0c0c10' }}>{c.v} — {c.l}</option>)}
+                  <label style={lbl3}>Criticidad</label>
+                  <select className="input" value={form.nivel_criticidad} onChange={e => setForm(f => ({...f, nivel_criticidad: e.target.value}))}>
+                    {criticidades.map(c => <option key={c.v} value={c.v}>{c.v} — {c.l}</option>)}
                   </select>
                 </div>
               </div>
-              <div><label style={lbl3}>EQUIPO ASOCIADO</label><input className="input" value={form.equipo_asociado} onChange={e => setForm(f => ({...f, equipo_asociado: e.target.value}))} placeholder="Ej: Chancadora HP400" /></div>
-              <div><label style={lbl3}>DESCRIPCIÓN</label><textarea className="input" value={form.descripcion} onChange={e => setForm(f => ({...f, descripcion: e.target.value}))} rows={2} placeholder="Descripción breve..." style={{ resize: 'vertical' }} /></div>
+              <div><label style={lbl3}>Equipo asociado</label><input className="input" value={form.equipo_asociado} onChange={e => setForm(f => ({...f, equipo_asociado: e.target.value}))} placeholder="Ej: Chancadora HP400" /></div>
+              <div><label style={lbl3}>Descripción</label><textarea className="input" value={form.descripcion} onChange={e => setForm(f => ({...f, descripcion: e.target.value}))} rows={2} placeholder="Descripción breve..." style={{ resize: 'vertical' }} /></div>
               {msg && <div className="alert alert-err">{msg}</div>}
               <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
                 <button className="btn btn-ghost" onClick={() => setEditando(null)} style={{ flex: 1 }}>Cancelar</button>
@@ -4210,13 +4218,13 @@ function AdminCompetencias() {
 
       {/* Confirm delete */}
       {confirmDel && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 12, padding: '24px 28px', maxWidth: 320, textAlign: 'center' }}>
-            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>¿Eliminar competencia?</div>
-            <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 20 }}><strong style={{ color: 'var(--text)' }}>{confirmDel.nombre}</strong></div>
+        <div role="presentation" className="modal-scrim" style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div role="dialog" aria-modal="true" className="modal-material modal-panel" style={{ borderRadius: 16, padding: '24px', maxWidth: 320, textAlign: 'center' }}>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>¿Eliminar competencia?</div>
+            <div style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 20 }}><strong style={{ color: 'var(--text)' }}>{confirmDel.nombre}</strong></div>
             <div style={{ display: 'flex', gap: 10 }}>
               <button className="btn btn-ghost" onClick={() => setConfirmDel(null)} style={{ flex: 1 }}>Cancelar</button>
-              <button onClick={() => eliminar(confirmDel.id_competencia)} style={{ flex: 1, padding: '9px', background: 'var(--red)', border: 'none', borderRadius: 8, color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>Eliminar</button>
+              <button onClick={() => eliminar(confirmDel.id_competencia)} className="btn btn-danger" style={{ flex: 1 }}>Eliminar</button>
             </div>
           </div>
         </div>
@@ -4293,7 +4301,7 @@ function AdminBitacoraEditor({ svc, user }) {
 
   return (
     <div className="fade">
-      <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 16 }}>
+      <div style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 16 }}>
         {actividades.length} trabajos críticos registrados en este servicio
       </div>
 
@@ -4307,23 +4315,23 @@ function AdminBitacoraEditor({ svc, user }) {
             let meta = {}
             try { meta = JSON.parse(act.checklist_generado) } catch {}
             return (
-              <div key={act.id_actividad} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 10 }}>
+              <div key={act.id_actividad} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--fill)', borderRadius: 12 }}>
                 {meta.url_foto ? (
                   <img src={meta.url_foto} alt="" style={{ width: 56, height: 56, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
                 ) : (
-                  <div style={{ width: 56, height: 56, borderRadius: 6, background: 'rgba(230,126,34,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🔧</div>
+                  <div style={{ width: 56, height: 56, borderRadius: 8, background: 'var(--fill)', color: 'var(--text3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="wrench" size={24} /></div>
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{act.nombre_actividad}</div>
-                  <div style={{ fontSize: 10, color: 'var(--accent)', marginTop: 1 }}>{act.catalogo_competencias?.nombre}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text3)' }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{act.nombre_actividad}</div>
+                  <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 1 }}>{act.catalogo_competencias?.nombre}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text3)' }}>
                     Prog: {act.duracion_programada || '—'}h · Real: {act.duracion_horas || '—'}h · G{meta.id_grupo}
                     <span style={{ marginLeft: 8, color: act.estado === 'EN PLAZO' ? 'var(--green)' : 'var(--red)', fontWeight: 600 }}>{act.estado}</span>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                  <button onClick={() => abrirEditar(act)} style={{ padding: '4px 10px', fontSize: 10, background: 'rgba(91,164,207,0.08)', border: '1px solid rgba(91,164,207,0.2)', borderRadius: 5, color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'Inter' }}>✏ Editar</button>
-                  <button onClick={() => setConfirmDel(act)} style={{ padding: '4px 10px', fontSize: 10, background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.15)', borderRadius: 5, color: 'var(--red)', cursor: 'pointer', fontFamily: 'Inter' }}>✕</button>
+                  <button onClick={() => abrirEditar(act)} className="act"><Icon name="edit" size={16} />Editar</button>
+                  <button onClick={() => setConfirmDel(act)} className="act act-icon act-danger" aria-label="Eliminar"><Icon name="trash" size={16} /></button>
                 </div>
               </div>
             )
@@ -4333,40 +4341,40 @@ function AdminBitacoraEditor({ svc, user }) {
 
       {/* Modal edición */}
       {editando && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
-          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14, padding: '22px 24px', width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto' }}>
+        <div role="presentation" className="modal-scrim" style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 20 }}>
+          <div role="dialog" aria-modal="true" className="modal-material modal-panel" style={{ borderRadius: 16, padding: '24px', width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>Editar actividad</div>
-              <button onClick={() => setEditando(null)} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 20, cursor: 'pointer' }}>×</button>
+              <div style={{ fontSize: 15, fontWeight: 700 }}>Editar actividad</div>
+              <button onClick={() => setEditando(null)} className="icon-btn" aria-label="Cerrar" style={{ margin: -10 }}><Icon name="close" size={20} /></button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-              <div><label style={lbl3}>DESCRIPCIÓN DEL TRABAJO</label><input className="input" value={form.nombre_actividad} onChange={e => setForm(f => ({...f, nombre_actividad: e.target.value}))} /></div>
+              <div><label style={lbl3}>Descripción del trabajo</label><input className="input" value={form.nombre_actividad} onChange={e => setForm(f => ({...f, nombre_actividad: e.target.value}))} /></div>
               <div>
-                <label style={lbl3}>COMPETENCIA / TIPO DE TRABAJO</label>
-                <select className="input" value={form.id_competencia} onChange={e => setForm(f => ({...f, id_competencia: e.target.value}))} style={{ background: 'var(--bg2)' }}>
+                <label style={lbl3}>Competencia / tipo de trabajo</label>
+                <select className="input" value={form.id_competencia} onChange={e => setForm(f => ({...f, id_competencia: e.target.value}))}>
                   <option value="">— Sin competencia —</option>
-                  {comps.map(c => <option key={c.id_competencia} value={c.id_competencia} style={{ background: '#0c0c10' }}>{c.nombre}</option>)}
+                  {comps.map(c => <option key={c.id_competencia} value={c.id_competencia}>{c.nombre}</option>)}
                 </select>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-                <div><label style={lbl3}>H. PROGRAMADAS</label><input className="input" type="number" value={form.duracion_programada} onChange={e => setForm(f => ({...f, duracion_programada: e.target.value}))} /></div>
-                <div><label style={lbl3}>H. REALES</label><input className="input" type="number" value={form.duracion_horas} onChange={e => setForm(f => ({...f, duracion_horas: e.target.value}))} /></div>
+                <div><label style={lbl3}>H. programadas</label><input className="input" type="number" value={form.duracion_programada} onChange={e => setForm(f => ({...f, duracion_programada: e.target.value}))} /></div>
+                <div><label style={lbl3}>H. reales</label><input className="input" type="number" value={form.duracion_horas} onChange={e => setForm(f => ({...f, duracion_horas: e.target.value}))} /></div>
                 <div>
-                  <label style={lbl3}>ESTADO</label>
-                  <select className="input" value={form.estado} onChange={e => setForm(f => ({...f, estado: e.target.value}))} style={{ background: 'var(--bg2)' }}>
+                  <label style={lbl3}>Estado</label>
+                  <select className="input" value={form.estado} onChange={e => setForm(f => ({...f, estado: e.target.value}))}>
                     <option value="EN PLAZO">EN PLAZO</option>
                     <option value="RETRASO">RETRASO</option>
                   </select>
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div><label style={lbl3}>GRUPO ASIGNADO</label><input className="input" value={form.id_grupo} onChange={e => setForm(f => ({...f, id_grupo: e.target.value}))} placeholder="Ej: 1" /></div>
+                <div><label style={lbl3}>Grupo asignado</label><input className="input" value={form.id_grupo} onChange={e => setForm(f => ({...f, id_grupo: e.target.value}))} placeholder="Ej: 1" /></div>
                 <div>
-                  <label style={lbl3}>URL FOTO</label>
+                  <label style={lbl3}>URL foto</label>
                   <input className="input" value={form.url_foto} onChange={e => setForm(f => ({...f, url_foto: e.target.value}))} placeholder="https://..." />
                 </div>
               </div>
-              <div><label style={lbl3}>LECCIONES APRENDIDAS</label><textarea className="input" value={form.lecciones_aprendidas} onChange={e => setForm(f => ({...f, lecciones_aprendidas: e.target.value}))} rows={3} style={{ resize: 'vertical' }} /></div>
+              <div><label style={lbl3}>Lecciones aprendidas</label><textarea className="input" value={form.lecciones_aprendidas} onChange={e => setForm(f => ({...f, lecciones_aprendidas: e.target.value}))} rows={3} style={{ resize: 'vertical' }} /></div>
               <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
                 <button className="btn btn-ghost" onClick={() => setEditando(null)} style={{ flex: 1 }}>Cancelar</button>
                 <button className="btn btn-primary" onClick={guardar} disabled={guardando} style={{ flex: 2 }}>{guardando ? 'Guardando...' : 'Guardar cambios'}</button>
@@ -4378,14 +4386,14 @@ function AdminBitacoraEditor({ svc, user }) {
 
       {/* Confirm delete */}
       {confirmDel && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 12, padding: '24px 28px', maxWidth: 320, textAlign: 'center' }}>
-            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>¿Eliminar esta actividad?</div>
-            <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 6 }}><strong style={{ color: 'var(--text)' }}>{confirmDel.nombre_actividad}</strong></div>
-            <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 20 }}>Se eliminará también todo el detalle asociado.</div>
+        <div role="presentation" className="modal-scrim" style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div role="dialog" aria-modal="true" className="modal-material modal-panel" style={{ borderRadius: 16, padding: '24px', maxWidth: 320, textAlign: 'center' }}>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>¿Eliminar esta actividad?</div>
+            <div style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 6 }}><strong style={{ color: 'var(--text)' }}>{confirmDel.nombre_actividad}</strong></div>
+            <div style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 20 }}>Se eliminará también todo el detalle asociado.</div>
             <div style={{ display: 'flex', gap: 10 }}>
               <button className="btn btn-ghost" onClick={() => setConfirmDel(null)} style={{ flex: 1 }}>Cancelar</button>
-              <button onClick={() => eliminar(confirmDel.id_actividad)} style={{ flex: 1, padding: '9px', background: 'var(--red)', border: 'none', borderRadius: 8, color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter' }}>Eliminar</button>
+              <button onClick={() => eliminar(confirmDel.id_actividad)} className="btn btn-danger" style={{ flex: 1 }}>Eliminar</button>
             </div>
           </div>
         </div>
@@ -4394,7 +4402,7 @@ function AdminBitacoraEditor({ svc, user }) {
   )
 }
 
-const lbl3 = { fontSize: 10, color: 'rgba(255,255,255,0.35)', fontWeight: 600, letterSpacing: 0.5, display: 'block', marginBottom: 5 }
+const lbl3 = { fontSize: 13, color: 'var(--text2)', fontWeight: 500, display: 'block', marginBottom: 6 }
 
 
 /* =========================================
@@ -4460,13 +4468,13 @@ function AdminEvaluadores({ svc }) {
       // Clasificación del perfil evaluador
       let perfil, perfilColor, perfilIcon
       if (diff > 0.4) {
-        perfil = 'Muy permisivo'; perfilColor = '#E67E22'; perfilIcon = '😊'
+        perfil = 'Muy permisivo'; perfilColor = 'var(--accent)'; perfilIcon = '😊'
       } else if (diff > 0.15) {
-        perfil = 'Permisivo'; perfilColor = '#D4A017'; perfilIcon = '🙂'
+        perfil = 'Permisivo'; perfilColor = 'var(--yellow)'; perfilIcon = '🙂'
       } else if (diff < -0.4) {
         perfil = 'Muy estricto'; perfilColor = 'var(--red)'; perfilIcon = '😤'
       } else if (diff < -0.15) {
-        perfil = 'Estricto'; perfilColor = '#E8A09A'; perfilIcon = '🤨'
+        perfil = 'Estricto'; perfilColor = 'var(--red)'; perfilIcon = '🤨'
       } else {
         perfil = 'Calibrado'; perfilColor = 'var(--green)'; perfilIcon = '✅'
       }
@@ -4508,51 +4516,51 @@ function AdminEvaluadores({ svc }) {
   return (
     <div className="fade">
       {/* Header con referencia */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18, padding: '12px 16px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18, padding: '12px 16px', background: 'var(--fill)', borderRadius: 12 }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.4 }}>PROMEDIO GLOBAL SERVICIO</div>
-          <div style={{ fontSize: 24, fontWeight: 900, color: sc(globalProm), fontFamily: 'monospace', lineHeight: 1.2 }}>{globalProm}</div>
-          <div style={{ fontSize: 9, color: 'var(--text3)' }}>línea base para comparar</div>
+          <div style={{ fontSize: 13, color: 'var(--text2)', fontWeight: 500 }}>Promedio global servicio</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: sc(globalProm), fontVariantNumeric: 'tabular-nums', lineHeight: 1.2 }}>{globalProm}</div>
+          <div style={{ fontSize: 11, color: 'var(--text3)' }}>línea base para comparar</div>
         </div>
-        <div style={{ flex: 1, fontSize: 11, color: 'var(--text2)', lineHeight: 1.5 }}>
-          Los evaluadores con diferencia <span style={{ color: '#E67E22', fontWeight: 600 }}>mayor a +0.15</span> tienden a calificar por encima del promedio (<em>permisivos</em>). Los que tienen <span style={{ color: 'var(--red)', fontWeight: 600 }}>menor a -0.15</span> califican más bajo (<em>estrictos</em>). El rango calibrado está entre ±0.15.
+        <div style={{ flex: 1, fontSize: 13, color: 'var(--text2)', lineHeight: 1.5 }}>
+          Los evaluadores con diferencia <span style={{ color: 'var(--accent)', fontWeight: 600 }}>mayor a +0.15</span> tienden a calificar por encima del promedio (<em>permisivos</em>). Los que tienen <span style={{ color: 'var(--red)', fontWeight: 600 }}>menor a -0.15</span> califican más bajo (<em>estrictos</em>). El rango calibrado está entre ±0.15.
         </div>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600 }}>EVALUADORES</div>
-          <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--accent2)', fontFamily: 'monospace' }}>{datos.length}</div>
+          <div style={{ fontSize: 13, color: 'var(--text2)', fontWeight: 500 }}>Evaluadores</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--accent2)', fontVariantNumeric: 'tabular-nums' }}>{datos.length}</div>
         </div>
       </div>
 
       {/* Lista evaluadores */}
       <div className="card-static" style={{ overflow: 'hidden', marginBottom: 16 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 70px 70px 110px', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text3)', fontWeight: 600, letterSpacing: 0.3 }}>
-          <div>EVALUADOR</div>
-          <div style={{ textAlign: 'center' }}>EVALS</div>
-          <div style={{ textAlign: 'center' }}>MEDIA</div>
-          <div style={{ textAlign: 'center' }}>vs GLOBAL</div>
-          <div style={{ textAlign: 'center' }}>% VERDE</div>
-          <div style={{ textAlign: 'center' }}>PERFIL</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 70px 70px 110px', gap: 8, padding: '8px 16px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text3)', fontWeight: 600 }}>
+          <div>Evaluador</div>
+          <div style={{ textAlign: 'center' }}>Evaluaciones</div>
+          <div style={{ textAlign: 'center' }}>Media</div>
+          <div style={{ textAlign: 'center' }}>vs global</div>
+          <div style={{ textAlign: 'center' }}>% verde</div>
+          <div style={{ textAlign: 'center' }}>Perfil</div>
         </div>
         {datos.map((ev, i) => (
           <div key={ev.dni}
             onClick={() => abrirDetalle(ev)}
-            style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 70px 70px 110px', gap: 8, padding: '11px 16px', alignItems: 'center', borderBottom: i < datos.length-1 ? '1px solid rgba(255,255,255,0.03)' : 'none', cursor: 'pointer', background: sel?.dni === ev.dni ? 'rgba(255,255,255,0.02)' : 'transparent', transition: 'background 0.15s' }}>
+            style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 70px 70px 110px', gap: 8, padding: '11px 16px', alignItems: 'center', borderBottom: i < datos.length-1 ? '1px solid var(--fill)' : 'none', cursor: 'pointer', background: sel?.dni === ev.dni ? 'var(--fill)' : 'transparent', transition: 'background-color var(--dur-quick) ease-out' }}>
             <div>
-              <div style={{ fontSize: 12, fontWeight: 600 }}>{ev.nombre.split(' ').slice(0,3).join(' ')}</div>
-              <div style={{ fontSize: 9, color: 'var(--text3)', fontFamily: 'monospace' }}>{ev.username}</div>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>{ev.nombre.split(' ').slice(0,3).join(' ')}</div>
+              <div style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'var(--font-mono)' }}>{ev.username}</div>
             </div>
             <div style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: 'var(--accent2)' }}>{ev.total}</div>
-            <div style={{ textAlign: 'center', fontSize: 14, fontWeight: 800, color: sc(ev.notaMedia), fontFamily: 'monospace' }}>{ev.notaMedia}</div>
-            <div style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: ev.diff > 0 ? '#E67E22' : ev.diff < 0 ? 'var(--red)' : 'var(--text3)' }}>
+            <div style={{ textAlign: 'center', fontSize: 15, fontWeight: 700, color: sc(ev.notaMedia), fontVariantNumeric: 'tabular-nums' }}>{ev.notaMedia}</div>
+            <div style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: ev.diff > 0 ? 'var(--accent)' : ev.diff < 0 ? 'var(--red)' : 'var(--text3)' }}>
               {ev.diff > 0 ? '+' : ''}{ev.diff}
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--green)' }}>{ev.verdesPorc}%</div>
-              {ev.rojaPorc > 0 && <div style={{ fontSize: 9, color: 'var(--red)' }}>{ev.rojaPorc}% riesgo</div>}
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--green)' }}>{ev.verdesPorc}%</div>
+              {ev.rojaPorc > 0 && <div style={{ fontSize: 11, color: 'var(--red)' }}>{ev.rojaPorc}% riesgo</div>}
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: ev.perfilColor, display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
-                <span>{ev.perfilIcon}</span>{ev.perfil}
+              <div style={{ fontSize: 11, fontWeight: 700, color: ev.perfilColor, display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+                <Icon name={ev.perfil === 'Calibrado' ? 'check' : 'scale'} size={14} />{ev.perfil}
               </div>
             </div>
           </div>
@@ -4565,45 +4573,45 @@ function AdminEvaluadores({ svc }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <div>
               <div style={{ fontSize: 13, fontWeight: 700 }}>{sel.nombre}</div>
-              <div style={{ fontSize: 11, color: sel.perfilColor, fontWeight: 600 }}>{sel.perfilIcon} {sel.perfil} · Promedio: {sel.notaMedia} · σ {sel.desviacion}</div>
+              <div style={{ fontSize: 13, color: sel.perfilColor, fontWeight: 600 }}>{sel.perfil} · Promedio: {sel.notaMedia} · σ {sel.desviacion}</div>
             </div>
-            <button onClick={() => setSel(null)} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 18, cursor: 'pointer' }}>×</button>
+            <button onClick={() => setSel(null)} className="icon-btn" aria-label="Cerrar" style={{ margin: -10 }}><Icon name="close" size={20} /></button>
           </div>
 
           {/* Barra de distribución */}
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, marginBottom: 6 }}>DISTRIBUCIÓN DE NOTAS</div>
+            <div style={{ fontSize: 13, color: 'var(--text2)', fontWeight: 500, marginBottom: 6 }}>Distribución de notas</div>
             <div style={{ display: 'flex', height: 28, borderRadius: 6, overflow: 'hidden', gap: 1 }}>
               {[
                 { label: 'Riesgo <2.0', val: sel.evs.filter(e=>parseFloat(e.promedio)<2.0).length, color: 'var(--red)' },
                 { label: 'Aceptable 2.0-3.5', val: sel.evs.filter(e=>parseFloat(e.promedio)>=2.0&&parseFloat(e.promedio)<3.5).length, color: 'var(--yellow)' },
                 { label: 'Óptimo ≥3.5', val: sel.evs.filter(e=>parseFloat(e.promedio)>=3.5).length, color: 'var(--green)' },
               ].map(b => b.val > 0 && (
-                <div key={b.label} title={`${b.label}: ${b.val}`} style={{ flex: b.val, background: b.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'rgba(0,0,0,0.6)' }}>
+                <div key={b.label} title={`${b.label}: ${b.val}`} style={{ flex: b.val, background: b.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--on-accent)' }}>
                   {b.val > 0 && b.val}
                 </div>
               ))}
             </div>
             <div style={{ display: 'flex', gap: 14, marginTop: 5 }}>
-              <span style={{ fontSize: 9, color: 'var(--red)' }}>■ Riesgo: {sel.evs.filter(e=>parseFloat(e.promedio)<2.0).length}</span>
-              <span style={{ fontSize: 9, color: 'var(--yellow)' }}>■ Aceptable: {sel.evs.filter(e=>parseFloat(e.promedio)>=2.0&&parseFloat(e.promedio)<3.5).length}</span>
-              <span style={{ fontSize: 9, color: 'var(--green)' }}>■ Óptimo: {sel.evs.filter(e=>parseFloat(e.promedio)>=3.5).length}</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text2)' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--red)' }} />Riesgo: {sel.evs.filter(e=>parseFloat(e.promedio)<2.0).length}</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text2)' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--yellow)' }} />Aceptable: {sel.evs.filter(e=>parseFloat(e.promedio)>=2.0&&parseFloat(e.promedio)<3.5).length}</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text2)' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--green)' }} />Óptimo: {sel.evs.filter(e=>parseFloat(e.promedio)>=3.5).length}</span>
             </div>
           </div>
 
           {/* Últimas evaluaciones */}
-          <div style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 600, marginBottom: 8 }}>ÚLTIMAS {detalle.length} EVALUACIONES</div>
+          <div style={{ fontSize: 13, color: 'var(--text2)', fontWeight: 500, marginBottom: 8 }}>ÚLTIMAS {detalle.length} EVALUACIONES</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {detalle.map((e, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: 6 }}>
-                <div style={{ fontSize: 16, fontWeight: 900, color: sc(e.promedio), fontFamily: 'monospace', width: 36 }}>{e.promedio}</div>
-                <div style={{ flex: 1, fontSize: 11, color: 'var(--text2)' }}>{e.cargo_momento || '—'}</div>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 12px', background: 'var(--fill)', borderRadius: 6 }}>
+                <div style={{ fontSize: 17, fontWeight: 700, color: sc(e.promedio), fontVariantNumeric: 'tabular-nums', width: 36 }}>{e.promedio}</div>
+                <div style={{ flex: 1, fontSize: 13, color: 'var(--text2)' }}>{e.cargo_momento || '—'}</div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   {[e.nota_1, e.nota_2, e.nota_3, e.nota_4].map((n, ni) => (
-                    <div key={ni} style={{ width: 20, height: 20, borderRadius: 4, background: n>=3.5?'rgba(39,174,96,0.25)':n>=2.0?'rgba(212,160,23,0.25)':'rgba(192,57,43,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: n>=3.5?'var(--green)':n>=2.0?'var(--yellow)':'var(--red)' }}>{n}</div>
+                    <div key={ni} style={{ width: 20, height: 20, borderRadius: 6, background: n>=3.5?'color-mix(in srgb, var(--green) 25%, transparent)':n>=2.0?'color-mix(in srgb, var(--yellow) 25%, transparent)':'color-mix(in srgb, var(--red) 25%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: n>=3.5?'var(--green)':n>=2.0?'var(--yellow)':'var(--red)' }}>{n}</div>
                   ))}
                 </div>
-                <div style={{ fontSize: 9, color: 'var(--text3)' }}>{e.fecha_hora ? new Date(e.fecha_hora).toLocaleDateString('es-PE',{day:'2-digit',month:'short'}) : '—'}</div>
+                <div style={{ fontSize: 11, color: 'var(--text3)' }}>{e.fecha_hora ? new Date(e.fecha_hora).toLocaleDateString('es-PE',{day:'2-digit',month:'short'}) : '—'}</div>
               </div>
             ))}
           </div>

@@ -3,6 +3,10 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
+import Icon from '@/components/Icon'
+import Logo from '@/components/Logo'
+import { MARCA } from '@/config/marca'
+import { BarraScroll } from '@/components/Vivo'
 
 export default function ServiciosPage() {
   const { user, loading, logout } = useAuth()
@@ -23,9 +27,8 @@ export default function ServiciosPage() {
   }, [user])
 
   if (loading || !user) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#060608' }}>
-      <div style={{ width: 16, height: 16, border: '2px solid #E67E22', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    <div className="flex min-h-dvh items-center justify-center bg-canvas" role="status" aria-label="Cargando">
+      <span className="spinner" />
     </div>
   )
 
@@ -35,176 +38,154 @@ export default function ServiciosPage() {
   const activos     = servicios.filter(s => s.estado === 'ACTIVO')
   const finalizados = servicios.filter(s => s.estado !== 'ACTIVO')
 
-  return (
-    <div style={{ minHeight: '100vh', background: '#060608', fontFamily: "'Inter', -apple-system, sans-serif", color: '#E8E8E8', display: 'flex', flexDirection: 'column' }}>
+  const fecha = d => new Date(d).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
 
-      {/* ── Header con logo PRODISE ── */}
-      <header style={{ padding: '14px 28px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(5,5,7,0.95)', position: 'sticky', top: 0, zIndex: 10, backdropFilter: 'blur(10px)' }}>
-        <div style={{ background: 'white', borderRadius: 7, padding: '5px 14px', display: 'inline-flex', alignItems: 'center' }}>
-          <img src="/logo_prodise.png" alt="PRODISE" style={{ height: 32, objectFit: 'contain', display: 'block' }} />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 12, fontWeight: 600 }}>{user.nombre}</div>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>Nivel {user.nivel}</div>
+  return (
+    <div className="flex min-h-dvh flex-col bg-canvas text-label">
+
+      {/* ── Barra de navegación translúcida ── */}
+      <header className="nav-material sticky top-0 z-20">
+        <BarraScroll titulo="#titulo-servicios" />
+        <div className="relative mx-auto flex h-14 w-full max-w-[1100px] items-center justify-between gap-4 px-4 sm:px-8">
+          <span className="nav-title pointer-events-none absolute left-1/2 -translate-x-1/2 text-headline font-semibold whitespace-nowrap max-sm:hidden" aria-hidden="true">Frentes de trabajo</span>
+          <Logo height={28} />
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="hidden min-w-0 text-right sm:block">
+              <div className="truncate text-footnote font-semibold">{user.nombre}</div>
+              <div className="text-caption text-label-3">Nivel {user.nivel}</div>
+            </div>
+            <button onClick={() => { logout(); router.push('/') }} className="btn btn-ghost" style={{ minHeight: 44 }}>
+              <Icon name="logout" size={18} />
+              <span>Cerrar sesión</span>
+            </button>
           </div>
-          <button onClick={() => { logout(); router.push('/') }} style={{ padding: '6px 14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 7, color: 'rgba(255,255,255,0.5)', fontSize: 11, cursor: 'pointer', fontFamily: 'Inter' }}>
-            Cerrar sesión
-          </button>
         </div>
       </header>
 
       {/* ── Contenido ── */}
-      <div style={{ flex: 1, padding: '32px 28px', maxWidth: 1100, width: '100%', margin: '0 auto' }}>
+      <main id="contenido" className="mx-auto w-full max-w-[1100px] flex-1 px-4 pt-10 pb-16 sm:px-8 sm:pt-14">
 
-        <div style={{ marginBottom: 28 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>Frentes de Trabajo</h1>
-          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13 }}>Selecciona un servicio para ingresar</p>
+        <div className="mb-10">
+          <h1 id="titulo-servicios" className="text-large font-bold">Frentes de trabajo</h1>
+          <p className="mt-2 text-body text-label-2">Elige el servicio en el que vas a trabajar hoy.</p>
         </div>
 
         {cargando ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '40px 0' }}>
-            <div style={{ width: 14, height: 14, border: '2px solid #E67E22', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-            <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>Cargando servicios...</span>
+          <div role="status" aria-label="Cargando servicios" className="flex flex-col gap-3">
+            {[0, 1, 2].map(i => <div key={i} className="skeleton h-[104px] rounded-lg" />)}
           </div>
         ) : (
           <>
             {/* Servicios activos */}
             {activos.length > 0 && (
-              <div style={{ marginBottom: 36 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+              <section aria-labelledby="t-activos" className="mb-14">
+                <h2 id="t-activos" className="mb-3 flex items-baseline gap-2 text-headline font-semibold">
+                  En curso <span className="num text-footnote font-normal text-label-3">{activos.length}</span>
+                </h2>
+                <ul className="flex flex-col gap-3">
                   {activos.map(s => (
-                    <TarjetaServicio key={s.id_servicio} s={s} activo={true} onClick={() => router.push(`/servicio/${s.id_servicio}`)} />
+                    <TarjetaServicio key={s.id_servicio} s={s} activo={true} fecha={fecha} onClick={() => router.push(`/servicio/${s.id_servicio}`)} />
                   ))}
-                </div>
-              </div>
+                </ul>
+              </section>
             )}
 
             {/* Servicios finalizados */}
             {finalizados.length > 0 && (
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.25)', letterSpacing: 1 }}>FINALIZADOS</div>
-                  <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
+              <section aria-labelledby="t-finalizados">
+                <h2 id="t-finalizados" className="mb-3 flex items-baseline gap-2 text-headline font-semibold">
+                  Finalizados <span className="num text-footnote font-normal text-label-3">{finalizados.length}</span>
+                </h2>
+                <ul className="overflow-hidden rounded-lg bg-surface">
                   {finalizados.map(s => (
-                    <TarjetaServicio key={s.id_servicio} s={s} activo={false} onClick={() => {}} />
+                    <TarjetaServicio key={s.id_servicio} s={s} activo={false} fecha={fecha} onClick={() => {}} />
                   ))}
-                </div>
-              </div>
+                </ul>
+              </section>
             )}
 
             {servicios.length === 0 && (
-              <div style={{ padding: '60px 20px', textAlign: 'center', color: 'rgba(255,255,255,0.25)', fontSize: 14 }}>
-                No hay servicios disponibles
+              <div className="rounded-lg bg-surface px-6 py-14 text-center">
+                <Icon name="folder" size={28} style={{ margin: '0 auto', color: 'var(--text3)' }} />
+                <p className="mt-4 text-headline font-semibold">No tienes servicios asignados</p>
+                <p className="mt-1 text-footnote text-label-3">Cuando tu coordinador te asigne a un frente, aparecerá aquí.</p>
               </div>
             )}
           </>
         )}
-      </div>
+      </main>
 
-      {/* ── Footer ── */}
-      <footer style={{ padding: '16px 28px', borderTop: '1px solid rgba(255,255,255,0.04)', textAlign: 'center' }}>
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', letterSpacing: 0.3 }}>
-          PROYECTOS DE INGENIERIA Y SERVICIOS S.C.R.L. © 2026 · Desarrollado por CJP y GM
+      {/* ── Pie ── */}
+      <footer className="border-t border-separator">
+        <div className="mx-auto w-full max-w-[1100px] px-4 py-6 text-caption text-label-3 sm:px-8">
+          {MARCA.razonSocial} © {MARCA.anio} · Desarrollado por {MARCA.creditos}
         </div>
       </footer>
-
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        @keyframes spin { to { transform: rotate(360deg) } }
-        @media (max-width: 600px) {
-          .svc-grid { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
     </div>
   )
 }
 
-function TarjetaServicio({ s, activo, onClick }) {
+function TarjetaServicio({ s, activo, onClick, fecha }) {
   const [hovered, setHovered] = useState(false)
 
-  const bgStyle = s.fondo_url ? {
-    backgroundImage: `url(${s.fondo_url})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-  } : {}
+  const rango = s.fecha_inicio && (
+    <span className="num">
+      {fecha(s.fecha_inicio)}
+      {s.fecha_fin && ` – ${fecha(s.fecha_fin)}`}
+    </span>
+  )
 
-  return (
-    <div
-      onClick={activo ? onClick : undefined}
+  // Finalizados: fila compacta de una lista agrupada, sin acción
+  if (!activo) return (
+    <li
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{
-        position: 'relative', overflow: 'hidden',
-        borderRadius: 14,
-        border: `1px solid ${activo ? (hovered ? 'rgba(230,126,34,0.4)' : 'rgba(255,255,255,0.08)') : 'rgba(255,255,255,0.04)'}`,
-        background: activo ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.015)',
-        cursor: activo ? 'pointer' : 'default',
-        opacity: activo ? 1 : 0.5,
-        transition: 'all 0.2s',
-        transform: activo && hovered ? 'translateY(-2px)' : 'translateY(0)',
-        boxShadow: activo && hovered ? '0 8px 30px rgba(0,0,0,0.4)' : 'none',
-        minHeight: 180,
-        ...bgStyle,
-      }}
+      className="flex items-center gap-4 border-b border-separator px-4 py-3 last:border-b-0 sm:px-5"
     >
-      {/* Overlay sobre el fondo */}
-      {s.fondo_url && (
-        <div style={{ position: 'absolute', inset: 0, background: activo ? 'rgba(6,6,8,0.72)' : 'rgba(6,6,8,0.85)', borderRadius: 14 }} />
-      )}
-
-      {/* Contenido */}
-      <div style={{ position: 'relative', zIndex: 1, padding: '20px 20px 18px' }}>
-
-        {/* Tipo + cliente */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <span style={{
-            fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 5, letterSpacing: 0.4,
-            background: s.tipo === 'PDP' ? 'rgba(91,164,207,0.12)' : 'rgba(155,89,182,0.12)',
-            color: s.tipo === 'PDP' ? '#5BA4CF' : '#B07CC6',
-            border: `1px solid ${s.tipo === 'PDP' ? 'rgba(91,164,207,0.2)' : 'rgba(155,89,182,0.2)'}`,
-          }}>{s.tipo}</span>
-          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontWeight: 600, letterSpacing: 0.5 }}>
-            {s.cliente}
-          </span>
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-body font-medium text-label-2">{s.nombre_descriptivo}</div>
+        <div className="mt-0.5 truncate text-footnote text-label-3">
+          {s.cliente} · <span className="font-mono text-caption">{s.codigo_otp}</span>
         </div>
-
-        {/* Nombre del servicio */}
-        <div style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.3, marginBottom: 6, color: activo ? '#E8E8E8' : 'rgba(255,255,255,0.5)' }}>
-          {s.nombre_descriptivo}
-        </div>
-
-        {/* OTP */}
-        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', fontFamily: 'monospace', marginBottom: 16 }}>
-          {s.codigo_otp}
-        </div>
-
-        {/* Fechas si existen */}
-        {s.fecha_inicio && (
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginBottom: 16 }}>
-            {new Date(s.fecha_inicio).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}
-            {s.fecha_fin && ` → ${new Date(s.fecha_fin).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}`}
-          </div>
-        )}
-
-        {/* Botón ingresar */}
-        {activo && (
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 5,
-            fontSize: 12, fontWeight: 700, color: hovered ? '#E67E22' : 'rgba(230,126,34,0.7)',
-            transition: 'color 0.2s',
-          }}>
-            Ingresar {hovered ? '→' : '›'}
-          </div>
-        )}
-        {!activo && (
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', fontStyle: 'italic' }}>
-            Servicio finalizado
-          </div>
-        )}
       </div>
-    </div>
+      <div className="hidden shrink-0 text-right text-footnote text-label-3 sm:block">{rango}</div>
+      <span className={`badge ${s.tipo === 'PDP' ? 'b-pdp' : 'b-pro'}`}>{s.tipo}</span>
+    </li>
+  )
+
+  // Activos: fila amplia con miniatura; toda la fila es el control
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={activo ? onClick : undefined}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        className="svc-row group flex w-full items-center gap-4 rounded-lg bg-surface p-3 text-left sm:gap-5 sm:p-4"
+      >
+        <div className="relative h-[72px] w-[96px] shrink-0 overflow-hidden rounded-md bg-brand-soft sm:h-20 sm:w-32">
+          {s.fondo_url
+            ? <img src={s.fondo_url} alt="" className="svc-foto h-full w-full object-cover" />
+            : <Icon name="planta" size={30} style={{ position: 'absolute', inset: 0, margin: 'auto', color: 'var(--accent)' }} />}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className={`badge ${s.tipo === 'PDP' ? 'b-pdp' : 'b-pro'}`}>{s.tipo}</span>
+            <span className="truncate text-footnote text-label-3">{s.cliente}</span>
+          </div>
+          <div className="mt-1.5 truncate text-headline font-semibold">{s.nombre_descriptivo}</div>
+          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-footnote text-label-3">
+            <span className="font-mono text-caption leading-[18px]">{s.codigo_otp}</span>
+            {rango}
+          </div>
+        </div>
+
+        <span className={`svc-cta flex h-9 shrink-0 items-center gap-1 rounded-full pr-2 pl-2 text-footnote font-semibold sm:pl-4 ${hovered ? 'bg-brand text-on-brand' : 'bg-brand-soft text-accent'}`}>
+          <span className="hidden sm:inline">Ingresar</span>
+          <Icon name="chevron" size={18} className="svc-chevron" />
+        </span>
+      </button>
+    </li>
   )
 }
