@@ -1,6 +1,7 @@
 'use client'
 import { createContext, useContext, useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { md5 } from '@/lib/md5'
 
 const AuthContext = createContext(null)
 
@@ -32,8 +33,9 @@ export function AuthProvider({ children }) {
         return { success: false, error: 'Usuario no encontrado' }
       }
 
-      // 2. Comparación directa
-      if (usr.password_hash !== password) {
+      // 2. Comparación: el panel de Admin guarda MD5; las creadas a mano en
+      //    Supabase pueden estar en texto plano. Se aceptan ambas.
+      if (usr.password_hash !== md5(password) && usr.password_hash !== password) {
         return { success: false, error: 'Contraseña incorrecta' }
       }
 

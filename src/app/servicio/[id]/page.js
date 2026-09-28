@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import Icon, { Medalla } from '@/components/Icon'
 import Logo from '@/components/Logo'
 import { Deslizador, Contador, BarraScroll, GestoCajon } from '@/components/Vivo'
+import { md5 } from '@/lib/md5'
 
 const NAV_ICON = { evaluar: 'evaluar', historial: 'historial', bitacora: 'bitacora', dashboard: 'dashboard', ranking: 'ranking', perfiles: 'perfiles', buscador: 'buscador', predictor: 'predictor', admin: 'admin' }
 
@@ -2860,40 +2861,25 @@ function RedAfinidadSVG({ cuadrilla, afinidades }) {
    GESTIÓN DE USUARIOS
    ========================================= */
 
-// MD5 puro en JS — mismo resultado que Python hashlib.md5
-function md5(input) {
-  function safeAdd(x,y){const l=(x&0xFFFF)+(y&0xFFFF);return((x>>16)+(y>>16)+(l>>16)<<16)|(l&0xFFFF)}
-  function rol(n,c){return(n<<c)|(n>>>(32-c))}
-  function cmn(q,a,b,x,s,t){return safeAdd(rol(safeAdd(safeAdd(a,q),safeAdd(x,t)),s),b)}
-  function ff(a,b,c,d,x,s,t){return cmn((b&c)|((~b)&d),a,b,x,s,t)}
-  function gg(a,b,c,d,x,s,t){return cmn((b&d)|(c&(~d)),a,b,x,s,t)}
-  function hh(a,b,c,d,x,s,t){return cmn(b^c^d,a,b,x,s,t)}
-  function ii(a,b,c,d,x,s,t){return cmn(c^(b|(~d)),a,b,x,s,t)}
-  const s8=unescape(encodeURIComponent(input));const x=[]
-  for(let i=0;i<s8.length;i+=4)x[i>>2]=s8.charCodeAt(i)+(s8.charCodeAt(i+1)<<8)+(s8.charCodeAt(i+2)<<16)+(s8.charCodeAt(i+3)<<24)
-  const l=s8.length;x[l>>2]|=0x80<<((l%4)*8);x[(((l+64)>>>9)<<4)+14]=l*8
-  let [a,b,c,d]=[0x67452301,0xEFCDAB89,0x98BADCFE,0x10325476]
-  for(let i=0;i<x.length;i+=16){
-    const[A,B,C,D]=[a,b,c,d]
-    a=ff(a,b,c,d,x[i],7,-680876936);d=ff(d,a,b,c,x[i+1],12,-389564586);c=ff(c,d,a,b,x[i+2],17,606105819);b=ff(b,c,d,a,x[i+3],22,-1044525330)
-    a=ff(a,b,c,d,x[i+4],7,-176418897);d=ff(d,a,b,c,x[i+5],12,1200080426);c=ff(c,d,a,b,x[i+6],17,-1473231341);b=ff(b,c,d,a,x[i+7],22,-45705983)
-    a=ff(a,b,c,d,x[i+8],7,1770035416);d=ff(d,a,b,c,x[i+9],12,-1958414417);c=ff(c,d,a,b,x[i+10],17,-42063);b=ff(b,c,d,a,x[i+11],22,-1990404162)
-    a=ff(a,b,c,d,x[i+12],7,1804603682);d=ff(d,a,b,c,x[i+13],12,-40341101);c=ff(c,d,a,b,x[i+14],17,-1502002290);b=ff(b,c,d,a,x[i+15],22,1236535329)
-    a=gg(a,b,c,d,x[i+1],5,-165796510);d=gg(d,a,b,c,x[i+6],9,-1069501632);c=gg(c,d,a,b,x[i+11],14,643717713);b=gg(b,c,d,a,x[i],20,-373897302)
-    a=gg(a,b,c,d,x[i+5],5,-701558691);d=gg(d,a,b,c,x[i+10],9,38016083);c=gg(c,d,a,b,x[i+15],14,-660478335);b=gg(b,c,d,a,x[i+4],20,-405537848)
-    a=gg(a,b,c,d,x[i+9],5,568446438);d=gg(d,a,b,c,x[i+14],9,-1019803690);c=gg(c,d,a,b,x[i+3],14,-187363961);b=gg(b,c,d,a,x[i+8],20,1163531501)
-    a=gg(a,b,c,d,x[i+13],5,-1444681467);d=gg(d,a,b,c,x[i+2],9,-51403784);c=gg(c,d,a,b,x[i+7],14,1735328473);b=gg(b,c,d,a,x[i+12],20,-1926607734)
-    a=hh(a,b,c,d,x[i+5],4,-378558);d=hh(d,a,b,c,x[i+8],11,-2022574463);c=hh(c,d,a,b,x[i+11],16,1839030562);b=hh(b,c,d,a,x[i+14],23,-35309556)
-    a=hh(a,b,c,d,x[i+1],4,-1530992060);d=hh(d,a,b,c,x[i+4],11,1272893353);c=hh(c,d,a,b,x[i+7],16,-155497632);b=hh(b,c,d,a,x[i+10],23,-1094730640)
-    a=hh(a,b,c,d,x[i+13],4,681279174);d=hh(d,a,b,c,x[i],11,-358537222);c=hh(c,d,a,b,x[i+3],16,-722521979);b=hh(b,c,d,a,x[i+6],23,76029189)
-    a=hh(a,b,c,d,x[i+9],4,-640364487);d=hh(d,a,b,c,x[i+12],11,-421815835);c=hh(c,d,a,b,x[i+15],16,530742520);b=hh(b,c,d,a,x[i+2],23,-995338651)
-    a=ii(a,b,c,d,x[i],6,-198630844);d=ii(d,a,b,c,x[i+7],10,1126891415);c=ii(c,d,a,b,x[i+14],15,-1416354905);b=ii(b,c,d,a,x[i+5],21,-57434055)
-    a=ii(a,b,c,d,x[i+12],6,1700485571);d=ii(d,a,b,c,x[i+3],10,-1894986606);c=ii(c,d,a,b,x[i+10],15,-1051523);b=ii(b,c,d,a,x[i+1],21,-2054922799)
-    a=ii(a,b,c,d,x[i+8],6,1873313359);d=ii(d,a,b,c,x[i+15],10,-30611744);c=ii(c,d,a,b,x[i+6],15,-1560198380);b=ii(b,c,d,a,x[i+13],21,1309151649)
-    a=ii(a,b,c,d,x[i+4],6,-145523070);d=ii(d,a,b,c,x[i+11],10,-1120210379);c=ii(c,d,a,b,x[i+2],15,718787259);b=ii(b,c,d,a,x[i+9],21,-343485551)
-    a=safeAdd(a,A);b=safeAdd(b,B);c=safeAdd(c,C);d=safeAdd(d,D)
-  }
-  return[a,b,c,d].map(n=>('00000000'+((n<0?n+0x100000000:n)).toString(16)).slice(-8).match(/../g).reverse().join('')).join('')
+
+const NIVELES = [
+  { n: 1, label: 'Admin', desc: 'Acceso total: todos los módulos, servicios y usuarios.' },
+  { n: 2, label: 'Planner / Coordinador', desc: 'Dashboard, Ranking, Perfiles, Buscador, Historial y Bitácora.' },
+  { n: 3, label: 'Supervisor', desc: 'Solo Evaluar y ver el Ranking de sus servicios.' },
+]
+
+function fuerzaClave(p) {
+  if (!p) return null
+  let puntos = 0
+  if (p.length >= 8) puntos++
+  if (p.length >= 12) puntos++
+  if (/[a-z]/.test(p) && /[A-Z]/.test(p)) puntos++
+  if (/\d/.test(p)) puntos++
+  if (/[^A-Za-z0-9]/.test(p)) puntos++
+  if (p.length < 6) return { nivel: 0, texto: 'Muy corta', color: 'var(--red)' }
+  if (puntos <= 2) return { nivel: 1, texto: 'Débil', color: 'var(--yellow)' }
+  if (puntos <= 3) return { nivel: 2, texto: 'Aceptable', color: 'var(--yellow)' }
+  return { nivel: 3, texto: 'Fuerte', color: 'var(--green)' }
 }
 
 function AdminUsuarios({ user: currentUser }) {
@@ -2906,60 +2892,81 @@ function AdminUsuarios({ user: currentUser }) {
   const [guardando, setGuardando] = useState(false)
   const [busquedaDni, setBusquedaDni] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(null)
+  const [cambiarClave, setCambiarClave] = useState(false)   // en edición: mostrar campo de contraseña
+  const [verClave, setVerClave]   = useState(true)
+  const [credenciales, setCredenciales] = useState(null)    // { username, password, nuevo } tras guardar
+  const [copiado, setCopiado]     = useState(false)
+  const [filtro, setFiltro]       = useState('')
+  const [filtroNivel, setFiltroNivel] = useState(0)          // 0 = todos
 
   // Form state
   const [form, setForm] = useState({
     username: '', password: '', dni_asociado: '', nivel_acceso: 2, estado: 'ACTIVO'
   })
-  const [generatedPwd, setGeneratedPwd] = useState('')
-
-  const nivelLabels = { 1: 'Nivel 1 — Admin', 2: 'Nivel 2 — Planner/Coordinador', 3: 'Nivel 3 — Supervisor' }
 
   useEffect(() => { loadAll() }, [])
 
   async function loadAll() {
     setLoading(true)
-    const [{ data: usrs }, { data: trabs }] = await Promise.all([
+    const [{ data: usrs, error: e1 }, { data: trabs }] = await Promise.all([
       supabase.from('usuarios_sistema').select('*').order('username'),
       supabase.from('trabajadores').select('dni, nombres_completos').order('nombres_completos'),
     ])
+    if (e1) setMsg('No se pudo leer la lista de usuarios: ' + e1.message)
     setUsuarios(usrs || [])
     setTrab(trabs || [])
     setLoading(false)
   }
 
   function nombreDeTrabajador(dni) {
-    return trabajadores.find(t => t.dni === dni)?.nombres_completos || dni || '—'
+    return trabajadores.find(t => t.dni === dni)?.nombres_completos || null
   }
 
   function trabajadoresFiltrados() {
-    if (!busquedaDni) return trabajadores.slice(0, 8)
+    if (!busquedaDni) return trabajadores.slice(0, 6)
     const q = busquedaDni.toLowerCase()
     return trabajadores.filter(t =>
       t.nombres_completos.toLowerCase().includes(q) || t.dni.includes(q)
-    ).slice(0, 8)
+    ).slice(0, 6)
+  }
+
+  function generarClave() {
+    // Sin caracteres que se confunden (0/O, 1/l/I) para dictarla sin errores
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'
+    const nums = '23456789'
+    const base = Array.from({ length: 7 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+    return base + Array.from({ length: 3 }, () => nums[Math.floor(Math.random() * nums.length)]).join('')
   }
 
   function abrirNuevo() {
-    setForm({ username: '', password: '', dni_asociado: '', nivel_acceso: 2, estado: 'ACTIVO' })
-    setGeneratedPwd(''); setEditando(null); setBusquedaDni(''); setMsg(''); setShowForm(true)
+    setForm({ username: '', password: generarClave(), dni_asociado: '', nivel_acceso: 2, estado: 'ACTIVO' })
+    setEditando(null); setBusquedaDni(''); setMsg(''); setCambiarClave(true); setVerClave(true); setCredenciales(null); setShowForm(true)
   }
 
-  function abrirEditar(u) {
-    setForm({ username: u.username, password: '', dni_asociado: u.dni_asociado || '', nivel_acceso: u.nivel_acceso, estado: u.estado })
-    setGeneratedPwd(''); setEditando(u); setBusquedaDni(''); setMsg(''); setShowForm(true)
+  function abrirEditar(u, soloClave = false) {
+    setForm({ username: u.username, password: soloClave ? generarClave() : '', dni_asociado: u.dni_asociado || '', nivel_acceso: u.nivel_acceso, estado: u.estado })
+    setEditando(u); setBusquedaDni(''); setMsg(''); setCambiarClave(soloClave); setVerClave(true); setCredenciales(null); setShowForm(true)
   }
 
-  function generarPassword() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789#@!'
-    const pwd = Array.from({length: 10}, () => chars[Math.floor(Math.random() * chars.length)]).join('')
-    setForm(f => ({ ...f, password: pwd }))
-    setGeneratedPwd(pwd)
+  function cerrarForm() {
+    setShowForm(false); setCredenciales(null); setMsg('')
+  }
+
+  function validar() {
+    const u = form.username.trim().toUpperCase()
+    if (!u) return 'Escribe un nombre de usuario.'
+    if (!/^[A-Z0-9._-]+$/.test(u)) return 'El usuario solo puede tener letras, números, punto, guion o guion bajo (sin espacios ni tildes).'
+    if (u.length < 3) return 'El usuario debe tener al menos 3 caracteres.'
+    if (!editando && usuarios.some(x => x.username === u)) return `Ya existe un usuario ${u}.`
+    if ((!editando || cambiarClave) && form.password.trim().length < 6) return 'La contraseña debe tener al menos 6 caracteres.'
+    if (editando && editando.username === currentUser.username && form.estado !== 'ACTIVO') return 'No puedes desactivar tu propio usuario.'
+    if (editando && editando.username === currentUser.username && parseInt(form.nivel_acceso) !== 1 && currentUser.nivel === 1) return 'No puedes quitarte el nivel de Admin a ti mismo.'
+    return ''
   }
 
   async function guardar() {
-    if (!form.username.trim()) { setMsg('El nombre de usuario es obligatorio'); return }
-    if (!editando && !form.password.trim()) { setMsg('La contraseña es obligatoria para usuarios nuevos'); return }
+    const error0 = validar()
+    if (error0) { setMsg(error0); return }
     setGuardando(true); setMsg('')
 
     const data = {
@@ -2969,10 +2976,12 @@ function AdminUsuarios({ user: currentUser }) {
       dni_asociado:  form.dni_asociado || null,
     }
 
-    // Solo hashear si se escribió contraseña
-    if (form.password.trim()) {
-      data.password_hash = md5(form.password.trim())
+    // Solo cifrar si se escribió contraseña
+    const clave = (!editando || cambiarClave) ? form.password.trim() : ''
+    if (clave) {
+      data.password_hash = md5(clave)
     }
+    if (!editando) data.intentos_fallidos = 0
 
     let error
     if (editando) {
@@ -2982,16 +2991,28 @@ function AdminUsuarios({ user: currentUser }) {
     }
 
     if (error) {
-      setMsg(error.code === '23505' ? 'Ese nombre de usuario ya existe' : error.message)
+      setMsg(
+        error.code === '23505' ? 'Ese nombre de usuario ya existe.'
+        : error.code === '23503' ? 'El trabajador vinculado no existe en la base de datos.'
+        : error.code === '42501' ? 'La base de datos rechazó el cambio por permisos (políticas RLS de Supabase).'
+        : 'No se pudo guardar: ' + error.message
+      )
     } else {
-      setShowForm(false)
-      setMsg('')
+      await supabase.from('audit_log').insert({
+        username: currentUser.username,
+        accion: editando ? (clave ? 'USUARIO_CLAVE' : 'USUARIO_EDITAR') : 'USUARIO_CREAR',
+        registro_id: data.username,
+        detalle: `Nivel ${data.nivel_acceso} · ${data.estado}${clave ? ' · contraseña asignada' : ''}`,
+      })
       await loadAll()
+      if (clave) setCredenciales({ username: data.username, password: clave, nuevo: !editando })
+      else cerrarForm()
     }
     setGuardando(false)
   }
 
   async function toggleEstado(u) {
+    if (u.username === currentUser.username) return
     const nuevoEstado = u.estado === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO'
     await supabase.from('usuarios_sistema').update({ estado: nuevoEstado }).eq('username', u.username)
     await loadAll()
@@ -3003,214 +3024,301 @@ function AdminUsuarios({ user: currentUser }) {
     await loadAll()
   }
 
-  const nivelColor = n => n === 1 ? 'var(--accent)' : n === 2 ? 'var(--accent2)' : 'var(--green)'
-  const nivelBg    = n => n === 1 ? 'color-mix(in srgb, var(--accent) 8%, transparent)' : n === 2 ? 'color-mix(in srgb, var(--accent2) 8%, transparent)' : 'color-mix(in srgb, var(--green) 8%, transparent)'
+  function textoCredenciales(c) {
+    const url = typeof window !== 'undefined' ? window.location.origin : ''
+    return `Acceso al Portal PRODISE\nUsuario: ${c.username}\nContraseña: ${c.password}\nIngresa en: ${url}`
+  }
 
-  if (loading) return <p style={{ color: 'var(--text3)', fontSize: 13 }}>Cargando usuarios...</p>
+  async function copiar(c) {
+    try { await navigator.clipboard.writeText(textoCredenciales(c)); setCopiado(true); setTimeout(() => setCopiado(false), 2000) }
+    catch { setCopiado(false) }
+  }
+
+  async function compartir(c) {
+    const texto = textoCredenciales(c)
+    if (navigator.share) { try { await navigator.share({ title: 'Acceso al Portal PRODISE', text: texto }) } catch {} }
+    else window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank', 'noopener')
+  }
+
+  const nivelColor = n => n === 1 ? 'var(--accent)' : n === 2 ? 'var(--text)' : 'var(--text2)'
+  const nivelBg    = n => n === 1 ? 'var(--brand-soft)' : 'var(--fill-2)'
+  const nivelCorto = n => n === 1 ? 'Admin' : n === 2 ? 'Planner' : 'Supervisor'
+
+  const visibles = usuarios.filter(u => {
+    if (filtroNivel && u.nivel_acceso !== filtroNivel) return false
+    if (!filtro) return true
+    const q = filtro.toLowerCase()
+    return u.username.toLowerCase().includes(q) || (nombreDeTrabajador(u.dni_asociado) || '').toLowerCase().includes(q) || (u.dni_asociado || '').includes(q)
+  })
+  const activos = usuarios.filter(u => u.estado === 'ACTIVO').length
+  const fuerza = fuerzaClave(form.password)
+
+  if (loading) return <div role="status" style={{ display: 'flex', alignItems: 'center', gap: 12, color: 'var(--text2)', fontSize: 15 }}><span className="spinner" />Cargando usuarios…</div>
 
   return (
     <div className="fade">
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+      {/* Encabezado */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 20 }}>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 600 }}>Usuarios del sistema</div>
-          <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 2 }}>{usuarios.length} usuarios registrados</div>
+          <h3 className="group-title">Usuarios del sistema</h3>
+          <div className="num" style={{ fontSize: 13, color: 'var(--text3)', marginTop: 2 }}>{usuarios.length} usuarios · {activos} activos</div>
         </div>
         <button className="btn btn-primary" onClick={abrirNuevo} style={{ width: 'auto' }}>
           <Icon name="plus" size={18} />Nuevo usuario
         </button>
       </div>
 
-      {/* Tabla de usuarios */}
-      <div className="card-static" style={{ overflow: 'hidden', marginBottom: 16 }}>
-        {/* Cabecera */}
-        <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr 140px 80px 120px 100px', gap: 8, padding: '9px 16px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text3)', fontWeight: 600 }}>
-          <div>Usuario</div><div>Trabajador vinculado</div><div>Nivel</div><div>Estado</div><div>Último acceso</div><div style={{ textAlign: 'right' }}>Acciones</div>
+      {!showForm && msg && <div className="alert alert-err" role="alert" style={{ marginBottom: 16 }}>{msg}</div>}
+
+      {/* Búsqueda y filtro */}
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
+        <div className="search-field" style={{ flex: '1 1 260px', maxWidth: 420 }}>
+          <Icon name="buscador" size={18} />
+          <input className="input" type="search" aria-label="Buscar usuario" placeholder="Buscar por usuario, nombre o DNI" value={filtro} onChange={e => setFiltro(e.target.value)} style={{ background: 'var(--surface)' }} />
         </div>
-
-        {usuarios.map((u, i) => (
-          <div key={u.username} style={{ display: 'grid', gridTemplateColumns: '140px 1fr 140px 80px 120px 100px', gap: 8, padding: '11px 16px', alignItems: 'center', borderBottom: i < usuarios.length - 1 ? '1px solid var(--fill)' : 'none', opacity: u.estado === 'INACTIVO' ? 0.45 : 1 }}>
-            {/* Username */}
-            <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)', color: u.username === currentUser.username ? 'var(--accent)' : 'var(--text)' }}>
-              {u.username}
-              {u.username === currentUser.username && <span style={{ fontSize: 11, color: 'var(--accent)', marginLeft: 6, fontFamily: 'inherit' }}>tú</span>}
-            </div>
-
-            {/* Trabajador */}
-            <div style={{ fontSize: 13, color: 'var(--text2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {nombreDeTrabajador(u.dni_asociado)}
-            </div>
-
-            {/* Nivel */}
-            <div>
-              <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 6, background: nivelBg(u.nivel_acceso), color: nivelColor(u.nivel_acceso), fontWeight: 600 }}>
-                N{u.nivel_acceso} · {u.nivel_acceso === 1 ? 'Admin' : u.nivel_acceso === 2 ? 'Planner' : 'Supervisor'}
-              </span>
-            </div>
-
-            {/* Estado */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <div style={{ width: 7, height: 7, borderRadius: '50%', background: u.estado === 'ACTIVO' ? 'var(--green)' : 'var(--text3)', flexShrink: 0 }} />
-              <span style={{ fontSize: 11, color: u.estado === 'ACTIVO' ? 'var(--green)' : 'var(--text3)' }}>{u.estado}</span>
-            </div>
-
-            {/* Último acceso */}
-            <div style={{ fontSize: 11, color: 'var(--text3)' }}>
-              {u.ultimo_login ? new Date(u.ultimo_login).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: '2-digit' }) : 'Nunca'}
-            </div>
-
-            {/* Acciones */}
-            <div style={{ display: 'flex', gap: 5, justifyContent: 'flex-end' }}>
-              <button onClick={() => abrirEditar(u)} className="act">
-                <Icon name="edit" size={16} />Editar
-              </button>
-              <button onClick={() => toggleEstado(u)} className="act act-icon" aria-label={u.estado === 'ACTIVO' ? 'Desactivar usuario' : 'Activar usuario'} title={u.estado === 'ACTIVO' ? 'Desactivar' : 'Activar'}>
-                <Icon name={u.estado === 'ACTIVO' ? 'pause' : 'play'} size={16} />
-              </button>
-              {u.username !== currentUser.username && (
-                <button onClick={() => setConfirmDelete(u.username)} className="act act-icon act-danger" aria-label="Eliminar usuario">
-                  <Icon name="trash" size={16} />
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
+        <div className="segmented" role="tablist" aria-label="Filtrar por nivel">
+          <Deslizador />
+          {[0, 1, 2, 3].map(n => (
+            <button key={n} role="tab" aria-selected={filtroNivel === n} onClick={() => setFiltroNivel(n)} className={`segmented-item ${filtroNivel === n ? 'is-active' : ''}`}>
+              {n === 0 ? 'Todos' : `N${n}`}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Confirm delete */}
+      {/* Lista de usuarios */}
+      {visibles.length === 0 ? (
+        <div className="card-static empty-state" style={{ marginBottom: 16 }}>
+          <Icon name="users" size={28} style={{ color: 'var(--text3)' }} />
+          <p style={{ color: 'var(--text2)', fontSize: 15, marginTop: 16 }}>{usuarios.length ? 'Ningún usuario coincide con la búsqueda.' : 'Aún no hay usuarios. Crea el primero con “Nuevo usuario”.'}</p>
+        </div>
+      ) : (
+        <ul className="card-static grouped-list" style={{ marginBottom: 16 }}>
+          {visibles.map(u => {
+            const yo = u.username === currentUser.username
+            const nombre = nombreDeTrabajador(u.dni_asociado)
+            return (
+              <li key={u.username} className="user-row" style={{ opacity: u.estado === 'INACTIVO' ? 0.6 : 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: '1 1 280px' }}>
+                  <Avatar nombre={nombre || u.username} size={40} />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 15, fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{u.username}</span>
+                      {yo && <span className="badge b-pdp">Tú</span>}
+                      <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: nivelBg(u.nivel_acceso), color: nivelColor(u.nivel_acceso), fontWeight: 600 }}>
+                        N{u.nivel_acceso} · {nivelCorto(u.nivel_acceso)}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 13, color: nombre ? 'var(--text2)' : 'var(--text3)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {nombre || 'Sin trabajador vinculado'}
+                    </div>
+                    <div className="num" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text3)', marginTop: 2 }}>
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: u.estado === 'ACTIVO' ? 'var(--green)' : 'var(--text3)' }} />
+                      {u.estado === 'ACTIVO' ? 'Activo' : 'Inactivo'} · {u.ultimo_login ? `Último acceso ${new Date(u.ultimo_login).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: '2-digit' })}` : 'Nunca ha ingresado'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="user-actions">
+                  <button onClick={() => abrirEditar(u, true)} className="act" title="Asignar una contraseña nueva">
+                    <Icon name="key" size={16} />Contraseña
+                  </button>
+                  <button onClick={() => abrirEditar(u)} className="act">
+                    <Icon name="edit" size={16} />Editar
+                  </button>
+                  {!yo && (
+                    <button onClick={() => toggleEstado(u)} className="act act-icon" aria-label={u.estado === 'ACTIVO' ? 'Desactivar usuario' : 'Activar usuario'} title={u.estado === 'ACTIVO' ? 'Desactivar' : 'Activar'}>
+                      <Icon name={u.estado === 'ACTIVO' ? 'pause' : 'play'} size={16} />
+                    </button>
+                  )}
+                  {!yo && (
+                    <button onClick={() => setConfirmDelete(u.username)} className="act act-icon act-danger" aria-label="Eliminar usuario">
+                      <Icon name="trash" size={16} />
+                    </button>
+                  )}
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+
+      {/* Confirmar eliminación */}
       {confirmDelete && (
         <div role="presentation" className="modal-scrim" style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div role="dialog" aria-modal="true" className="modal-material modal-panel" style={{ borderRadius: 16, padding: '24px', maxWidth: 320, textAlign: 'center' }}>
-            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>¿Eliminar usuario?</div>
-            <div style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 20 }}>Se eliminará <strong style={{ color: 'var(--text)' }}>{confirmDelete}</strong> permanentemente.</div>
+          <div role="dialog" aria-modal="true" className="modal-material modal-panel" style={{ borderRadius: 16, padding: '24px', maxWidth: 340, textAlign: 'center' }}>
+            <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 8 }}>¿Eliminar usuario?</div>
+            <div style={{ fontSize: 15, color: 'var(--text2)', marginBottom: 20 }}>Se eliminará <strong style={{ color: 'var(--text)' }}>{confirmDelete}</strong> permanentemente. Si solo quieres quitarle el acceso, desactívalo.</div>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn btn-ghost" onClick={() => setConfirmDelete(null)} style={{ flex: 1, fontSize: 13 }}>Cancelar</button>
+              <button className="btn btn-ghost" onClick={() => setConfirmDelete(null)} style={{ flex: 1 }}>Cancelar</button>
               <button onClick={() => eliminar(confirmDelete)} className="btn btn-danger" style={{ flex: 1 }}>Eliminar</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal formulario */}
+      {/* Formulario / credenciales */}
       {showForm && (
-        <div role="presentation" className="modal-scrim" style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div role="dialog" aria-modal="true" className="modal-material modal-panel" style={{ borderRadius: 16, padding: '24px', width: '100%', maxWidth: 440 }}>
+        <div role="presentation" className="modal-scrim sheet-scrim" style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div role="dialog" aria-modal="true" aria-labelledby="usr-titulo" className="modal-material modal-panel sheet-panel" style={{ borderRadius: 16, padding: '24px', width: '100%', maxWidth: 480, maxHeight: '92dvh', overflowY: 'auto' }}>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <div style={{ fontSize: 15, fontWeight: 700 }}>{editando ? 'Editar usuario' : 'Nuevo usuario'}</div>
-              <button onClick={() => setShowForm(false)} className="icon-btn" aria-label="Cerrar" style={{ margin: -10 }}><Icon name="close" size={20} /></button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-              {/* Username */}
-              <div>
-                <label style={lbl}>Nombre de usuario</label>
-                <input className="input" value={form.username} placeholder="Ej: RCHANCAY"
-                  onChange={e => setForm(f => ({ ...f, username: e.target.value.toUpperCase() }))}
-                  disabled={!!editando}
-                  style={{ fontVariantNumeric: 'tabular-nums', opacity: editando ? 0.6 : 1 }}
-                />
-                <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 3 }}>Solo letras y números, sin espacios. Se guardará en MAYÚSCULAS.</div>
-              </div>
-
-              {/* Trabajador vinculado */}
-              <div>
-                <label style={lbl}>Trabajador vinculado</label>
-                <input className="input" placeholder="Buscar por nombre o DNI..."
-                  value={busquedaDni}
-                  onChange={e => setBusquedaDni(e.target.value)}
-                  style={{ marginBottom: 6 }}
-                />
-                <div style={{ background: 'var(--fill)', borderRadius: 8, overflow: 'hidden' }}>
-                  {/* Opción ninguno */}
-                  <div onClick={() => { setForm(f => ({...f, dni_asociado: ''})); setBusquedaDni('') }}
-                    style={{ padding: '7px 12px', fontSize: 13, cursor: 'pointer', background: !form.dni_asociado ? 'color-mix(in srgb, var(--accent) 7%, transparent)' : 'transparent', color: !form.dni_asociado ? 'var(--accent)' : 'var(--text3)', borderBottom: '1px solid var(--border)' }}>
-                    — Sin vincular
-                  </div>
-                  {trabajadoresFiltrados().map(t => (
-                    <div key={t.dni} onClick={() => { setForm(f => ({...f, dni_asociado: t.dni})); setBusquedaDni(t.nombres_completos) }}
-                      style={{ padding: '7px 12px', fontSize: 13, cursor: 'pointer', background: form.dni_asociado === t.dni ? 'color-mix(in srgb, var(--accent) 7%, transparent)' : 'transparent', color: form.dni_asociado === t.dni ? 'var(--accent)' : 'var(--text2)', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--fill)' }}>
-                      <span style={{ fontWeight: form.dni_asociado === t.dni ? 600 : 400 }}>{t.nombres_completos}</span>
-                      <span style={{ color: 'var(--text3)', fontFamily: 'var(--font-mono)' }}>{t.dni}</span>
-                    </div>
-                  ))}
+            {credenciales ? (
+              /* ── Listo: credenciales para entregar ── */
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ width: 56, height: 56, borderRadius: '50%', margin: '0 auto', background: 'color-mix(in srgb, var(--green) 14%, transparent)', color: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon name="check" size={28} strokeWidth={2.25} />
                 </div>
-                {form.dni_asociado && <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--green)', marginTop: 6 }}><Icon name="link" size={14} />Vinculado a {nombreDeTrabajador(form.dni_asociado)}</div>}
-              </div>
-
-              {/* Nivel de acceso */}
-              <div>
-                <label style={lbl}>Nivel de acceso</label>
-                <select className="input" value={form.nivel_acceso} onChange={e => setForm(f => ({...f, nivel_acceso: parseInt(e.target.value)}))}>
-                  <option value={1}>Nivel 1 — Admin (acceso total)</option>
-                  <option value={2}>Nivel 2 — Planner / Coordinador</option>
-                  <option value={3}>Nivel 3 — Supervisor (solo evaluar)</option>
-                </select>
-              </div>
-
-              {/* Contraseña */}
-              <div>
-                <label style={lbl}>{editando ? 'Nueva contraseña (déjala vacía para no cambiarla)' : 'Contraseña *'}</label>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <input className="input" type="text" value={form.password} placeholder={editando ? 'Escribe para cambiar contraseña' : 'Escribe una contraseña...'}
-                    onChange={e => { setForm(f => ({...f, password: e.target.value})); setGeneratedPwd('') }}
-                    style={{ flex: 1 }}
-                  />
-                  <button type="button" onClick={generarPassword}
-                    className="btn btn-ghost" style={{ minHeight: 44, whiteSpace: 'nowrap' }}>
-                    <Icon name="dice" size={16} />Generar
+                <h3 id="usr-titulo" style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', marginTop: 16 }}>{credenciales.nuevo ? 'Usuario creado' : 'Contraseña actualizada'}</h3>
+                <p style={{ fontSize: 15, color: 'var(--text2)', marginTop: 6 }}>Entrégale estos datos. Por seguridad no se podrán volver a ver.</p>
+                <div style={{ textAlign: 'left', marginTop: 20, padding: '14px 16px', borderRadius: 12, background: 'var(--fill)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text3)' }}>Usuario</div>
+                  <div style={{ fontSize: 17, fontWeight: 600, fontFamily: 'var(--font-mono)', marginTop: 2, userSelect: 'all' }}>{credenciales.username}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 12 }}>Contraseña</div>
+                  <div style={{ fontSize: 17, fontWeight: 600, fontFamily: 'var(--font-mono)', marginTop: 2, userSelect: 'all', wordBreak: 'break-all' }}>{credenciales.password}</div>
+                </div>
+                <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+                  <button className="btn btn-ghost" onClick={() => copiar(credenciales)} style={{ flex: 1, minHeight: 44 }}>
+                    <Icon name={copiado ? 'check' : 'copy'} size={18} />{copiado ? 'Copiado' : 'Copiar'}
+                  </button>
+                  <button className="btn btn-ghost" onClick={() => compartir(credenciales)} style={{ flex: 1, minHeight: 44 }}>
+                    <Icon name="share" size={18} />Compartir
                   </button>
                 </div>
-                {form.password && (
-                  <div style={{ marginTop: 8, padding: '8px 12px', background: 'color-mix(in srgb, var(--green) 7%, transparent)', border: '1px solid color-mix(in srgb, var(--green) 15%, transparent)', borderRadius: 8 }}>
-                    <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 4 }}>Contraseña que verá el usuario:</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--green)' }}>{form.password}</div>
-                    <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>Se guardará encriptada en la base de datos. Comparte esta contraseña con el usuario.</div>
-                  </div>
-                )}
+                <button className="btn btn-primary" onClick={cerrarForm} style={{ marginTop: 10 }}>Listo</button>
               </div>
-
-              {/* Estado (solo en edición) */}
-              {editando && (
-                <div>
-                  <label style={lbl}>Estado</label>
-                  <select className="input" value={form.estado} onChange={e => setForm(f => ({...f, estado: e.target.value}))}>
-                    <option value="ACTIVO">ACTIVO</option>
-                    <option value="INACTIVO">INACTIVO</option>
-                  </select>
+            ) : (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <h3 id="usr-titulo" style={{ fontSize: 17, fontWeight: 600 }}>{editando ? `Editar ${editando.username}` : 'Nuevo usuario'}</h3>
+                  <button onClick={cerrarForm} className="icon-btn" aria-label="Cerrar" style={{ margin: -10 }}><Icon name="close" size={20} /></button>
                 </div>
-              )}
 
-              {msg && <div className="alert alert-err">{msg}</div>}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-              <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-                <button className="btn btn-ghost" onClick={() => setShowForm(false)} style={{ flex: 1 }}>Cancelar</button>
-                <button className="btn btn-primary" onClick={guardar} disabled={guardando} style={{ flex: 2 }}>
-                  {guardando ? 'Guardando...' : editando ? 'Guardar cambios' : 'Crear usuario'}
-                </button>
-              </div>
-            </div>
+                  {/* Usuario */}
+                  <div>
+                    <label htmlFor="usr-nombre" style={lbl}>Nombre de usuario</label>
+                    <input id="usr-nombre" className="input" value={form.username} placeholder="Ej: RCHANCAY" autoComplete="off" autoCapitalize="characters" spellCheck={false}
+                      onChange={e => { setForm(f => ({ ...f, username: e.target.value.toUpperCase().replace(/\s/g, '') })); setMsg('') }}
+                      disabled={!!editando}
+                      style={{ fontFamily: 'var(--font-mono)', opacity: editando ? 0.6 : 1 }}
+                    />
+                    {!editando && <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 6 }}>Letras y números, sin espacios. Es el que escribirá para ingresar.</div>}
+                  </div>
+
+                  {/* Contraseña */}
+                  <div>
+                    {editando && !cambiarClave ? (
+                      <button type="button" className="btn btn-ghost" onClick={() => { setCambiarClave(true); setForm(f => ({ ...f, password: generarClave() })) }} style={{ width: '100%', minHeight: 44 }}>
+                        <Icon name="key" size={18} />Asignar una contraseña nueva
+                      </button>
+                    ) : (
+                      <>
+                        <label htmlFor="usr-clave" style={lbl}>{editando ? 'Contraseña nueva' : 'Contraseña'}</label>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <div style={{ position: 'relative', flex: 1 }}>
+                            <input id="usr-clave" className="input" type={verClave ? 'text' : 'password'} value={form.password} autoComplete="new-password" spellCheck={false}
+                              onChange={e => { setForm(f => ({ ...f, password: e.target.value })); setMsg('') }}
+                              style={{ fontFamily: 'var(--font-mono)', paddingRight: 48 }}
+                            />
+                            <button type="button" onClick={() => setVerClave(v => !v)} className="icon-btn" aria-label={verClave ? 'Ocultar contraseña' : 'Mostrar contraseña'} style={{ position: 'absolute', right: 0, top: 0, color: 'var(--text3)' }}>
+                              <Icon name={verClave ? 'eyeOff' : 'eye'} size={18} />
+                            </button>
+                          </div>
+                          <button type="button" onClick={() => setForm(f => ({ ...f, password: generarClave() }))} className="btn btn-ghost" style={{ minHeight: 44, whiteSpace: 'nowrap' }} title="Generar otra contraseña">
+                            <Icon name="dice" size={16} />Generar
+                          </button>
+                        </div>
+                        {fuerza && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+                            <div style={{ flex: 1, display: 'flex', gap: 4 }}>
+                              {[0, 1, 2, 3].map(i => <span key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= fuerza.nivel ? fuerza.color : 'var(--fill-2)', transition: 'background-color var(--dur-quick) ease-out' }} />)}
+                            </div>
+                            <span style={{ fontSize: 13, color: fuerza.color, fontWeight: 500, minWidth: 72, textAlign: 'right' }}>{fuerza.texto}</span>
+                          </div>
+                        )}
+                        <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 6 }}>Se guarda cifrada. Al guardar podrás copiarla o compartirla con el usuario.</div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Nivel de acceso */}
+                  <fieldset style={{ border: 0 }}>
+                    <legend style={lbl}>Nivel de acceso</legend>
+                    <div className="card-static grouped-list" style={{ background: 'var(--fill)' }}>
+                      {NIVELES.map(({ n, label, desc }) => (
+                        <label key={n} className={`choice-row ${parseInt(form.nivel_acceso) === n ? 'is-selected' : ''}`}>
+                          <input type="radio" name="usr-nivel" checked={parseInt(form.nivel_acceso) === n} onChange={() => setForm(f => ({ ...f, nivel_acceso: n }))} className="choice-radio" />
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 15, fontWeight: 600 }}>Nivel {n} · {label}</div>
+                            <div style={{ fontSize: 13, color: 'var(--text2)', marginTop: 2 }}>{desc}</div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+
+                  {/* Trabajador vinculado */}
+                  <div>
+                    <label htmlFor="usr-trab" style={lbl}>Trabajador vinculado <span style={{ color: 'var(--text3)', fontWeight: 400 }}>(opcional)</span></label>
+                    {form.dni_asociado ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, background: 'var(--fill)' }}>
+                        <Avatar nombre={nombreDeTrabajador(form.dni_asociado) || form.dni_asociado} size={32} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 15, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{nombreDeTrabajador(form.dni_asociado) || 'Trabajador no encontrado'}</div>
+                          <div style={{ fontSize: 13, color: 'var(--text3)', fontFamily: 'var(--font-mono)' }}>DNI {form.dni_asociado}</div>
+                        </div>
+                        <button type="button" className="act" onClick={() => { setForm(f => ({ ...f, dni_asociado: '' })); setBusquedaDni('') }}>Quitar</button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="search-field">
+                          <Icon name="buscador" size={18} />
+                          <input id="usr-trab" className="input" type="search" placeholder="Buscar por nombre o DNI" value={busquedaDni} onChange={e => setBusquedaDni(e.target.value)} />
+                        </div>
+                        {busquedaDni && (
+                          <ul className="grouped-list" style={{ marginTop: 8, borderRadius: 10, background: 'var(--fill)', overflow: 'hidden' }}>
+                            {trabajadoresFiltrados().map(t => (
+                              <li key={t.dni}>
+                                <button type="button" className="pick-row" onClick={() => { setForm(f => ({ ...f, dni_asociado: t.dni })); setBusquedaDni('') }} style={{ borderRadius: 0 }}>
+                                  <span style={{ flex: 1, textAlign: 'left', fontSize: 15 }}>{t.nombres_completos}</span>
+                                  <span style={{ fontSize: 13, color: 'var(--text3)', fontFamily: 'var(--font-mono)' }}>{t.dni}</span>
+                                </button>
+                              </li>
+                            ))}
+                            {trabajadoresFiltrados().length === 0 && <li style={{ padding: '12px', fontSize: 13, color: 'var(--text3)' }}>Sin resultados.</li>}
+                          </ul>
+                        )}
+                        <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 6 }}>Vincúlalo para que el nombre aparezca en las evaluaciones y los niveles 3 vean sus servicios.</div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Estado (solo en edición) */}
+                  {editando && editando.username !== currentUser.username && (
+                    <button type="button" role="switch" aria-checked={form.estado === 'ACTIVO'} onClick={() => setForm(f => ({ ...f, estado: f.estado === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO' }))} className="switch-row" style={{ width: '100%', justifyContent: 'flex-start', background: 'var(--fill)' }}>
+                      <span className={`switch ${form.estado === 'ACTIVO' ? 'is-on' : ''}`} aria-hidden="true"><span className="switch-knob" /></span>
+                      <span style={{ textAlign: 'left' }}>
+                        <span style={{ display: 'block', fontSize: 15, fontWeight: 500 }}>Usuario activo</span>
+                        <span style={{ display: 'block', fontSize: 13, color: 'var(--text3)' }}>{form.estado === 'ACTIVO' ? 'Puede ingresar al portal' : 'No podrá ingresar hasta reactivarlo'}</span>
+                      </span>
+                    </button>
+                  )}
+
+                  {msg && <div className="alert alert-err" role="alert">{msg}</div>}
+
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button className="btn btn-ghost" onClick={cerrarForm} style={{ flex: 1 }}>Cancelar</button>
+                    <button className="btn btn-primary" onClick={guardar} disabled={guardando} style={{ flex: 2 }}>
+                      {guardando ? 'Guardando…' : editando ? 'Guardar cambios' : 'Crear usuario'}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
-
-      {/* Leyenda de niveles */}
-      <div className="card-static" style={{ padding: '12px 16px' }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', marginBottom: 8 }}>Referencia de niveles</div>
-        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          {[
-            { n: 1, label: 'Admin', desc: 'Acceso total a todos los módulos y servicios' },
-            { n: 2, label: 'Planner', desc: 'Dashboard, Ranking, Perfiles, Buscador, Bitácora' },
-            { n: 3, label: 'Supervisor', desc: 'Solo puede Evaluar y ver Ranking' },
-          ].map(({ n, label, desc }) => (
-            <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 6, background: nivelBg(n), color: nivelColor(n), fontWeight: 600 }}>N{n} · {label}</span>
-              <span style={{ fontSize: 11, color: 'var(--text3)' }}>{desc}</span>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   )
 }

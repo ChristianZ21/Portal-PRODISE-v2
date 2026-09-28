@@ -217,10 +217,12 @@
   /* Sin fundido por elemento: la única entrada es la del contenido de cada sección */
   .fade { }
   @keyframes section-in { from { opacity: 0; transform: translateY(8px); } }
-  .section-enter { animation: section-in var(--dur-spring) var(--spring) both; }
+  /* backwards (no both): al terminar no queda ninguna transformación aplicada;
+     si quedara, los modales position:fixed se anclarían a la sección. */
+  .section-enter { animation: section-in var(--dur-spring) var(--spring) backwards; }
 
   @keyframes enter-up { from { opacity: 0; transform: translateY(12px); } }
-  .enter { animation: enter-up 600ms var(--spring) both; }
+  .enter { animation: enter-up 600ms var(--spring) backwards; }
 
   /* Grupos de contenido: superficie sólida, sin borde ni sombra */
   .card, .card-static {
@@ -328,7 +330,7 @@
 
   /* Barras que crecen al aparecer */
   @keyframes meter-grow { from { transform: scaleX(0); } }
-  .meter-fill { transform-origin: left center; animation: meter-grow 900ms var(--spring) both; }
+  .meter-fill { transform-origin: left center; animation: meter-grow 900ms var(--spring) backwards; }
 
   /* Barra de navegación estilo iOS: transparente arriba, material al desplazar */
   .nav-material { transition: background-color 200ms ease-out, box-shadow 200ms ease-out, -webkit-backdrop-filter 200ms ease-out, backdrop-filter 200ms ease-out; }
@@ -483,13 +485,13 @@
     box-shadow: inset 0 -0.5px 0 var(--border);
   }
   .modal-material {
-    background: color-mix(in srgb, var(--surface) 86%, transparent);
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
     -webkit-backdrop-filter: blur(28px) saturate(180%);
     backdrop-filter: blur(28px) saturate(180%);
     box-shadow: var(--shadow-float);
   }
-  .modal-scrim { -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); padding: 16px; animation: scrim-in var(--dur-quick) ease-out both; }
-  .modal-panel { color: var(--text); animation: sheet-in var(--dur-spring) var(--spring) both; transform-origin: 50% 60%; }
+  .modal-scrim { -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); padding: 16px; animation: scrim-in var(--dur-quick) ease-out backwards; }
+  .modal-panel { color: var(--text); animation: sheet-in var(--dur-spring) var(--spring) backwards; transform-origin: 50% 60%; }
   @keyframes scrim-in { from { opacity: 0; } }
   @keyframes sheet-in { from { opacity: 0; transform: scale(0.94); filter: blur(6px); } }
   @media (prefers-reduced-transparency: reduce) {
@@ -555,7 +557,7 @@
   transition: transform var(--dur-spring) var(--spring-bounce);
   will-change: transform;
 }
-.sidebar-scrim { position: fixed; inset: 0; z-index: 45; background: var(--scrim); animation: scrim-in var(--dur-quick) ease-out both; touch-action: none; }
+.sidebar-scrim { position: fixed; inset: 0; z-index: 45; background: var(--scrim); animation: scrim-in var(--dur-quick) ease-out backwards; touch-action: none; }
 
 .nav-item {
   display: flex; align-items: center; gap: 12px;
@@ -612,6 +614,10 @@
 .tab-item.is-active { color: var(--accent); font-weight: 600; }
 .tab-item:active { transform: scale(0.92); transition-duration: var(--dur-quick), 80ms; }
 
+/* Usuarios (Admin) */
+.user-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 16px; padding: 14px 16px; }
+.user-actions { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+
 /* Barra fija de guardado (Evaluar) */
 .save-bar {
   position: sticky; bottom: 16px; z-index: 5;
@@ -660,6 +666,15 @@
     box-shadow: inset 0 0.5px 0 var(--border);
   }
   .save-bar { bottom: calc(76px + env(safe-area-inset-bottom)); padding-left: 16px; gap: 12px; }
+  /* Hojas modales al estilo iOS: suben desde abajo */
+  .sheet-scrim { align-items: flex-end !important; padding: 0 !important; }
+  .sheet-panel {
+    max-width: none !important; border-radius: 20px 20px 0 0 !important;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+    animation: sheet-up var(--dur-spring) var(--spring-bounce) backwards !important;
+  }
+  @keyframes sheet-up { from { transform: translateY(100%); } }
+  .user-actions { margin-left: 52px; }
   /* La pestaña "Más" abre el menú: la barra superior queda solo para el título */
   .mobile-bar > .icon-btn { display: none; }
   .mobile-bar { padding-left: 16px; }
@@ -738,7 +753,7 @@
     transition-duration: 1ms !important;
     scroll-behavior: auto !important;
   }
-  .section-enter, .enter, .modal-panel, .modal-scrim, .sidebar-scrim { animation: fade-only 160ms ease-out both !important; }
+  .section-enter, .enter, .modal-panel, .modal-scrim, .sidebar-scrim { animation: fade-only 160ms ease-out backwards !important; }
   @keyframes fade-only { from { opacity: 0; } }
   .sidebar { transition: none !important; }
   .spinner { animation: spin 1.6s linear infinite !important; }
