@@ -8,6 +8,16 @@ import Logo from '@/components/Logo'
 import { MARCA } from '@/config/marca'
 import { BarraScroll } from '@/components/Vivo'
 
+// Saludo según la hora local y nombre en formato propio ("CARLOS JIMÉNEZ" → "Carlos")
+function saludo() {
+  const h = new Date().getHours()
+  return h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches'
+}
+function nombrePropio(nombre = '') {
+  const n = nombre.trim().split(/\s+/)[0] || ''
+  return n.charAt(0) + n.slice(1).toLowerCase()
+}
+
 export default function ServiciosPage() {
   const { user, loading, logout } = useAuth()
   const router = useRouter()
@@ -66,8 +76,9 @@ export default function ServiciosPage() {
       <main id="contenido" className="mx-auto w-full max-w-[1100px] flex-1 px-4 pt-10 pb-16 sm:px-8 sm:pt-14">
 
         <div className="mb-10">
-          <h1 id="titulo-servicios" className="text-large font-bold">Frentes de trabajo</h1>
-          <p className="mt-2 text-body text-label-2">Elige el servicio en el que vas a trabajar hoy.</p>
+          <p className="page-eyebrow"><Icon name="planta" size={15} strokeWidth={2} />{saludo()}, {nombrePropio(user.nombre)}</p>
+          <h1 id="titulo-servicios" className="page-title">Frentes de trabajo</h1>
+          <p className="page-sub">Elige el servicio en el que vas a trabajar hoy.</p>
         </div>
 
         {cargando ? (
@@ -79,8 +90,8 @@ export default function ServiciosPage() {
             {/* Servicios activos */}
             {activos.length > 0 && (
               <section aria-labelledby="t-activos" className="mb-14">
-                <h2 id="t-activos" className="mb-3 flex items-baseline gap-2 text-headline font-semibold">
-                  En curso <span className="num text-footnote font-normal text-label-3">{activos.length}</span>
+                <h2 id="t-activos" className="group-title mb-4">
+                  <span className="ico-tile" aria-hidden="true"><Icon name="helmet" size={16} /></span>En curso <span className="num text-footnote font-normal text-label-3">{activos.length}</span>
                 </h2>
                 <ul className="flex flex-col gap-3">
                   {activos.map(s => (
@@ -93,8 +104,8 @@ export default function ServiciosPage() {
             {/* Servicios finalizados */}
             {finalizados.length > 0 && (
               <section aria-labelledby="t-finalizados">
-                <h2 id="t-finalizados" className="mb-3 flex items-baseline gap-2 text-headline font-semibold">
-                  Finalizados <span className="num text-footnote font-normal text-label-3">{finalizados.length}</span>
+                <h2 id="t-finalizados" className="group-title mb-4">
+                  <span className="ico-tile" aria-hidden="true"><Icon name="check" size={16} /></span>Finalizados <span className="num text-footnote font-normal text-label-3">{finalizados.length}</span>
                 </h2>
                 <ul className="overflow-hidden rounded-lg bg-surface">
                   {finalizados.map(s => (

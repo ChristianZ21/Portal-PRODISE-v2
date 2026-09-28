@@ -50,7 +50,7 @@ export default function LoginPage() {
           <Logo height={44} />
 
           <div ref={cardRef}>
-            <h1 className="mt-12 text-title1 font-semibold">Inicia sesión</h1>
+            <h1 className="mt-12 text-large font-bold">Inicia sesión</h1>
             <p className="mt-2 text-body text-label-2">Usa tu usuario y contraseña de {MARCA.nombre}.</p>
 
             <form onSubmit={handleSubmit} noValidate className="mt-8 flex flex-col gap-5">
