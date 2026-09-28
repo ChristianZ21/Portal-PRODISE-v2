@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, use, useRef, useCallback } from 'react'
+import { Fragment, useState, useEffect, use, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../../../context/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -9,6 +9,14 @@ import { Deslizador, Contador, BarraScroll, GestoCajon } from '@/components/Vivo
 import { md5 } from '@/lib/md5'
 
 const NAV_ICON = { evaluar: 'evaluar', historial: 'historial', bitacora: 'bitacora', dashboard: 'dashboard', ranking: 'ranking', perfiles: 'perfiles', buscador: 'buscador', predictor: 'predictor', admin: 'admin' }
+// Clasificación de las secciones: se muestra en el menú y sobre cada título
+const NAV_GRUPO = { evaluar: 'Trabajo diario', historial: 'Trabajo diario', bitacora: 'Trabajo diario', dashboard: 'Análisis', ranking: 'Análisis', perfiles: 'Análisis', buscador: 'Análisis', predictor: 'Análisis', admin: 'Administración' }
+function Antetitulo({ sec }) {
+  return <p className="page-eyebrow"><Icon name={NAV_ICON[sec]} size={15} strokeWidth={2} />{NAV_GRUPO[sec]}</p>
+}
+function Glifo({ icono }) {
+  return <span className="ico-tile" aria-hidden="true"><Icon name={icono} size={16} /></span>
+}
 
 export default function ServicioPage({ params }) {
   const { id } = use(params)
@@ -122,8 +130,10 @@ export default function ServicioPage({ params }) {
         <nav style={{ flex: 1, padding: '0 8px', overflowY: 'auto' }}>
           <ul className="nav-list" style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Deslizador />
-            {nav.map(x => (
-              <li key={x.id}>
+            {nav.map((x, i) => (
+              <Fragment key={x.id}>
+              {NAV_GRUPO[x.id] !== NAV_GRUPO[nav[i - 1]?.id] && <li className="nav-group" aria-hidden="true">{NAV_GRUPO[x.id]}</li>}
+              <li>
                 <button
                   onClick={() => { if (!x.disabled) { setSec(x.id); setSidebarOpen(false) } }}
                   className={`nav-item ${sec === x.id ? 'is-active' : ''}`}
@@ -136,6 +146,7 @@ export default function ServicioPage({ params }) {
                   {x.disabled && <Icon name="lock" size={14} style={{ color: 'var(--text3)' }} />}
                 </button>
               </li>
+              </Fragment>
             ))}
           </ul>
         </nav>
@@ -290,7 +301,7 @@ function Evaluar({ svc, user }) {
 
   return (
     <div>
-      <h2 className="page-title">Evaluar personal</h2>
+      <Antetitulo sec="evaluar" /><h2 className="page-title">Evaluar personal</h2>
       <p className="page-sub" style={{ marginBottom: 24 }}>{svc.nombre_descriptivo}</p>
       {msg && <div className="alert alert-ok" role="status" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}><Icon name="check" size={18} />{msg}</div>}
       {!sel ? (
@@ -427,7 +438,7 @@ function Historial({ svc, user }) {
 
   return (
     <div>
-      <h2 className="page-title">Historial de evaluaciones</h2>
+      <Antetitulo sec="historial" /><h2 className="page-title">Historial de evaluaciones</h2>
       <p className="page-sub" style={{ marginBottom: 24 }}>{svc.nombre_descriptivo} · {data.length} evaluaciones</p>
 
       {data.length > 0 && (
@@ -656,7 +667,7 @@ function Dashboard({ svc, user }) {
     <div className="fade">
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 24 }}>
         <div>
-          <h2 className="page-title">Dashboard</h2>
+          <Antetitulo sec="dashboard" /><h2 className="page-title">Dashboard</h2>
           <p className="page-sub">{svc.nombre_descriptivo}</p>
         </div>
         <button className="btn btn-ghost" onClick={loadAll}><Icon name="refresh" size={18} />Actualizar</button>
@@ -707,10 +718,10 @@ function Dashboard({ svc, user }) {
 
       <div className="card-static" style={{ padding: '4px 0 20px', marginBottom: 16 }}>
       <div className="kpi-grid kpi-strip" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
-        <KpiCard label="Personal total" value={kpi.total} sub="asignados al servicio" color="var(--accent2)" />
-        <KpiCard label="Evaluados" value={`${kpi.evaluados}/${kpi.total}`} sub={`${kpi.pctEval}% completado`} color={kpi.pctEval >= 80 ? 'var(--green)' : kpi.pctEval >= 50 ? 'var(--yellow)' : 'var(--red)'} />
-        <KpiCard label="Nota promedio" value={kpi.avgGeneral ?? '—'} sub="de 1 a 4" color={scoreColor(kpi.avgGeneral)} />
-        <KpiCard label="Sin evaluar" value={kpi.sinEval} sub="pendientes" color={kpi.sinEval === 0 ? 'var(--green)' : 'var(--yellow)'} />
+        <KpiCard icono="users" label="Personal total" value={kpi.total} sub="asignados al servicio" color="var(--accent2)" />
+        <KpiCard icono="check" label="Evaluados" value={`${kpi.evaluados}/${kpi.total}`} sub={`${kpi.pctEval}% completado`} color={kpi.pctEval >= 80 ? 'var(--green)' : kpi.pctEval >= 50 ? 'var(--yellow)' : 'var(--red)'} />
+        <KpiCard icono="star" label="Nota promedio" value={kpi.avgGeneral ?? '—'} sub="de 1 a 4" color={scoreColor(kpi.avgGeneral)} />
+        <KpiCard icono="clock" label="Sin evaluar" value={kpi.sinEval} sub="pendientes" color={kpi.sinEval === 0 ? 'var(--green)' : 'var(--yellow)'} />
       </div>
 
       <div style={{ padding: '0 20px' }}>
@@ -733,7 +744,7 @@ function Dashboard({ svc, user }) {
         {/* Columna 1: Promedio por dimensión */}
         {byDim.length > 0 && (
           <div className="card-static" style={{ padding: '20px' }}>
-            <div className="group-title" style={{ marginBottom: 16 }}>Por dimensión</div>
+            <div className="group-title" style={{ marginBottom: 16 }}><Glifo icono="radar" />Por dimensión</div>
             {byDim.map(d => (
               <div key={d.dim} style={{ marginBottom: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
@@ -749,7 +760,7 @@ function Dashboard({ svc, user }) {
             {byCargo.length > 0 && (
               <>
                 <div style={{ height: 1, background: 'var(--separator)', margin: '20px 0' }} />
-                <div className="group-title" style={{ marginBottom: 16 }}>Por cargo</div>
+                <div className="group-title" style={{ marginBottom: 16 }}><Glifo icono="helmet" />Por cargo</div>
                 {byCargo.slice(0, 8).map((cargo, i) => (
                   <div key={cargo.cargo} style={{ marginBottom: 8 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3, alignItems: 'center' }}>
@@ -772,7 +783,7 @@ function Dashboard({ svc, user }) {
         {/* Columna 2 & 3: Estado por grupo — expandido */}
         {byGrupo.length > 0 && (
           <div className="card-static dash-col-span2" style={{ padding: '20px', gridColumn: 'span 2', alignSelf: 'start' }}>
-            <div className="group-title" style={{ marginBottom: 16 }}>Estado por grupo</div>
+            <div className="group-title" style={{ marginBottom: 16 }}><Glifo icono="grid" />Estado por grupo</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px 24px' }}>
               {byGrupo.map(g => (
                 <div key={g.grupo}>
@@ -796,7 +807,7 @@ function Dashboard({ svc, user }) {
       {actividades.length > 0 && (
         <div className="card-static" style={{ padding: '20px', marginBottom: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, marginBottom: 16 }}>
-            <span className="group-title">Trabajos y actividades recientes</span>
+            <span className="group-title"><Glifo icono="activity" />Trabajos y actividades recientes</span>
             <span style={{ fontSize: 13, color: 'var(--text3)' }}>Vinculados a cuadrillas</span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px 24px' }}>
@@ -826,7 +837,7 @@ function Dashboard({ svc, user }) {
       <div className="dash-bottom-grid" style={{ display: 'grid', gridTemplateColumns: kpi.topScorer ? '1fr 280px' : '1fr', gap: 16, marginBottom: 16 }}>
         {recent.length > 0 && (
           <div className="card-static" style={{ padding: '20px' }}>
-            <div className="group-title" style={{ marginBottom: 16 }}>Últimas evaluaciones</div>
+            <div className="group-title" style={{ marginBottom: 16 }}><Glifo icono="evaluar" />Últimas evaluaciones</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '12px 24px' }}>
               {recent.slice(0, 8).map((r, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -849,7 +860,7 @@ function Dashboard({ svc, user }) {
           <div className="card-static" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 16, alignSelf: 'start' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Medalla pos={1} size={24} />
-              <span className="group-title">Mejor nota</span>
+              <span className="group-title"><Glifo icono="star" />Mejor nota</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <Avatar nombre={kpi.topScorer.nombre} foto={kpi.topScorer.foto} size={48} />
@@ -870,10 +881,10 @@ function Dashboard({ svc, user }) {
   )
 }
 
-function KpiCard({ label, value, sub, color }) {
+function KpiCard({ label, value, sub, color, icono }) {
   return (
     <div className="kpi-cell">
-      <div style={{ fontSize: 13, color: 'var(--text2)' }}>{label}</div>
+      <div style={{ fontSize: 13, color: 'var(--text2)', display: 'flex', alignItems: 'center', gap: 6 }}>{icono && <Icon name={icono} size={15} style={{ color: 'var(--text3)' }} />}{label}</div>
       <div className="num" style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.025em', color: color === 'var(--accent2)' ? 'var(--text)' : color, lineHeight: 1.1, marginTop: 8 }}><Contador valor={value} /></div>
       <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 4 }}>{sub}</div>
     </div>
@@ -914,7 +925,7 @@ function AdminPanel({ svc, user }) {
 
   return (
     <div>
-      <h2 className="page-title">Panel de administración</h2>
+      <Antetitulo sec="admin" /><h2 className="page-title">Panel de administración</h2>
       <p className="page-sub" style={{ marginBottom: 24 }}>Control central para {svc.nombre_descriptivo}</p>
 
       <div className="segmented" role="tablist" aria-label="Secciones de administración" style={{ marginBottom: 32, WebkitOverflowScrolling: 'touch' }}>
@@ -986,7 +997,7 @@ function AdminResumen({ svc }) {
         </div>
       </div>
       <div className="card-static" style={{ padding: '20px' }}>
-         <h3 className="card-title">Personal por especialidad</h3>
+         <h3 className="card-title"><Glifo icono="helmet" />Personal por especialidad</h3>
          <ul style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', columnGap: 32 }}>
             {stats.cargos.map(([nombre, cant]) => (
                <li key={nombre} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '10px 0', boxShadow: 'inset 0 -0.5px 0 var(--separator)' }}>
@@ -1197,7 +1208,7 @@ function AdminCarga({ svc, user }) {
         <>
           <div className="card-static" style={{ padding: '16px 18px', marginBottom: 16 }}>
             <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, display: 'flex', justifyContent: 'space-between' }}>
-              <span className="card-title" style={{ marginBottom: 0 }}>Formato de columnas requerido</span>
+              <span className="card-title" style={{ marginBottom: 0 }}><Glifo icono="file" />Formato de columnas requerido</span>
               <button className="btn btn-ghost" onClick={downloadTemplate} style={{ margin: 0, width: 'auto' }}><Icon name="download" size={16} />Descargar plantilla Excel/CSV</button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
@@ -1528,7 +1539,7 @@ function Ranking({ svc, user }) {
     <div className="fade">
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h2 className="page-title">Ranking por cargo</h2>
+          <Antetitulo sec="ranking" /><h2 className="page-title">Ranking por cargo</h2>
           <p className="page-sub">{svc.nombre_descriptivo}</p>
         </div>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -1603,7 +1614,7 @@ function Ranking({ svc, user }) {
           {rowsByGrupo.map(grupo => (
             <section key={grupo.cargoId}>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 8, padding: '0 4px' }}>
-                <h3 className="group-title">{grupo.cargoNombre}</h3>
+                <h3 className="group-title"><Glifo icono="helmet" />{grupo.cargoNombre}</h3>
                 <div className="num" style={{ fontSize: 13, color: 'var(--text3)' }}>{grupo.rows.length} evaluados</div>
               </div>
               <div className="card-static" style={{ overflow: 'hidden', overflowX: 'auto' }}>
@@ -1673,7 +1684,7 @@ function ToggleSwitch({ on, onChange, color, label, sub }) {
 }
 
 function SectionLabel({ text, color }) {
-  return <h3 className="group-title" style={{ marginBottom: 16, padding: '0 4px' }}>{text}</h3>
+  return <h3 className="group-title" style={{ marginBottom: 16, padding: '0 4px' }}><Glifo icono="trophy" />{text}</h3>
 }
 
 function Podio({ items, medalColor, scoreColor, svcId }) {
@@ -2021,7 +2032,7 @@ function Perfiles({ svc, user }) {
     return (
       <div className="fade">
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
-          <div><h2 className="page-title">Perfiles analíticos 360°</h2><p className="page-sub">{svc.nombre_descriptivo}</p></div>
+          <div><Antetitulo sec="perfiles" /><h2 className="page-title">Perfiles analíticos 360°</h2><p className="page-sub">{svc.nombre_descriptivo}</p></div>
           <div className="search-field" style={{ flex: '0 1 320px' }}>
             <Icon name="buscador" size={18} />
             <input className="input" type="search" aria-label="Buscar por nombre o cargo" placeholder="Buscar por nombre o cargo" value={search} onChange={e => setSearch(e.target.value)} />
@@ -2096,7 +2107,7 @@ function Perfiles({ svc, user }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               
               <div className="card-static" style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <h3 className="card-title" style={{ width: '100%' }}>Análisis dimensional vs cargo</h3>
+                <h3 className="card-title" style={{ width: '100%' }}><Glifo icono="radar" />Análisis dimensional vs cargo</h3>
                 {perfil.dims ? (
                   <>
                     <RadarSVG dims={perfil.dims} grupoDims={perfil.cargoServicioDims} size={180} color={sc(perfil.notaActual)} />
@@ -2109,7 +2120,7 @@ function Perfiles({ svc, user }) {
               </div>
 
               <div className="card-static" style={{ padding: '20px' }}>
-                 <h3 className="card-title">Desglose de varianza (Δ)</h3>
+                 <h3 className="card-title"><Glifo icono="delta" />Desglose de varianza (Δ)</h3>
                  {perfil.dims ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     {Object.entries({ 'Seguridad': 'd1', 'Calidad técnica': 'd2', 'Actitud': 'd3', 'Precisión': 'd4' }).map(([label, key]) => {
@@ -2157,14 +2168,14 @@ function Perfiles({ svc, user }) {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div className="card-static" style={{ padding: '20px' }}>
-                <h3 className="card-title">Línea de tiempo de rendimiento</h3>
+                <h3 className="card-title"><Glifo icono="trend" />Línea de tiempo de rendimiento</h3>
                 {perfil.trayectoria.length > 0
                   ? <TrayectoriaSVG data={perfil.trayectoria} scoreColor={sc} />
                   : <div style={{ padding: '32px 0', fontSize: 15, color: 'var(--text2)', textAlign: 'center' }}>Aún no hay historial suficiente para trazar la curva de rendimiento.</div>}
               </div>
 
               <div className="card-static" style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <h3 className="card-title">Competencias <span className="num" style={{ color: 'var(--text3)', fontWeight: 400 }}>{perfil.competencias.length}</span></h3>
+                <h3 className="card-title"><Glifo icono="wrench" />Competencias <span className="num" style={{ color: 'var(--text3)', fontWeight: 400 }}>{perfil.competencias.length}</span></h3>
                 
                 {perfil.competencias.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', flex: 1 }}>
@@ -2191,7 +2202,7 @@ function Perfiles({ svc, user }) {
               
               <section className="card-static" aria-live="polite" aria-busy={loadingAi} style={{ padding: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
-                  <h3 className="card-title" style={{ marginBottom: 0 }}>Diagnóstico IA</h3>
+                  <h3 className="card-title" style={{ marginBottom: 0 }}><Glifo icono="spark" />Diagnóstico IA</h3>
                   <div style={{ fontSize: 13, fontWeight: 500, color: loadingAi ? 'var(--text2)' : 'var(--green)', display: 'flex', alignItems: 'center', gap: 6 }}>
                     {loadingAi ? <><span className="spinner" style={{ width: 14, height: 14 }} />Sintetizando…</> : <><Icon name="check" size={16} />Listo</>}
                   </div>
@@ -2215,7 +2226,7 @@ function Perfiles({ svc, user }) {
 
               {perfil.habilidades.length > 0 && (
                 <div className="card-static" style={{ padding: '20px' }}>
-                  <h3 className="card-title">Polivalencia</h3>
+                  <h3 className="card-title"><Glifo icono="layers" />Polivalencia</h3>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     {perfil.habilidades.map((h, i) => (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '10px 0', boxShadow: i > 0 ? 'inset 0 0.5px 0 var(--separator)' : 'none' }}>
@@ -2233,7 +2244,7 @@ function Perfiles({ svc, user }) {
               )}
 
               <div className="card-static" style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <h3 className="card-title">Observaciones</h3>
+                <h3 className="card-title"><Glifo icono="quote" />Observaciones</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto', flex: 1 }}>
                   {perfil.comentarios?.length > 0 ? perfil.comentarios.map((c, i) => (
                     <blockquote key={i} style={{ fontSize: 15, color: 'var(--text)', lineHeight: 1.5, padding: '10px 0', boxShadow: i > 0 ? 'inset 0 0.5px 0 var(--separator)' : 'none' }}>
@@ -2456,7 +2467,7 @@ function Buscador({ svc, user }) {
   return (
     <div className="fade">
       <div style={{ marginBottom: 24 }}>
-        <h2 className="page-title">Buscador de talento</h2>
+        <Antetitulo sec="buscador" /><h2 className="page-title">Buscador de talento</h2>
         <p className="page-sub">Filtra al personal histórico por sus habilidades técnicas.</p>
       </div>
 
@@ -2656,7 +2667,7 @@ function Predictor({ svc, user }) {
         <div style={{ padding: '20px 20px 16px', boxShadow: 'inset 0 -0.5px 0 var(--separator)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
             <div>
-              <h2 className="page-title">Armar cuadrilla</h2>
+              <Antetitulo sec="predictor" /><h2 className="page-title">Armar cuadrilla</h2>
               <div className="num" style={{ fontSize: 15, color: 'var(--text2)', marginTop: 4 }}>
                 {seleccionados.length} seleccionados
               </div>
@@ -2738,7 +2749,7 @@ function Predictor({ svc, user }) {
         ) : (
           <>
             <div className="card-static" style={{ padding: '20px 24px' }}>
-              <h3 className="card-title">Proyección de rendimiento grupal</h3>
+              <h3 className="card-title"><Glifo icono="target" />Proyección de rendimiento grupal</h3>
               
               <div className="num" style={{ display: 'flex', alignItems: 'flex-end', gap: '16px 32px', flexWrap: 'wrap' }}>
                 <div>
@@ -2764,7 +2775,7 @@ function Predictor({ svc, user }) {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 16, flex: 1 }}>
               <div className="card-static" style={{ padding: '20px', display: 'flex', flexDirection: 'column' }}>
-                <h3 className="card-title">Mapa de afinidad</h3>
+                <h3 className="card-title"><Glifo icono="link" />Mapa de afinidad</h3>
                 <div style={{ flex: 1, position: 'relative', background: 'var(--fill)', borderRadius: 10, minHeight: 220 }}>
                   <RedAfinidadSVG cuadrilla={cuadrilla} afinidades={afinidades} />
                 </div>
@@ -2776,7 +2787,7 @@ function Predictor({ svc, user }) {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div className="card-static" style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <h3 className="card-title">Advertencias de conflicto</h3>
+                  <h3 className="card-title"><Glifo icono="alert" />Advertencias de conflicto</h3>
                   <div style={{ flex: 1, overflowY: 'auto' }}>
                     {advertencias.length === 0 ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, color: 'var(--text2)' }}><Icon name="check" size={18} style={{ color: 'var(--green)' }} />No se detectaron conflictos históricos.</div>
@@ -2791,7 +2802,7 @@ function Predictor({ svc, user }) {
                 </div>
 
                 <div className="card-static" style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <h3 className="card-title">Sinergias detectadas</h3>
+                  <h3 className="card-title"><Glifo icono="users" />Sinergias detectadas</h3>
                   <div style={{ flex: 1, overflowY: 'auto' }}>
                     {bonos.length === 0 ? (
                       <div style={{ fontSize: 15, color: 'var(--text2)' }}>No hay sinergias excepcionales registradas.</div>
@@ -3060,7 +3071,7 @@ function AdminUsuarios({ user: currentUser }) {
       {/* Encabezado */}
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 20 }}>
         <div>
-          <h3 className="group-title">Usuarios del sistema</h3>
+          <h3 className="group-title"><Glifo icono="users" />Usuarios del sistema</h3>
           <div className="num" style={{ fontSize: 13, color: 'var(--text3)', marginTop: 2 }}>{usuarios.length} usuarios · {activos} activos</div>
         </div>
         <button className="btn btn-primary" onClick={abrirNuevo} style={{ width: 'auto' }}>
@@ -3447,7 +3458,7 @@ function Bitacora({ svc, user }) {
     <div className="fade">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
-          <h2 className="page-title">Trabajos importantes</h2>
+          <Antetitulo sec="bitacora" /><h2 className="page-title">Trabajos importantes</h2>
           <p className="page-sub">Registro global de trabajos críticos y cuadrillas asignadas</p>
         </div>
         {vista === 'lista' && <button className="btn btn-primary" onClick={() => setVista('nueva')} style={{ width: 'auto' }}><Icon name="plus" size={18} />Registrar trabajo</button>}

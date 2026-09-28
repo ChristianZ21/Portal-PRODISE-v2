@@ -470,11 +470,35 @@
   .act-warn { color: var(--yellow); }
   @media (pointer: coarse) { .act { min-height: 44px; } .act-icon { width: 44px; } }
 
-  /* Encabezados de sección */
-  .page-title { font-size: 28px; line-height: 34px; font-weight: 700; letter-spacing: -0.025em; color: var(--text); }
-  .page-sub   { margin-top: 4px; font-size: 15px; line-height: 22px; color: var(--text2); }
-  .card-title { margin-bottom: 16px; font-size: 15px; line-height: 20px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); }
-  .group-title { font-size: 17px; line-height: 22px; font-weight: 600; letter-spacing: -0.015em; color: var(--text); }
+  /* Encabezados · escala tipográfica de Apple
+     Antetítulo (categoría) → Título grande 34 → Subtítulo 17 → Título de tarjeta 17 */
+  .page-eyebrow {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
+    font-size: 13px; line-height: 18px; font-weight: 600; letter-spacing: 0.01em; color: var(--accent);
+  }
+  .page-eyebrow > svg { flex-shrink: 0; }
+  .page-title {
+    font-size: clamp(28px, 2.2vw + 18px, 34px); line-height: 1.16; font-weight: 700;
+    letter-spacing: -0.028em; color: var(--text);
+  }
+  .page-sub   { margin-top: 6px; font-size: 17px; line-height: 24px; letter-spacing: -0.01em; color: var(--text2); }
+  .card-title, .group-title {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 17px; line-height: 22px; font-weight: 600; letter-spacing: -0.018em; color: var(--text);
+  }
+  .card-title { margin-bottom: 16px; }
+  /* Glifo de la tarjeta: monocromo, en una placa suave del color de marca */
+  .ico-tile {
+    display: inline-grid; place-items: center; flex-shrink: 0;
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--brand-soft); color: var(--accent);
+  }
+  /* Encabezado de grupo en el menú lateral */
+  .nav-group {
+    padding: 18px 12px 6px; font-size: 12px; line-height: 16px; font-weight: 600;
+    letter-spacing: 0.02em; color: var(--text3);
+  }
+  .nav-group:first-of-type { padding-top: 4px; }
 
   /* Material translúcido: solo barras de navegación y modales */
   .nav-material {
